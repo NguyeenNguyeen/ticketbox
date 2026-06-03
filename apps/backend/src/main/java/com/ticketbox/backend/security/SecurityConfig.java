@@ -1,5 +1,6 @@
 package com.ticketbox.backend.security;
 
+import com.ticketbox.backend.security.ratelimit.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,14 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    /**
+     * Rate limit filter injected here.
+     * Registered AFTER JwtAuthenticationFilter so that SecurityContext is populated
+     * and we can distinguish authenticated (username-based) vs unauthenticated (IP-based) requests.
+     */
+    @Autowired
+    private RateLimitFilter rateLimitFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,7 +56,10 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
+        // Filter order:
+        // JwtAuthenticationFilter → RateLimitFilter → UsernamePasswordAuthenticationFilter → AuthorizationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

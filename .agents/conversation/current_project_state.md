@@ -1,161 +1,117 @@
 # Current Project State — TicketBox
 
-Last Updated: 2026-06-03
+Last Updated: 2026-06-03 (Post-Backend Analysis)
 
 ---
 
 ## Current Phase
 
-**Phase 1 — Infrastructure** (partially complete)
+**Phase 2 — API Protection** ✅ Rate Limiting complete. Payment Protection is next.
 
-The Docker infrastructure is in place but has minor issues to fix. The Blueprint documentation is partially complete (C4 diagram exists, but design.md and specs/ are still stubs).
-
-No application code (Spring Boot, Next.js, Mobile) has been created yet.
+The Spring Boot backend has Rate Limiting fully implemented, tested, and documented.
+All 16 unit tests pass. The module is production-ready pending integration testing with a live Redis instance.
 
 ---
 
 ## Existing Architecture Status
 
-### Confirmed by C4 Container Diagram
+### Backend (apps/backend/)
 
-The system architecture has been designed and documented as a C4 Level 2 Container diagram. The following containers are defined:
+| Layer | Components | Status |
+|-------|-----------|--------|
+| Entry Point | `Application.java` (@SpringBootApplication + @EnableCaching) | ✅ |
+| Configuration | `RedisConfig.java`, `application.yml` | ✅ |
+| Security | `SecurityConfig`, `JwtAuthenticationFilter`, `JwtTokenProvider`, `CustomUserDetailsService` | ✅ |
+| Controllers | `AuthController` (/api/auth/**), `TicketController` (/api/tickets/purchase) | ✅ |
+| Services | `ConcertService`, `TicketPurchaseService`, `RedisService` | ✅ |
+| Entities | `User`, `Concert`, `Order`, `OrderItem`, `Ticket`, `TicketCategory`, `OrderStatus`, `TicketStatus`, `RoleName` | ✅ |
+| Repositories | All 6 repositories including pessimistic lock query | ✅ |
+| Design Patterns | State (Order lifecycle), Strategy (Pricing), Factory (Ticket creation) | ✅ |
+| Rate Limiting | `security.ratelimit` package (4 classes) | ✅ Implemented + tested |
+| Global Exception Handler | `exception.GlobalExceptionHandler` | ✅ Implemented |
+| Error Response DTO | `dto.ErrorResponse` | ✅ Implemented |
 
-| Container | Technology | Status |
-|-----------|-----------|--------|
-| Web Application | Next.js 14, Zustand, Tailwind CSS | ❌ Not started (placeholder README only) |
-| Mobile Check-in App | React Native/Flutter, SQLite | ❌ Not started (placeholder README only) |
-| Backend Core API | Java, Spring Boot 3 | ❌ Not started (placeholder README only) |
-| Redis Cache & Distributed Lock | Redis 7 (Docker) | ✅ Docker container configured |
-| Message Broker | RabbitMQ 3 (Docker) | ✅ Docker container configured |
-| Async Workers | Java, Spring Boot 3 | ❌ Not started |
-| PostgreSQL Database | PostgreSQL 15 (Docker) | ✅ Docker container configured |
-| Payment Gateway | VNPAY/MoMo (External) | ❌ Not integrated |
-| Email Service | Resend/Brevo (Cloud) | ❌ Not integrated |
-| AI Model | Gemini/OpenAI (Cloud) | ❌ Not integrated |
+### Infrastructure (infra/)
+
+| Component | Status |
+|-----------|--------|
+| PostgreSQL 15-alpine | ✅ Docker configured (healthcheck has bug) |
+| Redis 7-alpine | ✅ Docker configured |
+| RabbitMQ 3-management-alpine | ✅ Docker configured |
+
+### Frontend (apps/frontend/)
+
+| Component | Status |
+|-----------|--------|
+| Next.js project | ❌ Placeholder README only |
+
+### Mobile (apps/mobileapp/)
+
+| Component | Status |
+|-----------|--------|
+| Mobile app | ❌ Placeholder README only |
 
 ---
 
 ## Existing Decisions
 
-### Architecture
+### Key Technical Decisions Already Implemented
 
-* Monolithic Spring Boot backend with Docker-containerized infrastructure services
-* Frontend: Next.js 14 SPA
-* Mobile: Offline-first with SQLite + RSA
-* Communication: REST API + SSE for real-time
+* JWT subject = `username` (not user ID)
+* UserDetails authority = `ROLE_<RoleName.name()>`
+* Redis connection = Spring Boot auto-config (Lettuce)
+* Caching = `@Cacheable` with `RedisCacheManager` (30min TTL)
+* Locking = `@Lock(PESSIMISTIC_WRITE)` in `TicketCategoryRepository`
+* Idempotency = Redis `SETNX` with 10-minute TTL
 
-### Database
+### Rate Limiting Decision (New — 01_api_protection_design.md)
 
-* PostgreSQL 15 as primary database
-* Pessimistic Locking for ticket contention
-* Redis for caching, rate limiting, distributed locks, idempotency keys
-
-### Message Broker
-
-* RabbitMQ for async processing
-* DLQ with max 3 retries
-* Workers for: CSV import, AI bio generation, Email notifications
-
-### Security
-
-* JWT stateless auth
-* RBAC: CUSTOMER, ORGANIZER, CHECKER
-* Rate limiting: Token Bucket via Bucket4j + Redis
-* Circuit Breaker + Bulkhead via Resilience4j
+* Algorithm: Token Bucket (Bucket4j + Redis)
+* Public tier: 100 req/min by client IP
+* Private tier: 10 req/min by username
+* Filter position: After JwtAuthenticationFilter, before AuthorizationFilter
+* Redis failure: Fail-open with warning log
+* Configuration: Externalized via @ConfigurationProperties
 
 ---
 
-## Existing Infrastructure
+## Missing Implementations (Member 4 Scope)
 
-### Docker Compose (infra/docker/docker-compose.yml)
-
-| Service | Image | Container Name | Ports | Healthcheck | Status |
-|---------|-------|---------------|-------|-------------|--------|
-| PostgreSQL | postgres:15-alpine | ticketbox_postgres | 5432 | ⚠️ Broken (empty user/db) | Needs fix |
-| Redis | redis:7-alpine | ticketbox_redis | 6379 | ✅ Working | OK |
-| RabbitMQ | rabbitmq:3-management-alpine | ticketbox_rabbitmq | 5672, 15672 | ✅ Working | OK |
-
-### Known Issue
-
-The PostgreSQL healthcheck on line 15 of docker-compose.yml has empty `-U` and `-d` flags:
-
-```yaml
-test: [CMD-SHELL, pg_isready -U -d ]
-```
-
-Should be:
-
-```yaml
-test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-```
-
-### Environment Configuration
-
-* `.env.example` provides template with PostgreSQL, Gemini, Resend keys
-* `.env` file exists (gitignored)
-
-### Database Init
-
-* `init.sql` creates a basic `concerts` table with a sample record
-* This is a test/placeholder schema, not the final production schema
-
----
-
-## Existing Implementations
-
-| Component | Files | Status |
-|-----------|-------|--------|
-| Docker Infrastructure | `infra/docker/docker-compose.yml`, `infra/docker/init.sql` | ✅ Functional (with PG healthcheck bug) |
-| Infrastructure Docs | `infra/README.md` | ✅ Complete setup guide |
-| Architecture Diagram | `docs/architecture/container_diagram.png`, `docs/architecture/design.md` | ✅ C4 Level 2 exists |
-| Project README | `README.md` | ✅ Folder structure + git workflow |
-| Environment Config | `.env.example`, `.env` | ✅ Template ready |
-| Agent Rules | `.agents/rules/*` | ✅ 3 rule files |
-| Agent Knowledge | `.agents/knowledge/*` | ✅ 3 knowledge files |
-
----
-
-## Missing Implementations
-
-### Critical Path (Blocking All Members)
-
-1. **Spring Boot project initialization** — no `pom.xml`, no `src/` directory, no Spring Boot application class
-2. **Entity/DTO definitions** — no database schema design beyond the placeholder `concerts` table
-3. **Application configuration** — no `application.yml` for Spring Boot
-
-### Member 4 Specific
-
-1. Fix PostgreSQL healthcheck in docker-compose.yml
-2. Add `depends_on: condition: service_healthy` for Spring Boot service
-3. All Phase 2 deliverables (Rate Limiting, Circuit Breaker, Bulkhead)
-4. All Phase 3 deliverables (RabbitMQ config, DLQ, Workers)
-5. Blueprint documentation (proposal.md, detailed design.md, specs/)
-
-### Other Members
-
-1. **Member 1:** Entire backend (entities, repositories, services, controllers, security)
-2. **Member 2:** Entire frontend (Next.js project, components, pages)
-3. **Member 3:** Entire mobile app (technology not yet decided)
+1. **Rate Limiting** — Design complete, implementation pending approval
+2. **Circuit Breaker + Bulkhead** — Not started (requires payment service interface from Member 1)
+3. **RabbitMQ Spring AMQP config** — Not started
+4. **DLQ + Retry mechanism** — Not started
+5. **CSV Import Worker** — Not started
+6. **AI Worker** — Not started
+7. **Email Worker** — Not started
+8. **Docker Compose fixes** — PostgreSQL healthcheck bug still present
+9. **GlobalExceptionHandler** — Not started (planned with rate limiting)
 
 ---
 
 ## Recommended Next Task
 
-### Option A: Fix Docker Compose (Quick Win)
+**Implement Rate Limiting** (pending design approval)
 
-Fix the PostgreSQL healthcheck bug and add proper `depends_on` configuration. This is a 5-minute fix that improves infrastructure reliability.
+This is the highest-priority task for Member 4 because:
+1. Design is complete and documented (01_api_protection_design.md)
+2. All backend dependencies are available (Spring Security, JWT, Redis)
+3. No blocking dependencies on other team members
+4. Critical for meeting the 80,000 CCU requirement
+5. Provides foundational infrastructure (GlobalExceptionHandler, ErrorResponse) used by the entire project
 
-### Option B: Enhance Docker Compose for Spring Boot Integration (Recommended)
+### Files To Create (7)
 
-Prepare the docker-compose.yml for the Spring Boot service by:
+* `security/ratelimit/RateLimitFilter.java`
+* `security/ratelimit/RateLimitConfig.java`
+* `security/ratelimit/RateLimitProperties.java`
+* `security/ratelimit/RateLimitKeyResolver.java`
+* `exception/RateLimitExceededException.java`
+* `exception/GlobalExceptionHandler.java`
+* `dto/ErrorResponse.java`
 
-1. Fixing PostgreSQL healthcheck
-2. Adding Spring Boot service definition with `depends_on` conditions
-3. Adding proper network configuration
-4. Adding memory limits for lightweight development
+### Files To Modify (3)
 
-### Option C: Create Blueprint Documentation
-
-Write the proposal.md, detailed design.md, and feature specs as required by the project deliverables. This can be done independently of other members.
-
-**Recommended:** Option B or C — both can be done independently without blocking on other members.
+* `pom.xml` — Add Bucket4j dependencies
+* `application.yml` — Add rate limit config
+* `SecurityConfig.java` — Register filter
