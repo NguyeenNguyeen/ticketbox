@@ -9,7 +9,7 @@ Last Updated: 2026-06-03
 - [x] Repository structure created
 - [x] README.md with folder structure and git workflow
 - [x] .env.example with PostgreSQL, Gemini, Resend keys
-- [x] .gitignore configured (.env, .agents)
+- [x] .gitignore configured
 - [x] Branch strategy defined (main, develop, backend, frontend, mobileapp, infra)
 
 ---
@@ -21,41 +21,80 @@ Last Updated: 2026-06-03
 - [x] docker-compose.yml created (PostgreSQL 15-alpine, Redis 7-alpine, RabbitMQ 3-management-alpine)
 - [x] Named volumes for data persistence (postgres_data, redis_data, rabbitmq_data)
 - [x] Healthchecks defined for all 3 services
-- [ ] **FIX NEEDED:** PostgreSQL healthcheck uses empty `-U` and `-d` flags — must reference env variables
+- [ ] **FIX NEEDED:** PostgreSQL healthcheck uses empty `-U` and `-d` flags
 - [x] init.sql with sample concerts table and seed data
-- [x] Infrastructure README (infra/README.md) — complete setup guide for Windows/macOS
+- [x] Infrastructure README (infra/README.md) — complete setup guide
 
 ### Docker Improvements Needed
 
-- [ ] Add `depends_on` with `condition: service_healthy` for future Spring Boot service
-- [ ] Fix PostgreSQL healthcheck to use `${POSTGRES_USER}` and `${POSTGRES_DB}`
+- [ ] Add `depends_on` with `condition: service_healthy` for Spring Boot service
+- [ ] Fix PostgreSQL healthcheck to use actual env variables
 - [ ] Consider adding network configuration for service discovery
 - [ ] Consider memory limits for lightweight development environment
 
 ---
 
-## Phase 1.5 — Blueprint Documentation
+## Phase 1.5 — Backend Core (Member 1 — COMPLETED)
 
-- [x] C4 Container diagram (Level 2) created (docs/architecture/container_diagram.png)
-- [x] design.md referencing container diagram
-- [ ] proposal.md (as per project requirements template)
-- [ ] Detailed design.md with all sections (architecture, DB schema, access control, protection mechanisms)
-- [ ] specs/ directory with feature specifications (auth.md, payment.md, checkin.md, etc.)
+- [x] Spring Boot 3.2.4 project initialized (pom.xml, Application.java)
+- [x] Entity classes: User, Concert, Order, OrderItem, Ticket, TicketCategory, OrderStatus, TicketStatus, RoleName
+- [x] Repository interfaces: UserRepository, ConcertRepository, OrderRepository, OrderItemRepository, TicketRepository, TicketCategoryRepository
+- [x] Spring Security: SecurityConfig, JwtAuthenticationFilter, JwtTokenProvider, CustomUserDetailsService
+- [x] Redis: RedisConfig (CacheManager), RedisService (distributed locks, idempotency)
+- [x] Controllers: AuthController (/api/auth/**), TicketController (/api/tickets/purchase)
+- [x] Services: ConcertService (@Cacheable), TicketPurchaseService (full purchase flow)
+- [x] Design Patterns: State (Order lifecycle), Strategy (Pricing), Factory (Ticket creation)
+- [x] application.yml with PostgreSQL, Redis, JWT config
 
 ---
 
 ## Phase 2 — API Protection (Member 4)
 
-### Rate Limiting
+### Rate Limiting — DESIGN
 
-- [ ] Bucket4j + Redis dependency in Spring Boot
-- [ ] RateLimitFilter implementation
-- [ ] Token Bucket configuration
-- [ ] Public API throttling (by IP)
-- [ ] Private API throttling (by User ID from JWT)
-- [ ] HTTP 429 JSON response format
+- [x] Existing backend analysis completed
+- [x] Architecture design completed (01_api_protection_design.md)
+- [x] Package structure proposed
+- [x] Integration plan defined
+- [x] Edge case analysis completed
+- [x] Risk assessment completed
 
-### Payment Protection
+### Rate Limiting — IMPLEMENTATION ✅ COMPLETE
+
+- [x] Add Bucket4j dependencies to pom.xml (bucket4j-core:8.10.1, bucket4j-redis:8.10.1)
+- [x] Create RateLimitProperties.java (@ConfigurationProperties)
+- [x] Create RateLimitConfig.java (dedicated Lettuce client + LettuceBasedProxyManager bean)
+- [x] Create RateLimitKeyResolver.java (IP/username key resolution)
+- [x] Create RateLimitFilter.java (OncePerRequestFilter — core logic)
+- [x] Create ErrorResponse.java (standard error DTO, @JsonInclude)
+- [x] Create RateLimitExceededException.java
+- [x] Create GlobalExceptionHandler.java (@RestControllerAdvice — project-wide)
+- [x] Add rate-limit config block to application.yml
+- [x] Register RateLimitFilter in SecurityConfig.java (after JwtAuthenticationFilter)
+- [x] Unit tests: RateLimitKeyResolverTest (7 tests, all passing)
+- [x] Unit tests: RateLimitFilterTest (9 tests, all passing)
+- [x] Build verification: mvn compile + mvn test → BUILD SUCCESS (16/16)
+- [x] Implementation documentation: 02_api_protection_implementation.md
+
+### Rate Limiting — REVIEW ✅ COMPLETE
+
+- [x] Architecture Review
+- [x] Security Review
+- [x] Concurrency & Redis Failure Review
+- [x] Performance & Edge Case Review
+- [x] Code Quality Assessment
+- [x] Review documentation: 03_api_protection_review.md
+
+### Rate Limiting — REMEDIATION ✅ COMPLETE (29 tests passing)
+
+- [x] CRITICAL 2.1: IP spoofing fix (trustProxyHeaders flag, default=false)
+- [x] CRITICAL 2.2: DoS shield pre-auth Caffeine gate (blocks floods before JWT/DB)
+- [x] IMPORTANT 3.1: Auth-tier brute-force protection (/api/auth/** 10/min per IP)
+- [x] IMPORTANT 3.2: Redis fallback to local Caffeine (no longer fully fail-open)
+- [x] IMPORTANT 3.3: Actuator whitelist narrowed (only health + info)
+- [x] MINOR 4.1: Dead code removed from GlobalExceptionHandler
+- [x] Tests updated: 29 tests, 0 failures (12 resolver + 17 filter)
+- [x] Remediation documentation: 04_api_protection_remediation.md
 
 - [ ] Resilience4j dependency
 - [ ] Circuit Breaker configuration (count-based sliding window)
@@ -65,7 +104,7 @@ Last Updated: 2026-06-03
 
 ---
 
-## Phase 3 — Async Processing (Member 4)
+## Phase 3 — Async Processing (Member 4) — Not Started
 
 ### RabbitMQ Configuration
 
@@ -105,19 +144,20 @@ Last Updated: 2026-06-03
 
 | Task | Blocked By | Reason |
 |------|-----------|--------|
-| Rate Limiting Filter | Member 1 | Requires Spring Boot project initialization |
-| Circuit Breaker | Member 1 | Requires Spring Boot project + payment service interface |
-| RabbitMQ Spring Config | Member 1 | Requires Spring Boot project initialization |
-| All Workers | Member 1 | Requires Spring Boot project + entity/DTO definitions |
+| Circuit Breaker | Member 1 | Requires payment service interface |
+| RabbitMQ Spring Config | Design phase | Rate limiting complete — this is next |
+| All Workers | Design phase | Requires RabbitMQ setup first |
 
 ---
 
-## Dependencies on Other Members
+## Dependencies on Other Members — Updated
 
 | Member | Dependency | Status |
 |--------|-----------|--------|
-| Member 1 (Backend) | Spring Boot project initialization | ❌ Not started |
-| Member 1 (Backend) | Entity/DTO definitions (Order, Ticket, Concert, User) | ❌ Not started |
+| Member 1 (Backend) | Spring Boot project initialization | ✅ Complete |
+| Member 1 (Backend) | Entity/DTO definitions | ✅ Complete (User, Order, Ticket, etc.) |
+| Member 1 (Backend) | Security configuration (JWT, RBAC) | ✅ Complete |
+| Member 1 (Backend) | Redis configuration | ✅ Complete |
 | Member 1 (Backend) | Payment service interface | ❌ Not started |
-| Member 2 (Frontend) | None — frontend consumes APIs | N/A |
-| Member 3 (Mobile) | Technology decision (React Native vs Flutter) | ❌ Pending |
+| Member 2 (Frontend) | None | N/A |
+| Member 3 (Mobile) | Technology decision | ❌ Pending |
