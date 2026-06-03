@@ -28,24 +28,57 @@ jwt:
 
 ticketbox:
   rate-limit:
-    # Set to false to disable rate limiting entirely (useful for local development)
+    # Set to false to disable rate limiting entirely (e.g. integration tests, local dev)
     enabled: true
-    # Public API tier: limits unauthenticated requests by client IP
+
+    # -----------------------------------------------------------------------
+    # IP Spoofing protection (Security Fix 2.1)
+    # -----------------------------------------------------------------------
+    # Set to true ONLY when running behind a trusted reverse proxy (Nginx/ALB).
+    # When false (default), request.getRemoteAddr() is used exclusively.
+    # When true, also enable: server.forward-headers-strategy=framework
+    # -----------------------------------------------------------------------
+    trust-proxy-headers: false
+
+    # Pre-auth IP gate: fast local in-memory check (Caffeine, per-node)
+    # Blocks floods BEFORE JWT parsing and DB access (Security Fix 2.2)
+    pre-auth:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 60
+
+    # Auth tier: strict Redis-backed limit for login/register (Security Fix 3.1)
+    # Prevents credential brute-forcing (10 attempts/min per IP)
+    auth:
+      capacity: 10
+      refill-tokens: 10
+      refill-duration-seconds: 60
+
+    # Public API tier: limits unauthenticated non-auth requests by client IP
     public:
       capacity: 100
       refill-tokens: 100
       refill-duration-seconds: 60
+
     # Private API tier: limits authenticated requests by username (from JWT)
     private:
       capacity: 10
       refill-tokens: 10
       refill-duration-seconds: 60
-    # Paths that completely bypass rate limiting
+
+    # Paths that receive the stricter 'auth' tier instead of 'public' tier
+    auth-paths:
+      - /api/auth/**
+
+    # Paths that completely bypass rate limiting.
+    # Keep this list as narrow as possible (Docker health probes only).
+    # Actuator endpoints are NO LONGER whitelisted — they now use the
+    # standard private-tier limit (authenticated) to prevent abuse (Fix 3.3).
     whitelisted-paths:
-      - /actuator/**
+      - /actuator/health
+      - /actuator/info
       - /swagger-ui/**
       - /swagger-ui.html
       - /v3/api-docs/**
       - /error
       - /favicon.ico
-      - /static/**

@@ -15,34 +15,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Centralized exception handler for all REST controllers.
  * <p>
  * Converts exceptions into a consistent {@link ErrorResponse} JSON payload.
- * Note: {@link RateLimitExceededException} is handled directly inside
- * {@code RateLimitFilter} (filter-level) because filters cannot use
- * {@code @RestControllerAdvice}. This handler exists as a safety net if the
- * exception somehow propagates past the filter (e.g. during testing with
- * {@code MockMvc} and no filter chain).
+ * <p>
+ * <b>Note on Rate Limiting:</b> HTTP 429 responses are written directly by
+ * {@code RateLimitFilter} at the Servlet filter level (outside the DispatcherServlet).
+ * This handler does NOT catch rate limiting errors — that would require the exception
+ * to reach a controller, which it never will. The filter handles its own 429 responses.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    /**
-     * HTTP 429 — Rate limit exceeded.
-     */
-    @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RateLimitExceededException ex) {
-        log.warn("Rate limit exceeded: {}", ex.getMessage());
-        ErrorResponse body = ErrorResponse.builder()
-                .status(HttpStatus.TOO_MANY_REQUESTS.value())
-                .code("RATE_LIMIT_EXCEEDED")
-                .message("Too many requests. Please try again later.")
-                .retryAfterSeconds(ex.getRetryAfterSeconds())
-                .build();
-        return ResponseEntity
-                .status(HttpStatus.TOO_MANY_REQUESTS)
-                .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
-                .body(body);
-    }
 
     /**
      * HTTP 403 — Access denied (RBAC check failed).

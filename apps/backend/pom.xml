@@ -85,6 +85,11 @@
 			<artifactId>bucket4j-redis</artifactId>
 			<version>8.10.1</version>
 		</dependency>
+		<!-- Caffeine: In-memory cache for local rate limit fallback and pre-auth DoS shield -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

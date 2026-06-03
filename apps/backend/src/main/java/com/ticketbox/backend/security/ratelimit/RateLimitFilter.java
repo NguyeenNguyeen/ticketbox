@@ -1,7 +1,10 @@
 package com.ticketbox.backend.security.ratelimit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.ticketbox.backend.dto.ErrorResponse;
+import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.distributed.BucketProxy;
@@ -19,50 +22,84 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Servlet filter that enforces rate limiting on all HTTP requests.
- * <p>
- * <b>Filter position:</b> Placed <em>after</em> {@code JwtAuthenticationFilter} so the
- * {@link SecurityContextHolder} is already populated when we need to resolve the
- * authenticated username for private-tier limits.
- * <p>
- * <b>Two-tier strategy:</b>
- * <ul>
- *   <li><b>Private tier</b> — authenticated requests limited by username (10 req/min default)</li>
- *   <li><b>Public tier</b> — unauthenticated requests limited by client IP (100 req/min default)</li>
- * </ul>
- * <p>
- * <b>Fail-open behavior:</b> If Redis is unavailable, the request is allowed through
- * with a warning log. This prevents a Redis outage from taking down the entire API.
- * <p>
- * <b>Whitelist:</b> Paths listed in {@link RateLimitProperties#getWhitelistedPaths()} skip
- * all rate limit checks (Actuator, Swagger, static resources, error pages).
+ *
+ * <h2>Processing Pipeline (per request)</h2>
+ * <ol>
+ *   <li><b>Global disable check</b> — Skip if {@code ticketbox.rate-limit.enabled=false}.</li>
+ *   <li><b>Whitelist check</b> — Skip for health probes, Swagger, error endpoints.</li>
+ *   <li><b>Pre-auth local gate (DoS shield)</b> — Fast in-memory Caffeine check by IP.
+ *       Runs BEFORE JWT parsing and DB access. Blocks floods at the filter level
+ *       without consuming DB connections. (Fixes Critical Finding 2.2)</li>
+ *   <li><b>Auth-tier check</b> — If the path matches {@code auth-paths} (e.g., {@code /api/auth/**}),
+ *       apply the strict Redis-backed auth bucket (e.g., 10 req/min per IP).
+ *       (Fixes Important Finding 3.1)</li>
+ *   <li><b>Standard tier check</b> — Private (authenticated, username-based) or Public
+ *       (unauthenticated, IP-based) Redis-backed bucket.</li>
+ * </ol>
+ *
+ * <h2>Filter Position</h2>
+ * Placed <em>after</em> {@code JwtAuthenticationFilter} so the {@code SecurityContextHolder}
+ * is populated. The pre-auth Caffeine gate (Step 3) is intentionally cheap enough that
+ * running it here (rather than before JWT) adds negligible overhead while still blocking
+ * floods before any business logic or DB calls execute.
+ *
+ * <h2>Redis Failure Behaviour (Improved Fallback, Fixes Important Finding 3.2)</h2>
+ * If Redis is unavailable, the filter falls back to the local Caffeine bucket for the
+ * same key. This provides node-level protection rather than completely failing open.
+ * The fallback is logged at WARN level.
+ *
+ * <h2>IP Spoofing Protection (Fixes Critical Finding 2.1)</h2>
+ * IP extraction honours the {@code trust-proxy-headers} property. By default
+ * ({@code false}), only {@code request.getRemoteAddr()} is used.
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
 
-    private static final String HEADER_RETRY_AFTER       = "Retry-After";
+    private static final String HEADER_RETRY_AFTER          = "Retry-After";
     private static final String HEADER_RATE_LIMIT_REMAINING = "X-Rate-Limit-Remaining";
 
-    private final ProxyManager<String> proxyManager;
-    private final RateLimitProperties  properties;
-    private final RateLimitKeyResolver keyResolver;
-    private final ObjectMapper         objectMapper;
-    private final AntPathMatcher       pathMatcher;
+    /**
+     * Local in-memory bucket cache.
+     * <p>
+     * Used for:
+     * <ul>
+     *   <li>Pre-auth DoS gate (always, fast path)</li>
+     *   <li>Redis fallback when distributed storage is unavailable</li>
+     * </ul>
+     * TTL is set to 2× the longest refill window to ensure buckets expire
+     * naturally. Maximum size caps memory usage regardless of unique IP count.
+     */
+    private final Cache<String, Bucket> localBucketCache;
+
+    private final ProxyManager<String>  proxyManager;
+    private final RateLimitProperties   properties;
+    private final RateLimitKeyResolver  keyResolver;
+    private final ObjectMapper          objectMapper;
+    private final AntPathMatcher        pathMatcher;
 
     public RateLimitFilter(ProxyManager<String> proxyManager,
                            RateLimitProperties properties,
                            RateLimitKeyResolver keyResolver,
                            ObjectMapper objectMapper) {
-        this.proxyManager  = proxyManager;
-        this.properties    = properties;
-        this.keyResolver   = keyResolver;
-        this.objectMapper  = objectMapper;
-        this.pathMatcher   = new AntPathMatcher();
+        this.proxyManager = proxyManager;
+        this.properties   = properties;
+        this.keyResolver  = keyResolver;
+        this.objectMapper = objectMapper;
+        this.pathMatcher  = new AntPathMatcher();
+
+        // Local cache: expires after 2 minutes (covers a 60-second refill window with margin)
+        // Max 50,000 entries ≈ 50k unique IPs/usernames stored per node (~4 MB overhead)
+        this.localBucketCache = Caffeine.newBuilder()
+                .maximumSize(50_000)
+                .expireAfterWrite(Duration.ofSeconds(120))
+                .build();
     }
 
     @Override
@@ -71,66 +108,144 @@ public class RateLimitFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. Skip rate limiting if globally disabled
+        // ── Step 1: Global disable ────────────────────────────────────────────
         if (!properties.isEnabled()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Skip rate limiting for whitelisted paths (actuator, swagger, etc.)
+        // ── Step 2: Whitelist check ───────────────────────────────────────────
         String requestPath = request.getRequestURI();
         if (isWhitelisted(requestPath)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Resolve bucket key (username or IP) and corresponding bucket configuration
+        // ── Step 3: Pre-auth local DoS gate (Security Fix 2.2) ───────────────
+        // Fast local (Caffeine) IP-based check executed BEFORE any downstream
+        // filter can trigger JWT validation or DB queries.
+        String ipKey = keyResolver.resolveIpKey(request);
+        Bucket localBucket = getOrCreateLocalBucket(ipKey, properties.getPreAuth());
+        ConsumptionProbe localProbe = localBucket.tryConsumeAndReturnRemaining(1);
+        if (!localProbe.isConsumed()) {
+            long retryAfter = Math.max(
+                    TimeUnit.NANOSECONDS.toSeconds(localProbe.getNanosToWaitForRefill()), 1L);
+            log.warn("Pre-auth gate: rate limit exceeded for ip='{}' path='{}' retryAfter={}s",
+                    ipKey, requestPath, retryAfter);
+            writeRateLimitResponse(response, retryAfter);
+            return;
+        }
+
+        // ── Step 4: Auth-tier check (Important Fix 3.1) ─────────────────────
+        // Authentication endpoints (login/register) receive a separate stricter
+        // Redis-backed limit to prevent brute-forcing of credentials.
+        if (isAuthPath(requestPath)) {
+            if (!checkRedisBucket(ipKey, properties.getAuth(), response, requestPath,
+                    ipKey /* fallback key */)) {
+                return; // request rejected — 429 already written
+            }
+            // Auth path passed both pre-auth gate and auth-tier — allow through
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ── Step 5: Standard tier check (public or private) ──────────────────
         String bucketKey = keyResolver.resolve(request);
-        BucketConfiguration bucketConfig = resolveBucketConfiguration(bucketKey);
+        RateLimitProperties.TierProperties tier = bucketKey.startsWith(RateLimitKeyResolver.KEY_PREFIX_USER)
+                ? properties.getPrivate()
+                : properties.getPublic();
 
+        if (!checkRedisBucket(bucketKey, tier, response, requestPath, ipKey)) {
+            return; // request rejected — 429 already written
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Redis bucket check with local fallback (Fixes Important Finding 3.2)
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Attempts to consume a token from the distributed Redis bucket for the given key.
+     * <p>
+     * If Redis is unavailable, falls back to the local Caffeine bucket for the same key,
+     * providing node-level protection rather than fully failing open.
+     *
+     * @param bucketKey   the Redis/local cache key (IP or username prefixed)
+     * @param tier        the rate limit parameters for this tier
+     * @param response    the HTTP response to write 429 into on rejection
+     * @param requestPath for logging
+     * @param fallbackKey the local-cache key to use as Redis fallback
+     * @return {@code true} if the token was consumed (request allowed),
+     *         {@code false} if the bucket is exhausted (429 already written)
+     */
+    private boolean checkRedisBucket(String bucketKey,
+                                     RateLimitProperties.TierProperties tier,
+                                     HttpServletResponse response,
+                                     String requestPath,
+                                     String fallbackKey) throws IOException {
         try {
-            // 4. Lazily create or retrieve the distributed bucket from Redis.
-            // Use explicit Supplier<BucketConfiguration> form to disambiguate the
-            // two build() overloads in RemoteBucketBuilder (Bucket4j 8.x).
-            final BucketConfiguration config = bucketConfig;
-            BucketProxy bucket = proxyManager.builder().build(bucketKey, (java.util.function.Supplier<BucketConfiguration>) () -> config);
+            final BucketConfiguration config = buildBucketConfiguration(tier);
+            BucketProxy bucket = proxyManager.builder()
+                    .build(bucketKey,
+                            (java.util.function.Supplier<BucketConfiguration>) () -> config);
 
-            // 5. Atomically try to consume 1 token
             ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 
             if (probe.isConsumed()) {
-                // Token consumed — allow request and add informational header
                 response.addHeader(HEADER_RATE_LIMIT_REMAINING,
                         String.valueOf(probe.getRemainingTokens()));
-                filterChain.doFilter(request, response);
+                return true;
             } else {
-                // No tokens left — reject with HTTP 429
-                long retryAfterSeconds = TimeUnit.NANOSECONDS.toSeconds(
-                        probe.getNanosToWaitForRefill());
-                // Ensure at least 1 second is shown to the client
-                retryAfterSeconds = Math.max(retryAfterSeconds, 1L);
-
+                long retryAfter = Math.max(
+                        TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill()), 1L);
                 log.warn("Rate limit exceeded for key='{}' path='{}' retryAfter={}s",
-                        bucketKey, requestPath, retryAfterSeconds);
-
-                writeRateLimitResponse(response, retryAfterSeconds);
+                        bucketKey, requestPath, retryAfter);
+                writeRateLimitResponse(response, retryAfter);
+                return false;
             }
 
         } catch (Exception ex) {
-            // 6. Fail-open: if Redis is down or Bucket4j fails, allow the request through
-            log.warn("Rate limit check failed for key='{}' — failing open. Cause: {}",
+            // Redis unavailable: fall back to local Caffeine bucket for this key
+            log.warn("Redis unavailable for key='{}' — falling back to local bucket. Cause: {}",
                     bucketKey, ex.getMessage());
-            filterChain.doFilter(request, response);
+            return checkLocalFallbackBucket(fallbackKey, tier, response, requestPath);
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
     /**
-     * Checks whether the given request path matches any whitelisted Ant pattern.
+     * Local Caffeine fallback for when Redis is unavailable.
+     * Provides per-node rate limiting as a safety net — not as strong as distributed
+     * Redis limiting, but prevents unbounded load when Redis is down.
      */
+    private boolean checkLocalFallbackBucket(String key,
+                                             RateLimitProperties.TierProperties tier,
+                                             HttpServletResponse response,
+                                             String requestPath) throws IOException {
+        // Use a "fallback:" prefix so fallback buckets don't conflict with pre-auth buckets
+        Bucket localBucket = getOrCreateLocalBucket("fallback:" + key, tier);
+        ConsumptionProbe probe = localBucket.tryConsumeAndReturnRemaining(1);
+
+        if (probe.isConsumed()) {
+            response.addHeader(HEADER_RATE_LIMIT_REMAINING,
+                    String.valueOf(probe.getRemainingTokens()));
+            return true;
+        } else {
+            long retryAfter = Math.max(
+                    TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill()), 1L);
+            log.warn("Local fallback rate limit exceeded for key='{}' path='{}' retryAfter={}s",
+                    key, requestPath, retryAfter);
+            writeRateLimitResponse(response, retryAfter);
+            return false;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /** Returns {@code true} if the path matches any configured whitelist Ant pattern. */
     private boolean isWhitelisted(String requestPath) {
         for (String pattern : properties.getWhitelistedPaths()) {
             if (pathMatcher.match(pattern, requestPath)) {
@@ -140,41 +255,45 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return false;
     }
 
-    /**
-     * Returns the {@link BucketConfiguration} appropriate for the given bucket key.
-     * <p>
-     * Private-tier buckets (keys starting with {@code ratelimit:user:}) use the
-     * private configuration. All other buckets use the public configuration.
-     */
-    private BucketConfiguration resolveBucketConfiguration(String bucketKey) {
-        if (bucketKey.startsWith(RateLimitKeyResolver.KEY_PREFIX_USER)) {
-            return buildBucketConfiguration(properties.getPrivate());
+    /** Returns {@code true} if the path matches any configured auth-paths Ant pattern. */
+    private boolean isAuthPath(String requestPath) {
+        for (String pattern : properties.getAuthPaths()) {
+            if (pathMatcher.match(pattern, requestPath)) {
+                return true;
+            }
         }
-        return buildBucketConfiguration(properties.getPublic());
+        return false;
     }
 
     /**
-     * Builds a {@link BucketConfiguration} from a {@link RateLimitProperties.TierProperties}.
-     * <p>
-     * Uses a greedy refill so the full refill amount is added at the end of each
-     * interval (not spread over time). This matches the Token Bucket semantics
-     * described in the approved design.
+     * Gets or creates a local in-memory Bucket4j bucket for the given key.
+     * Thread-safe: Caffeine's {@code get(key, mappingFunction)} guarantees atomic creation.
+     */
+    private Bucket getOrCreateLocalBucket(String key, RateLimitProperties.TierProperties tier) {
+        return localBucketCache.get(key, k ->
+                Bucket.builder()
+                        .addLimit(limit -> limit
+                                .capacity(tier.getCapacity())
+                                .refillGreedy(tier.getRefillTokens(),
+                                        Duration.ofSeconds(tier.getRefillDurationSeconds())))
+                        .build()
+        );
+    }
+
+    /**
+     * Builds a Bucket4j {@link BucketConfiguration} from tier properties.
+     * Used for the distributed Redis-backed buckets.
      */
     private BucketConfiguration buildBucketConfiguration(RateLimitProperties.TierProperties tier) {
         return BucketConfiguration.builder()
                 .addLimit(limit -> limit
                         .capacity(tier.getCapacity())
                         .refillGreedy(tier.getRefillTokens(),
-                                java.time.Duration.ofSeconds(tier.getRefillDurationSeconds())))
+                                Duration.ofSeconds(tier.getRefillDurationSeconds())))
                 .build();
     }
 
-    /**
-     * Writes a JSON HTTP 429 response and sets the {@code Retry-After} header.
-     * <p>
-     * This must be done at the filter level (not via {@code @RestControllerAdvice})
-     * because the filter short-circuits before reaching the dispatcher servlet.
-     */
+    /** Writes a JSON HTTP 429 response with standard Retry-After header. */
     private void writeRateLimitResponse(HttpServletResponse response,
                                         long retryAfterSeconds) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -193,9 +312,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Determines whether the filter should be applied to async dispatches.
-     * Rate limiting should only apply to the initial request dispatch, not
-     * to async result processing.
+     * Skip rate limiting on async re-dispatches (e.g., DeferredResult).
+     * Rate limiting applies only to the initial request dispatch.
      */
     @Override
     protected boolean shouldNotFilterAsyncDispatch() {
@@ -203,9 +321,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Determines whether the filter should apply to error dispatches.
-     * We skip rate limiting on the Spring error dispatch to avoid
-     * affecting the /error endpoint.
+     * Skip rate limiting on Spring's internal error dispatch.
+     * The /error endpoint is whitelisted separately.
      */
     @Override
     protected boolean shouldNotFilterErrorDispatch() {

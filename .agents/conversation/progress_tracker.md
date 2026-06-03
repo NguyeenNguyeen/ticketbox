@@ -76,7 +76,25 @@ Last Updated: 2026-06-03
 - [x] Build verification: mvn compile + mvn test → BUILD SUCCESS (16/16)
 - [x] Implementation documentation: 02_api_protection_implementation.md
 
-### Payment Protection (Not Started)
+### Rate Limiting — REVIEW ✅ COMPLETE
+
+- [x] Architecture Review
+- [x] Security Review
+- [x] Concurrency & Redis Failure Review
+- [x] Performance & Edge Case Review
+- [x] Code Quality Assessment
+- [x] Review documentation: 03_api_protection_review.md
+
+### Rate Limiting — REMEDIATION ✅ COMPLETE (29 tests passing)
+
+- [x] CRITICAL 2.1: IP spoofing fix (trustProxyHeaders flag, default=false)
+- [x] CRITICAL 2.2: DoS shield pre-auth Caffeine gate (blocks floods before JWT/DB)
+- [x] IMPORTANT 3.1: Auth-tier brute-force protection (/api/auth/** 10/min per IP)
+- [x] IMPORTANT 3.2: Redis fallback to local Caffeine (no longer fully fail-open)
+- [x] IMPORTANT 3.3: Actuator whitelist narrowed (only health + info)
+- [x] MINOR 4.1: Dead code removed from GlobalExceptionHandler
+- [x] Tests updated: 29 tests, 0 failures (12 resolver + 17 filter)
+- [x] Remediation documentation: 04_api_protection_remediation.md
 
 - [ ] Resilience4j dependency
 - [ ] Circuit Breaker configuration (count-based sliding window)

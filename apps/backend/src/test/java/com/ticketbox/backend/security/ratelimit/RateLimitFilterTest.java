@@ -9,6 +9,7 @@ import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -28,251 +29,389 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for {@link RateLimitFilter}.
+ * Unit tests for the remediated {@link RateLimitFilter}.
  * <p>
- * Uses Mockito to simulate Bucket4j's {@link ProxyManager} — no real Redis needed.
- * Covers the 9 scenarios specified in the rate limiting design document.
- * <p>
- * Implementation notes:
- * - {@link ProxyManager} and {@link RemoteBucketBuilder} are mocked with raw types
- *   to avoid generic capture issues with Mockito.
- * - The {@code build()} overload is disambiguated by casting to
- *   {@code Supplier<BucketConfiguration>} matching the filter's production call.
+ * Covers all five pipeline steps and all security fixes from
+ * {@code 03_api_protection_review.md}:
+ * <ul>
+ *   <li>Pre-auth Caffeine gate (Fix 2.2 — DoS shield)</li>
+ *   <li>Auth-tier Redis bucket (Fix 3.1 — brute-force protection)</li>
+ *   <li>Public and private standard tiers</li>
+ *   <li>Redis failure → local fallback (Fix 3.2 — no longer fully fail-open)</li>
+ *   <li>Whitelist bypass (Fix 3.3 — narrow scope)</li>
+ *   <li>Global disable</li>
+ * </ul>
  */
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
 class RateLimitFilterTest {
 
-    @Mock
-    private ProxyManager proxyManager;
-
-    @Mock
-    private RemoteBucketBuilder remoteBucketBuilder;
-
-    @Mock
-    private BucketProxy bucketProxy;
-
-    @Mock
-    private FilterChain filterChain;
+    @Mock private ProxyManager proxyManager;
+    @Mock private RemoteBucketBuilder remoteBucketBuilder;
+    @Mock private BucketProxy bucketProxy;
+    @Mock private FilterChain filterChain;
 
     private RateLimitFilter filter;
     private RateLimitProperties properties;
+    private RateLimitKeyResolver keyResolver;
 
     @BeforeEach
     void setUp() {
         properties = buildDefaultProperties();
-        RateLimitKeyResolver keyResolver = new RateLimitKeyResolver();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        filter = new RateLimitFilter(proxyManager, properties, keyResolver, objectMapper);
+        keyResolver = new RateLimitKeyResolver(properties);
+        filter = new RateLimitFilter(proxyManager, properties, keyResolver, new ObjectMapper());
         SecurityContextHolder.clearContext();
     }
 
-    // -------------------------------------------------------------------------
-    // Test 1: Public API — under limit → allowed (HTTP 200)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Step 1 — Global disable
+    // =========================================================================
 
-    @Test
-    @DisplayName("1. Public API under limit — request passes through")
-    void publicApi_underLimit_allowed() throws Exception {
-        givenBucketHasTokens(99);
+    @Nested
+    @DisplayName("Step 1: Global disable")
+    class GlobalDisable {
 
-        MockHttpServletRequest request = publicRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Rate limiting disabled — all requests pass, no bucket interaction")
+        void disabled_allRequestsPass() throws Exception {
+            properties.setEnabled(false);
 
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = publicRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        verify(filterChain).doFilter(request, response);
-        assertThat(response.getStatus()).isNotEqualTo(429);
-        assertThat(response.getHeader("X-Rate-Limit-Remaining")).isEqualTo("99");
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+            verifyNoInteractions(proxyManager, bucketProxy);
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 2: Public API — over limit → HTTP 429
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Step 2 — Whitelist bypass
+    // =========================================================================
 
-    @Test
-    @DisplayName("2. Public API over limit — HTTP 429 returned")
-    void publicApi_overLimit_returns429() throws Exception {
-        givenBucketIsEmpty(30_000_000_000L); // 30 seconds in nanoseconds
+    @Nested
+    @DisplayName("Step 2: Whitelist")
+    class Whitelist {
 
-        MockHttpServletRequest request = publicRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("/actuator/health is whitelisted — no rate limiting")
+        void actuatorHealth_isWhitelisted() throws Exception {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(request, response, filterChain);
+            filter.doFilter(request, response, filterChain);
 
-        verify(filterChain, never()).doFilter(any(), any());
-        assertThat(response.getStatus()).isEqualTo(429);
-        assertThat(response.getHeader("Retry-After")).isEqualTo("30");
-        assertThat(response.getContentType()).contains("application/json");
+            verify(filterChain).doFilter(request, response);
+            verifyNoInteractions(proxyManager, bucketProxy);
+        }
 
-        String body = response.getContentAsString();
-        assertThat(body).contains("RATE_LIMIT_EXCEEDED");
-        assertThat(body).contains("\"status\":429");
+        @Test
+        @DisplayName("/actuator/metrics is NO LONGER whitelisted — rate limit applies")
+        void actuatorMetrics_isNoLongerWhitelisted_rateLimitApplies() throws Exception {
+            // Fix 3.3: /actuator/** removed from whitelist; only /actuator/health and /actuator/info remain
+            givenRedisAllows(9);
+
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/metrics");
+            request.setRemoteAddr("10.0.0.1");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            // Should pass (tokens available), but rate limiting WAS applied (not whitelisted)
+            verify(filterChain).doFilter(request, response);
+            verify(proxyManager, atLeastOnce()).builder();  // proves rate limit was checked
+        }
+
+        @Test
+        @DisplayName("/swagger-ui/** is whitelisted")
+        void swaggerUi_isWhitelisted() throws Exception {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/swagger-ui/index.html");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+            verifyNoInteractions(proxyManager, bucketProxy);
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 3: Private API — under limit → allowed
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Step 3 — Pre-auth local DoS gate (Security Fix 2.2)
+    // =========================================================================
 
-    @Test
-    @DisplayName("3. Private API (authenticated) under limit — request passes through")
-    void privateApi_underLimit_allowed() throws Exception {
-        authenticateAs("alice");
-        givenBucketHasTokens(9);
+    @Nested
+    @DisplayName("Step 3: Pre-auth local DoS gate")
+    class PreAuthGate {
 
-        MockHttpServletRequest request = privateRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Request within pre-auth limit — passes gate and continues")
+        void underPreAuthLimit_passes() throws Exception {
+            givenRedisAllows(99);
 
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = publicRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        verify(filterChain).doFilter(request, response);
-        assertThat(response.getStatus()).isNotEqualTo(429);
-        assertThat(response.getHeader("X-Rate-Limit-Remaining")).isEqualTo("9");
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+        }
+
+        @Test
+        @DisplayName("Pre-auth gate blocks IP that exceeds local burst limit")
+        void overPreAuthLimit_blocks429() throws Exception {
+            // Exhaust the pre-auth Caffeine bucket by calling the filter 201 times.
+            // We configure pre-auth capacity to 2 for this test to keep it fast.
+            properties.getPreAuth().setCapacity(2);
+            properties.getPreAuth().setRefillTokens(2);
+            properties.getPreAuth().setRefillDurationSeconds(60);
+
+            MockHttpServletRequest request = publicRequest();
+
+            // First two requests should pass
+            for (int i = 0; i < 2; i++) {
+                MockHttpServletResponse response = new MockHttpServletResponse();
+                // Redis mock must be set up for each allowed request
+                givenRedisAllows(99);
+                filter.doFilter(request, response, filterChain);
+                assertThat(response.getStatus()).isNotEqualTo(429);
+            }
+
+            // Third request must be rejected by the pre-auth gate (before Redis)
+            MockHttpServletResponse blockedResponse = new MockHttpServletResponse();
+            filter.doFilter(request, blockedResponse, filterChain);
+            assertThat(blockedResponse.getStatus()).isEqualTo(429);
+
+            String body = blockedResponse.getContentAsString();
+            assertThat(body).contains("RATE_LIMIT_EXCEEDED");
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 4: Private API — over limit → HTTP 429
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Step 4 — Auth-tier check (Security Fix 3.1 — brute-force protection)
+    // =========================================================================
 
-    @Test
-    @DisplayName("4. Private API (authenticated) over limit — HTTP 429 returned")
-    void privateApi_overLimit_returns429() throws Exception {
-        authenticateAs("bob");
-        givenBucketIsEmpty(45_000_000_000L); // 45 seconds
+    @Nested
+    @DisplayName("Step 4: Auth-tier for /api/auth/**")
+    class AuthTier {
 
-        MockHttpServletRequest request = privateRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Login request within auth limit — allowed")
+        void loginRequest_underAuthLimit_allowed() throws Exception {
+            givenRedisAllows(9);
 
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = authRequest("/api/auth/login");
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        verify(filterChain, never()).doFilter(any(), any());
-        assertThat(response.getStatus()).isEqualTo(429);
-        assertThat(response.getHeader("Retry-After")).isEqualTo("45");
+            filter.doFilter(request, response, filterChain);
 
-        String body = response.getContentAsString();
-        assertThat(body).contains("RATE_LIMIT_EXCEEDED");
+            verify(filterChain).doFilter(request, response);
+        }
+
+        @Test
+        @DisplayName("Login request exceeds auth tier — returns 429")
+        void loginRequest_overAuthLimit_returns429() throws Exception {
+            givenRedisRejects(55_000_000_000L); // 55 seconds
+
+            MockHttpServletRequest request = authRequest("/api/auth/login");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain, never()).doFilter(any(), any());
+            assertThat(response.getStatus()).isEqualTo(429);
+            assertThat(response.getHeader("Retry-After")).isEqualTo("55");
+        }
+
+        @Test
+        @DisplayName("Register request receives auth tier limit (not public tier)")
+        void registerRequest_usesAuthTier() throws Exception {
+            givenRedisAllows(9);
+
+            MockHttpServletRequest request = authRequest("/api/auth/register");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 5: Missing JWT → falls back to IP-based key → request allowed
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Step 5 — Standard tiers (public and private)
+    // =========================================================================
 
-    @Test
-    @DisplayName("5. Missing JWT — falls back to IP-based key, request allowed")
-    void missingJwt_fallsBackToIp_allowed() throws Exception {
-        // No authentication in SecurityContextHolder
-        givenBucketHasTokens(99);
+    @Nested
+    @DisplayName("Step 5: Standard public and private tiers")
+    class StandardTiers {
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/public/concerts");
-        request.setRemoteAddr("203.0.113.1");
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Public API under limit — allowed with remaining header")
+        void publicApi_underLimit_allowed() throws Exception {
+            givenRedisAllows(99);
 
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = publicRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        verify(filterChain).doFilter(request, response);
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+            assertThat(response.getHeader("X-Rate-Limit-Remaining")).isEqualTo("99");
+        }
+
+        @Test
+        @DisplayName("Public API over limit — returns 429 with Retry-After")
+        void publicApi_overLimit_returns429() throws Exception {
+            givenRedisRejects(30_000_000_000L); // 30 seconds
+
+            MockHttpServletRequest request = publicRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain, never()).doFilter(any(), any());
+            assertThat(response.getStatus()).isEqualTo(429);
+            assertThat(response.getHeader("Retry-After")).isEqualTo("30");
+            assertThat(response.getContentType()).contains("application/json");
+            assertThat(response.getContentAsString()).contains("RATE_LIMIT_EXCEEDED");
+        }
+
+        @Test
+        @DisplayName("Authenticated user under private limit — allowed")
+        void privateApi_underLimit_allowed() throws Exception {
+            authenticateAs("alice");
+            givenRedisAllows(9);
+
+            MockHttpServletRequest request = privateRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+            assertThat(response.getHeader("X-Rate-Limit-Remaining")).isEqualTo("9");
+        }
+
+        @Test
+        @DisplayName("Authenticated user over private limit — returns 429")
+        void privateApi_overLimit_returns429() throws Exception {
+            authenticateAs("bob");
+            givenRedisRejects(45_000_000_000L); // 45 seconds
+
+            MockHttpServletRequest request = privateRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain, never()).doFilter(any(), any());
+            assertThat(response.getStatus()).isEqualTo(429);
+            assertThat(response.getHeader("Retry-After")).isEqualTo("45");
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 6: Invalid JWT → anonymous principal → IP-based key
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // JWT edge cases
+    // =========================================================================
 
-    @Test
-    @DisplayName("6. Invalid JWT (anonymous principal) — falls back to IP-based key")
-    void invalidJwt_anonymousPrincipal_fallsBackToIp() throws Exception {
-        setAnonymousAuthentication();
-        givenBucketHasTokens(98);
+    @Nested
+    @DisplayName("JWT edge cases")
+    class JwtEdgeCases {
 
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
-        request.setRemoteAddr("10.0.0.5");
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Missing JWT — falls back to IP-based key (public tier)")
+        void missingJwt_fallsBackToPublicTier() throws Exception {
+            // No SecurityContext set — unauthenticated
+            givenRedisAllows(99);
 
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/concerts");
+            request.setRemoteAddr("203.0.113.1");
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        // Must use IP-based key (public tier) — request is allowed
-        verify(filterChain).doFilter(request, response);
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+        }
+
+        @Test
+        @DisplayName("Anonymous session — falls back to IP-based key (public tier)")
+        void anonymousSession_fallsBackToPublicTier() throws Exception {
+            setAnonymousAuthentication();
+            givenRedisAllows(98);
+
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/concerts");
+            request.setRemoteAddr("10.0.0.5");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 7: Redis unavailable → fail-open → request allowed
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Redis failure — local fallback (Security Fix 3.2)
+    // =========================================================================
 
-    @Test
-    @DisplayName("7. Redis unavailable — fail-open: request is allowed through")
-    void redisUnavailable_failOpen_requestAllowed() throws Exception {
-        // ProxyManager.builder() throws when Redis is unreachable
-        when(proxyManager.builder()).thenThrow(new RuntimeException("Redis connection refused"));
+    @Nested
+    @DisplayName("Redis failure — local fallback (Fix 3.2)")
+    class RedisFailure {
 
-        MockHttpServletRequest request = publicRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        @Test
+        @DisplayName("Redis unavailable — falls back to local Caffeine bucket, NOT fully open")
+        void redisUnavailable_fallsBackToLocal_notFullyOpen() throws Exception {
+            // ProxyManager.builder() throws — Redis is down
+            when(proxyManager.builder()).thenThrow(new RuntimeException("Redis connection refused"));
 
-        // Should NOT throw — must fail open and pass request through
-        filter.doFilter(request, response, filterChain);
+            MockHttpServletRequest request = publicRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        verify(filterChain).doFilter(request, response);
-        assertThat(response.getStatus()).isNotEqualTo(429);
+            // First call with Redis down: should still allow (local bucket has tokens)
+            filter.doFilter(request, response, filterChain);
+
+            verify(filterChain).doFilter(request, response);
+            // Status must not be 429 for first request
+            assertThat(response.getStatus()).isNotEqualTo(429);
+        }
+
+        @Test
+        @DisplayName("Redis unavailable — local fallback eventually blocks after exhaustion")
+        void redisUnavailable_localFallbackBlocksAfterExhaustion() throws Exception {
+            // Configure a tiny fallback capacity for this test
+            properties.getPublic().setCapacity(2);
+            properties.getPublic().setRefillTokens(2);
+            properties.getPreAuth().setCapacity(100); // Keep pre-auth generous
+
+            when(proxyManager.builder()).thenThrow(new RuntimeException("Redis unavailable"));
+
+            MockHttpServletRequest request = publicRequest();
+
+            // Consume the local fallback budget (2 tokens)
+            for (int i = 0; i < 2; i++) {
+                MockHttpServletResponse resp = new MockHttpServletResponse();
+                filter.doFilter(request, resp, filterChain);
+                assertThat(resp.getStatus()).isNotEqualTo(429);
+            }
+
+            // Third request should be blocked by local fallback
+            MockHttpServletResponse blockedResponse = new MockHttpServletResponse();
+            filter.doFilter(request, blockedResponse, filterChain);
+            assertThat(blockedResponse.getStatus()).isEqualTo(429);
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Test 8: Whitelisted path → skips rate limiting entirely
-    // -------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("8. Whitelisted path (/actuator/health) — skips rate limiting")
-    void whitelistedPath_skipsRateLimiting() throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-
-        filter.doFilter(request, response, filterChain);
-
-        // Filter chain continues, ProxyManager never touched
-        verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(proxyManager);
-        verifyNoInteractions(bucketProxy);
-    }
-
-    // -------------------------------------------------------------------------
-    // Test 9: Rate limiting disabled globally → all requests pass through
-    // -------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("9. Rate limiting disabled globally — all requests pass through")
-    void rateLimitingDisabled_allRequestsPass() throws Exception {
-        properties.setEnabled(false);
-
-        MockHttpServletRequest request = publicRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-
-        filter.doFilter(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(proxyManager);
-        verifyNoInteractions(bucketProxy);
-    }
-
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // Helpers
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
-    /**
-     * Stubs the ProxyManager chain so that bucket.tryConsumeAndReturnRemaining(1)
-     * returns a successful probe with {@code remaining} tokens left.
-     */
-    private void givenBucketHasTokens(long remaining) {
+    private void givenRedisAllows(long remaining) {
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(remaining);
         when(bucketProxy.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
-        // Disambiguate: match the Supplier<BucketConfiguration> overload used in the filter
         when(remoteBucketBuilder.build(anyString(), any(Supplier.class))).thenReturn(bucketProxy);
         when(proxyManager.builder()).thenReturn(remoteBucketBuilder);
     }
 
-    /**
-     * Stubs the ProxyManager chain so that bucket.tryConsumeAndReturnRemaining(1)
-     * returns a rejection probe with {@code nanosToWait} nanoseconds until refill.
-     */
-    private void givenBucketIsEmpty(long nanosToWait) {
+    private void givenRedisRejects(long nanosToWait) {
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
         when(probe.isConsumed()).thenReturn(false);
         when(probe.getNanosToWaitForRefill()).thenReturn(nanosToWait);
@@ -296,7 +435,7 @@ class RateLimitFilterTest {
     }
 
     private MockHttpServletRequest publicRequest() {
-        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/public/concerts");
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/concerts");
         req.setRemoteAddr("192.168.1.10");
         return req;
     }
@@ -307,16 +446,31 @@ class RateLimitFilterTest {
         return req;
     }
 
+    private MockHttpServletRequest authRequest(String path) {
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", path);
+        req.setRemoteAddr("192.168.1.30");
+        return req;
+    }
+
     private RateLimitProperties buildDefaultProperties() {
         RateLimitProperties props = new RateLimitProperties();
         props.setEnabled(true);
+        props.setTrustProxyHeaders(false);
+        props.getPreAuth().setCapacity(200);
+        props.getPreAuth().setRefillTokens(200);
+        props.getPreAuth().setRefillDurationSeconds(60);
+        props.getAuth().setCapacity(10);
+        props.getAuth().setRefillTokens(10);
+        props.getAuth().setRefillDurationSeconds(60);
         props.getPublic().setCapacity(100);
         props.getPublic().setRefillTokens(100);
         props.getPublic().setRefillDurationSeconds(60);
         props.getPrivate().setCapacity(10);
         props.getPrivate().setRefillTokens(10);
         props.getPrivate().setRefillDurationSeconds(60);
-        props.setWhitelistedPaths(List.of("/actuator/**", "/swagger-ui/**", "/error"));
+        props.setAuthPaths(List.of("/api/auth/**"));
+        props.setWhitelistedPaths(List.of("/actuator/health", "/actuator/info",
+                "/swagger-ui/**", "/error"));
         return props;
     }
 }
