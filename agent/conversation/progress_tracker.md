@@ -1,0 +1,8 @@
+- [x] Initial RabbitMQ Infrastructure Setup
+- [x] DLQ and Retry Mechanisms Validation
+- [x] CSV Worker Implementation & Validation
+- [x] AI Worker Implementation & Validation
+- [x] Email Worker Implementation & Validation
+- [ ] API Gateway / Request Router integration for Async flows
+- [ ] Frontend integration with Websocket/Polling for job progress
+- [ ] Cloud deployment testing

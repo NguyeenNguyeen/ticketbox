@@ -6,7 +6,8 @@ import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 public class TestRecoverer {
     @Test
     public void test() {
-        RepublishMessageRecoverer r = new RepublishMessageRecoverer(null, "ex");
+        org.springframework.amqp.core.AmqpTemplate template = org.mockito.Mockito.mock(org.springframework.amqp.core.AmqpTemplate.class);
+        RepublishMessageRecoverer r = new RepublishMessageRecoverer(template, "ex");
         r.setErrorRoutingKeyPrefix("");
     }
 }

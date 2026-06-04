@@ -13,10 +13,13 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/CompletedState.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/OrderItem.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/exception/PaymentGatewayException.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/TicketAttachmentService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/CustomUserDetailsService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/dto/async/CsvImportMessage.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/EmailService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/repository/OrderRepository.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/OrderStateContext.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/EmailProviderClient.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/PayingState.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/factory/TicketFactory.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/config/PaymentHealthIndicator.java
@@ -56,7 +59,10 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/ai/OpenAiClient.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/ai/GeminiAiClient.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/factory/VIPTicketFactory.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/EmailTemplateBuilder.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/User.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/EmailJobTracker.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/EmailConsumer.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/ai/AiJobTracker.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/PaymentGatewayService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/repository/TicketCategoryRepository.java
@@ -69,9 +75,12 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/Order.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/ratelimit/RateLimitKeyResolver.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/impl/MockPaymentGatewayService.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/EmailStatus.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/CancelledState.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/SecurityConfig.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/ResendEmailClient.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/Ticket.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/email/BrevoEmailClient.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvImportProgress.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/JwtAuthenticationFilter.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/ConcertService.java

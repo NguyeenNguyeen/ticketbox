@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.ticketbox.backend.worker.email.EmailWorkerTest" time="70.561" tests="3" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/test-classes:/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/classes:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.4/spring-boot-starter-web-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.4/spring-boot-starter-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot/3.2.4/spring-boot-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.4/spring-boot-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.4/spring-boot-starter-logging-3.2.4.jar:/home/daonguyennguyen/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/home/daonguyennguyen/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/home/daonguyennguyen/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/home/daonguyennguyen/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/home/daonguyennguyen/.m2/repository/org/slf4j/jul-to-slf4j/2.0.12/jul-to-slf4j-2.0.12.jar:/home/daonguyennguyen/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/home/daonguyennguyen/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.4/spring-boot-starter-json-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.4/jackson-datatype-jdk8-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.4/jackson-datatype-jsr310-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.4/jackson-module-parameter-names-2.15.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.4/spring-boot-starter-tomcat-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.19/tomcat-embed-core-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.19/tomcat-embed-websocket-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-web/6.1.5/spring-web-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-beans/6.1.5/spring-beans-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-webmvc/6.1.5/spring-webmvc-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-context/6.1.5/spring-context-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-expression/6.1.5/spring-expression-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.4/spring-boot-starter-data-jpa-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.4/spring-boot-starter-jdbc-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-jdbc/6.1.5/spring-jdbc-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/orm/hibernate-core/6.4.4.Final/hibernate-core-6.4.4.Final.jar:/home/daonguyennguyen/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/home/daonguyennguyen/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/home/daonguyennguyen/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/home/daonguyennguyen/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/home/daonguyennguyen/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.5/jaxb-runtime-4.0.5.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.5/jaxb-core-4.0.5.jar:/home/daonguyennguyen/.m2/repository/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/txw2/4.0.5/txw2-4.0.5.jar:/home/daonguyennguyen/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/home/daonguyennguyen/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/home/daonguyennguyen/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-jpa/3.2.4/spring-data-jpa-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-commons/3.2.4/spring-data-commons-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-orm/6.1.5/spring-orm-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-tx/6.1.5/spring-tx-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-aspects/6.1.5/spring-aspects-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.4/spring-boot-starter-security-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-aop/6.1.5/spring-aop-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-config/6.2.3/spring-security-config-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-web/6.2.3/spring-security-web-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis/3.2.4/spring-boot-starter-data-redis-3.2.4.jar:/home/daonguyennguyen/.m2/repository/io/lettuce/lettuce-core/6.3.2.RELEASE/lettuce-core-6.3.2.RELEASE.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-common/4.1.107.Final/netty-common-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-handler/4.1.107.Final/netty-handler-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-resolver/4.1.107.Final/netty-resolver-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-buffer/4.1.107.Final/netty-buffer-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.107.Final/netty-transport-native-unix-common-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-codec/4.1.107.Final/netty-codec-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-transport/4.1.107.Final/netty-transport-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/projectreactor/reactor-core/3.6.4/reactor-core-3.6.4.jar:/home/daonguyennguyen/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-redis/3.2.4/spring-data-redis-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-keyvalue/3.2.4/spring-data-keyvalue-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-oxm/6.1.5/spring-oxm-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-context-support/6.1.5/spring-context-support-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.4/spring-boot-starter-validation-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.19/tomcat-embed-el-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/home/daonguyennguyen/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/postgresql/postgresql/42.6.2/postgresql-42.6.2.jar:/home/daonguyennguyen/.m2/repository/org/checkerframework/checker-qual/3.31.0/checker-qual-3.31.0.jar:/home/daonguyennguyen/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-api/0.12.5/jjwt-api-0.12.5.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-impl/0.12.5/jjwt-impl-0.12.5.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-jackson/0.12.5/jjwt-jackson-0.12.5.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.4/jackson-databind-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.4/jackson-annotations-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.4/jackson-core-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/bucket4j/bucket4j-core/8.10.1/bucket4j-core-8.10.1.jar:/home/daonguyennguyen/.m2/repository/com/bucket4j/bucket4j-redis/8.10.1/bucket4j-redis-8.10.1.jar:/home/daonguyennguyen/.m2/repository/com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar:/home/daonguyennguyen/.m2/repository/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.2.0/resilience4j-spring-boot3-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.2.0/resilience4j-spring6-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.2.0/resilience4j-annotations-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.2.0/resilience4j-consumer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-core/2.2.0/resilience4j-core-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.2.0/resilience4j-circularbuffer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.2.0/resilience4j-framework-common-2.2.0.jar:/home/daonguyennguyen/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.2.0/resilience4j-micrometer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-core/1.12.4/micrometer-core-1.12.4.jar:/home/daonguyennguyen/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/home/daonguyennguyen/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.2.0/resilience4j-bulkhead-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.2.0/resilience4j-circuitbreaker-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-retry/2.2.0/resilience4j-retry-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.2.0/resilience4j-ratelimiter-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.2.0/resilience4j-timelimiter-2.2.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.4/spring-boot-starter-aop-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.4/spring-boot-starter-actuator-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.4/spring-boot-actuator-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.4/spring-boot-actuator-3.2.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-observation/1.12.4/micrometer-observation-1.12.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-commons/1.12.4/micrometer-commons-1.12.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.4/micrometer-jakarta9-1.12.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-amqp/3.2.4/spring-boot-starter-amqp-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-messaging/6.1.5/spring-messaging-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/amqp/spring-rabbit/3.1.3/spring-rabbit-3.1.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/amqp/spring-amqp/3.1.3/spring-amqp-3.1.3.jar:/home/daonguyennguyen/.m2/repository/com/rabbitmq/amqp-client/5.19.0/amqp-client-5.19.0.jar:/home/daonguyennguyen/.m2/repository/org/apache/commons/commons-csv/1.10.0/commons-csv-1.10.0.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/pdfbox/3.0.2/pdfbox-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/pdfbox-io/3.0.2/pdfbox-io-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/fontbox/3.0.2/fontbox-3.0.2.jar:/home/daonguyennguyen/.m2/repository/commons-logging/commons-logging/1.3.0/commons-logging-1.3.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/retry/spring-retry/2.0.5/spring-retry-2.0.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.4/spring-boot-starter-test-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-test/3.2.4/spring-boot-test-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.4/spring-boot-test-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/home/daonguyennguyen/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/home/daonguyennguyen/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/home/daonguyennguyen/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/home/daonguyennguyen/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/home/daonguyennguyen/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/home/daonguyennguyen/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/home/daonguyennguyen/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/home/daonguyennguyen/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/daonguyennguyen/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/daonguyennguyen/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/daonguyennguyen/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/home/daonguyennguyen/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/daonguyennguyen/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/daonguyennguyen/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/home/daonguyennguyen/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/home/daonguyennguyen/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-core/6.1.5/spring-core-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-jcl/6.1.5/spring-jcl-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-test/6.1.5/spring-test-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-test/6.2.3/spring-security-test-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-core/6.2.3/spring-security-core-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-crypto/6.2.3/spring-security-crypto-6.2.3.jar:/home/daonguyennguyen/.m2/repository/com/google/zxing/core/3.5.3/core-3.5.3.jar:/home/daonguyennguyen/.m2/repository/com/google/zxing/javase/3.5.3/javase-3.5.3.jar:/home/daonguyennguyen/.m2/repository/com/beust/jcommander/1.82/jcommander-1.82.jar:/home/daonguyennguyen/.m2/repository/com/github/jai-imageio/jai-imageio-core/1.4.0/jai-imageio-core-1.4.0.jar:"/>
+    <property name="java.vm.vendor" value="Ubuntu"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="sun.font.fontmanager" value="sun.awt.X11FontManager"/>
+    <property name="java.vendor.url" value="https://ubuntu.com/"/>
+    <property name="user.timezone" value="Asia/Ho_Chi_Minh"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Linux"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-17-openjdk-amd64/lib"/>
+    <property name="sun.java.command" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/surefire/surefirebooter-20260605000114501_3.jar /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/surefire 2026-06-05T00-01-14_099-jvmRun1 surefire-20260605000114501_1tmp surefire_0-20260605000114501_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/test-classes:/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/classes:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.4/spring-boot-starter-web-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.4/spring-boot-starter-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot/3.2.4/spring-boot-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.4/spring-boot-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.4/spring-boot-starter-logging-3.2.4.jar:/home/daonguyennguyen/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/home/daonguyennguyen/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/home/daonguyennguyen/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/home/daonguyennguyen/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/home/daonguyennguyen/.m2/repository/org/slf4j/jul-to-slf4j/2.0.12/jul-to-slf4j-2.0.12.jar:/home/daonguyennguyen/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/home/daonguyennguyen/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.4/spring-boot-starter-json-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.4/jackson-datatype-jdk8-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.4/jackson-datatype-jsr310-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.4/jackson-module-parameter-names-2.15.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.4/spring-boot-starter-tomcat-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.19/tomcat-embed-core-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.19/tomcat-embed-websocket-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-web/6.1.5/spring-web-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-beans/6.1.5/spring-beans-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-webmvc/6.1.5/spring-webmvc-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-context/6.1.5/spring-context-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-expression/6.1.5/spring-expression-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.4/spring-boot-starter-data-jpa-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.4/spring-boot-starter-jdbc-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-jdbc/6.1.5/spring-jdbc-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/orm/hibernate-core/6.4.4.Final/hibernate-core-6.4.4.Final.jar:/home/daonguyennguyen/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/home/daonguyennguyen/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/home/daonguyennguyen/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/home/daonguyennguyen/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/home/daonguyennguyen/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.5/jaxb-runtime-4.0.5.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.5/jaxb-core-4.0.5.jar:/home/daonguyennguyen/.m2/repository/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar:/home/daonguyennguyen/.m2/repository/org/glassfish/jaxb/txw2/4.0.5/txw2-4.0.5.jar:/home/daonguyennguyen/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/home/daonguyennguyen/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/home/daonguyennguyen/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-jpa/3.2.4/spring-data-jpa-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-commons/3.2.4/spring-data-commons-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-orm/6.1.5/spring-orm-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-tx/6.1.5/spring-tx-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-aspects/6.1.5/spring-aspects-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.4/spring-boot-starter-security-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-aop/6.1.5/spring-aop-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-config/6.2.3/spring-security-config-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-web/6.2.3/spring-security-web-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis/3.2.4/spring-boot-starter-data-redis-3.2.4.jar:/home/daonguyennguyen/.m2/repository/io/lettuce/lettuce-core/6.3.2.RELEASE/lettuce-core-6.3.2.RELEASE.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-common/4.1.107.Final/netty-common-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-handler/4.1.107.Final/netty-handler-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-resolver/4.1.107.Final/netty-resolver-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-buffer/4.1.107.Final/netty-buffer-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.107.Final/netty-transport-native-unix-common-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-codec/4.1.107.Final/netty-codec-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/netty/netty-transport/4.1.107.Final/netty-transport-4.1.107.Final.jar:/home/daonguyennguyen/.m2/repository/io/projectreactor/reactor-core/3.6.4/reactor-core-3.6.4.jar:/home/daonguyennguyen/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-redis/3.2.4/spring-data-redis-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/data/spring-data-keyvalue/3.2.4/spring-data-keyvalue-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-oxm/6.1.5/spring-oxm-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-context-support/6.1.5/spring-context-support-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.4/spring-boot-starter-validation-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.19/tomcat-embed-el-10.1.19.jar:/home/daonguyennguyen/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/home/daonguyennguyen/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/postgresql/postgresql/42.6.2/postgresql-42.6.2.jar:/home/daonguyennguyen/.m2/repository/org/checkerframework/checker-qual/3.31.0/checker-qual-3.31.0.jar:/home/daonguyennguyen/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-api/0.12.5/jjwt-api-0.12.5.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-impl/0.12.5/jjwt-impl-0.12.5.jar:/home/daonguyennguyen/.m2/repository/io/jsonwebtoken/jjwt-jackson/0.12.5/jjwt-jackson-0.12.5.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.4/jackson-databind-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.4/jackson-annotations-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.4/jackson-core-2.15.4.jar:/home/daonguyennguyen/.m2/repository/com/bucket4j/bucket4j-core/8.10.1/bucket4j-core-8.10.1.jar:/home/daonguyennguyen/.m2/repository/com/bucket4j/bucket4j-redis/8.10.1/bucket4j-redis-8.10.1.jar:/home/daonguyennguyen/.m2/repository/com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar:/home/daonguyennguyen/.m2/repository/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.2.0/resilience4j-spring-boot3-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.2.0/resilience4j-spring6-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.2.0/resilience4j-annotations-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.2.0/resilience4j-consumer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-core/2.2.0/resilience4j-core-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.2.0/resilience4j-circularbuffer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.2.0/resilience4j-framework-common-2.2.0.jar:/home/daonguyennguyen/.m2/repository/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.2.0/resilience4j-micrometer-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-core/1.12.4/micrometer-core-1.12.4.jar:/home/daonguyennguyen/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/home/daonguyennguyen/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.2.0/resilience4j-bulkhead-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.2.0/resilience4j-circuitbreaker-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-retry/2.2.0/resilience4j-retry-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.2.0/resilience4j-ratelimiter-2.2.0.jar:/home/daonguyennguyen/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.2.0/resilience4j-timelimiter-2.2.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.4/spring-boot-starter-aop-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.4/spring-boot-starter-actuator-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.4/spring-boot-actuator-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.4/spring-boot-actuator-3.2.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-observation/1.12.4/micrometer-observation-1.12.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-commons/1.12.4/micrometer-commons-1.12.4.jar:/home/daonguyennguyen/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.4/micrometer-jakarta9-1.12.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-amqp/3.2.4/spring-boot-starter-amqp-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-messaging/6.1.5/spring-messaging-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/amqp/spring-rabbit/3.1.3/spring-rabbit-3.1.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/amqp/spring-amqp/3.1.3/spring-amqp-3.1.3.jar:/home/daonguyennguyen/.m2/repository/com/rabbitmq/amqp-client/5.19.0/amqp-client-5.19.0.jar:/home/daonguyennguyen/.m2/repository/org/apache/commons/commons-csv/1.10.0/commons-csv-1.10.0.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/pdfbox/3.0.2/pdfbox-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/pdfbox-io/3.0.2/pdfbox-io-3.0.2.jar:/home/daonguyennguyen/.m2/repository/org/apache/pdfbox/fontbox/3.0.2/fontbox-3.0.2.jar:/home/daonguyennguyen/.m2/repository/commons-logging/commons-logging/1.3.0/commons-logging-1.3.0.jar:/home/daonguyennguyen/.m2/repository/org/springframework/retry/spring-retry/2.0.5/spring-retry-2.0.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.4/spring-boot-starter-test-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-test/3.2.4/spring-boot-test-3.2.4.jar:/home/daonguyennguyen/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.4/spring-boot-test-autoconfigure-3.2.4.jar:/home/daonguyennguyen/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/home/daonguyennguyen/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/home/daonguyennguyen/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/home/daonguyennguyen/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/home/daonguyennguyen/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/home/daonguyennguyen/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/home/daonguyennguyen/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/home/daonguyennguyen/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/home/daonguyennguyen/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/daonguyennguyen/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/home/daonguyennguyen/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/home/daonguyennguyen/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/home/daonguyennguyen/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/home/daonguyennguyen/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/home/daonguyennguyen/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/daonguyennguyen/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/home/daonguyennguyen/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/home/daonguyennguyen/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-core/6.1.5/spring-core-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-jcl/6.1.5/spring-jcl-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/springframework/spring-test/6.1.5/spring-test-6.1.5.jar:/home/daonguyennguyen/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-test/6.2.3/spring-security-test-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-core/6.2.3/spring-security-core-6.2.3.jar:/home/daonguyennguyen/.m2/repository/org/springframework/security/spring-security-crypto/6.2.3/spring-security-crypto-6.2.3.jar:/home/daonguyennguyen/.m2/repository/com/google/zxing/core/3.5.3/core-3.5.3.jar:/home/daonguyennguyen/.m2/repository/com/google/zxing/javase/3.5.3/javase-3.5.3.jar:/home/daonguyennguyen/.m2/repository/com/beust/jcommander/1.82/jcommander-1.82.jar:/home/daonguyennguyen/.m2/repository/com/github/jai-imageio/jai-imageio-core/1.4.0/jai-imageio-core-1.4.0.jar:"/>
+    <property name="test" value="RabbitMQValidationTest,EmailWorkerTest"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/daonguyennguyen"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2026-01-20"/>
+    <property name="java.home" value="/usr/lib/jvm/java-17-openjdk-amd64"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="surefire.real.class.path" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/target/surefire/surefirebooter-20260605000114501_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="17.0.18+8-Ubuntu-122.04.1"/>
+    <property name="user.name" value="daonguyennguyen"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="5.15.0-171-generic"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/daonguyennguyen/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-17"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="java.version" value="17.0.18"/>
+    <property name="user.dir" value="/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="55017"/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Ubuntu"/>
+    <property name="java.vm.version" value="17.0.18+8-Ubuntu-122.04.1"/>
+    <property name="java.specification.maintenance.version" value="1"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="61.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[ticketbox-backend] "/>
+  </properties>
+  <testcase name="testSuccessfulEmailDelivery" classname="com.ticketbox.backend.worker.email.EmailWorkerTest" time="4.092">
+    <system-out><![CDATA[Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+00:01:17.473 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.ticketbox.backend.worker.email.EmailWorkerTest]: EmailWorkerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+00:01:18.268 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.ticketbox.backend.Application for test class com.ticketbox.backend.worker.email.EmailWorkerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.4)
+
+2026-06-05T00:01:19.775+07:00  INFO 55017 --- [ticketbox-backend] [           main] c.t.b.worker.email.EmailWorkerTest       : Starting EmailWorkerTest using Java 17.0.18 with PID 55017 (started by daonguyennguyen in /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend)
+2026-06-05T00:01:19.779+07:00  INFO 55017 --- [ticketbox-backend] [           main] c.t.b.worker.email.EmailWorkerTest       : No active profile set, falling back to 1 default profile: "default"
+2026-06-05T00:01:25.684+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-05T00:01:25.689+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-05T00:01:26.386+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 660 ms. Found 7 JPA repository interfaces.
+2026-06-05T00:01:26.444+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-05T00:01:26.447+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-06-05T00:01:26.520+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.ConcertRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.525+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.GuestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.526+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.OrderItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.528+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.OrderRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.533+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.TicketCategoryRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.535+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.TicketRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.536+07:00  INFO 55017 --- [ticketbox-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.ticketbox.backend.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-05T00:01:26.551+07:00  INFO 55017 --- [ticketbox-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 66 ms. Found 0 Redis repository interfaces.
+2026-06-05T00:01:36.701+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-06-05T00:01:37.004+07:00  INFO 55017 --- [ticketbox-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-06-05T00:01:37.243+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-06-05T00:01:37.685+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-05T00:01:37.768+07:00  INFO 55017 --- [ticketbox-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-05T00:01:38.297+07:00  INFO 55017 --- [ticketbox-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@744673f3
+2026-06-05T00:01:38.301+07:00  INFO 55017 --- [ticketbox-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-05T00:01:38.410+07:00  WARN 55017 --- [ticketbox-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-05T00:01:44.960+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-05T00:01:46.073+07:00  INFO 55017 --- [ticketbox-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-05T00:01:53.145+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-05T00:01:59.027+07:00  WARN 55017 --- [ticketbox-backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-05T00:02:01.788+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-06-05T00:02:02.335+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@45eeea37, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@3bf5ced8, org.springframework.security.web.context.SecurityContextHolderFilter@1eff0d64, org.springframework.security.web.header.HeaderWriterFilter@4bc06a3e, org.springframework.web.filter.CorsFilter@4e637cdf, org.springframework.security.web.authentication.logout.LogoutFilter@670ef436, com.ticketbox.backend.security.JwtAuthenticationFilter@18ea9bec, com.ticketbox.backend.security.ratelimit.RateLimitFilter@763a46fe, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@4184d960, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5fcef70b, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1d8ecabb, org.springframework.security.web.session.SessionManagementFilter@5cd5fb8b, org.springframework.security.web.access.ExceptionTranslationFilter@4df207e1, org.springframework.security.web.access.intercept.AuthorizationFilter@5a31d662]
+2026-06-05T00:02:07.444+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2026-06-05T00:02:07.769+07:00  INFO 55017 --- [ticketbox-backend] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#14467f3b:0/SimpleConnection@7a6dd9dd [delegate=amqp://ticketbox@127.0.0.1:5672/, localPort=50508]
+2026-06-05T00:02:08.249+07:00  INFO 55017 --- [ticketbox-backend] [           main] c.t.b.worker.email.EmailWorkerTest       : Started EmailWorkerTest in 49.56 seconds (process running for 53.417)
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    insert 
+    into
+        users
+        (password, role, username) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        concerts
+        (artist_biography, description, end_time, location, name, start_time) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        ticket_categories
+        (available_quantity, concert_id, name, price, total_quantity, version) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        orders
+        (created_at, email_status, idempotency_key, status, total_amount, user_id) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tickets
+        (category_id, created_at, order_id, owner_id, qr_code, status, ticket_type) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-06-05T00:02:09.430+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.backend.worker.email.EmailConsumer   : Received Email request for Job ID: 7ef2c4f6-dd77-42b7-bea6-2471f4c25694
+2026-06-05T00:02:09.431+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.backend.worker.email.EmailService    : Processing email job: 7ef2c4f6-dd77-42b7-bea6-2471f4c25694
+2026-06-05T00:02:09.521+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.b.worker.email.EmailJobTracker       : Updated email job 7ef2c4f6-dd77-42b7-bea6-2471f4c25694 to status: PROCESSING
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0 
+    where
+        t1_0.id in (?)
+2026-06-05T00:02:09.632+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.b.w.email.TicketAttachmentService    : Generating E-ticket PDF for 1 tickets
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0 
+    where
+        tc1_0.id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0 
+    where
+        c1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-06-05T00:02:11.132+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.b.worker.email.ResendEmailClient     : Sending request to Resend API for email to: t***@ticketbox.com
+2026-06-05T00:02:11.152+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.b.worker.email.ResendEmailClient     : Received successful response from Resend API for email to: t***@ticketbox.com
+2026-06-05T00:02:11.162+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.b.worker.email.EmailJobTracker       : Updated email job 7ef2c4f6-dd77-42b7-bea6-2471f4c25694 to status: COMPLETED
+2026-06-05T00:02:11.162+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-1] c.t.backend.worker.email.EmailService    : Job 7ef2c4f6-dd77-42b7-bea6-2471f4c25694: Email sent successfully for order 16
+Hibernate: 
+    update
+        orders 
+    set
+        created_at=?,
+        email_status=?,
+        idempotency_key=?,
+        status=?,
+        total_amount=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    delete 
+    from
+        tickets 
+    where
+        id=?
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    delete 
+    from
+        orders 
+    where
+        id=?
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    delete 
+    from
+        ticket_categories 
+    where
+        id=? 
+        and version=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    delete 
+    from
+        concerts 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    delete 
+    from
+        users 
+    where
+        id=?
+]]></system-out>
+  </testcase>
+  <testcase name="testEmailTimeoutAndDlq" classname="com.ticketbox.backend.worker.email.EmailWorkerTest" time="12.317">
+    <system-out><![CDATA[Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    insert 
+    into
+        users
+        (password, role, username) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        concerts
+        (artist_biography, description, end_time, location, name, start_time) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        ticket_categories
+        (available_quantity, concert_id, name, price, total_quantity, version) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        orders
+        (created_at, email_status, idempotency_key, status, total_amount, user_id) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tickets
+        (category_id, created_at, order_id, owner_id, qr_code, status, ticket_type) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-06-05T00:02:12.803+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Received Email request for Job ID: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:12.804+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Processing email job: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:12.808+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.EmailJobTracker       : Updated email job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a to status: PROCESSING
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0 
+    where
+        t1_0.id in (?)
+2026-06-05T00:02:12.843+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.w.email.TicketAttachmentService    : Generating E-ticket PDF for 1 tickets
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0 
+    where
+        tc1_0.id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0 
+    where
+        c1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-06-05T00:02:12.961+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.ResendEmailClient     : Sending request to Resend API for email to: t***@ticketbox.com
+2026-06-05T00:02:12.965+07:00 ERROR 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: System error occurred: Provider timeout
+2026-06-05T00:02:12.977+07:00  WARN 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: Exception caught in consumer, propagating for retry: Provider timeout
+2026-06-05T00:02:13.980+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Received Email request for Job ID: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:13.983+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Processing email job: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:13.986+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.EmailJobTracker       : Updated email job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a to status: PROCESSING
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0 
+    where
+        t1_0.id in (?)
+2026-06-05T00:02:14.013+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.w.email.TicketAttachmentService    : Generating E-ticket PDF for 1 tickets
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0 
+    where
+        tc1_0.id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0 
+    where
+        c1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-06-05T00:02:14.098+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.ResendEmailClient     : Sending request to Resend API for email to: t***@ticketbox.com
+2026-06-05T00:02:14.100+07:00 ERROR 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: System error occurred: Provider timeout
+2026-06-05T00:02:14.103+07:00  WARN 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: Exception caught in consumer, propagating for retry: Provider timeout
+2026-06-05T00:02:16.104+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Received Email request for Job ID: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:16.108+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Processing email job: c63dd4c7-c30e-46bf-9d7c-a9e14f23928a
+2026-06-05T00:02:16.111+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.EmailJobTracker       : Updated email job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a to status: PROCESSING
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0 
+    where
+        t1_0.id in (?)
+2026-06-05T00:02:16.130+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.w.email.TicketAttachmentService    : Generating E-ticket PDF for 1 tickets
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0 
+    where
+        tc1_0.id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0 
+    where
+        c1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-06-05T00:02:16.166+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.b.worker.email.ResendEmailClient     : Sending request to Resend API for email to: t***@ticketbox.com
+2026-06-05T00:02:16.170+07:00 ERROR 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailService    : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: System error occurred: Provider timeout
+2026-06-05T00:02:16.174+07:00  WARN 55017 --- [ticketbox-backend] [ntContainer#2-2] c.t.backend.worker.email.EmailConsumer   : Job c63dd4c7-c30e-46bf-9d7c-a9e14f23928a: Exception caught in consumer, propagating for retry: Provider timeout
+2026-06-05T00:02:16.180+07:00  WARN 55017 --- [ticketbox-backend] [ntContainer#2-2] o.s.a.r.retry.RepublishMessageRecoverer  : Republishing failed message to exchange 'ticketbox.dlx' with routing key email.send
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    delete 
+    from
+        tickets 
+    where
+        id=?
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    delete 
+    from
+        orders 
+    where
+        id=?
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    delete 
+    from
+        ticket_categories 
+    where
+        id=? 
+        and version=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    delete 
+    from
+        concerts 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    delete 
+    from
+        users 
+    where
+        id=?
+]]></system-out>
+  </testcase>
+  <testcase name="testDuplicateJobIgnored" classname="com.ticketbox.backend.worker.email.EmailWorkerTest" time="2.421">
+    <system-out><![CDATA[Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    insert 
+    into
+        users
+        (password, role, username) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        concerts
+        (artist_biography, description, end_time, location, name, start_time) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        ticket_categories
+        (available_quantity, concert_id, name, price, total_quantity, version) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        orders
+        (created_at, email_status, idempotency_key, status, total_amount, user_id) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tickets
+        (category_id, created_at, order_id, owner_id, qr_code, status, ticket_type) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+Hibernate: 
+    update
+        orders 
+    set
+        created_at=?,
+        email_status=?,
+        idempotency_key=?,
+        status=?,
+        total_amount=?,
+        user_id=? 
+    where
+        id=?
+2026-06-05T00:02:25.101+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-3] c.t.backend.worker.email.EmailConsumer   : Received Email request for Job ID: 16a0da04-f989-45d3-8a72-f80e4e16611e
+2026-06-05T00:02:25.101+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-3] c.t.backend.worker.email.EmailService    : Processing email job: 16a0da04-f989-45d3-8a72-f80e4e16611e
+2026-06-05T00:02:25.104+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-3] c.t.b.worker.email.EmailJobTracker       : Updated email job 16a0da04-f989-45d3-8a72-f80e4e16611e to status: PROCESSING
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0 
+    where
+        o1_0.id=?
+2026-06-05T00:02:25.111+07:00  WARN 55017 --- [ticketbox-backend] [ntContainer#2-3] c.t.backend.worker.email.EmailService    : Job 16a0da04-f989-45d3-8a72-f80e4e16611e: Email for order 18 was already sent. Skipping.
+2026-06-05T00:02:25.114+07:00  INFO 55017 --- [ticketbox-backend] [ntContainer#2-3] c.t.b.worker.email.EmailJobTracker       : Updated email job 16a0da04-f989-45d3-8a72-f80e4e16611e to status: COMPLETED
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.category_id,
+        t1_0.created_at,
+        t1_0.order_id,
+        t1_0.owner_id,
+        t1_0.qr_code,
+        t1_0.status,
+        t1_0.ticket_type 
+    from
+        tickets t1_0
+Hibernate: 
+    delete 
+    from
+        tickets 
+    where
+        id=?
+Hibernate: 
+    select
+        o1_0.id,
+        o1_0.created_at,
+        o1_0.email_status,
+        o1_0.idempotency_key,
+        o1_0.status,
+        o1_0.total_amount,
+        o1_0.user_id 
+    from
+        orders o1_0
+Hibernate: 
+    delete 
+    from
+        orders 
+    where
+        id=?
+Hibernate: 
+    select
+        tc1_0.id,
+        tc1_0.available_quantity,
+        tc1_0.concert_id,
+        tc1_0.name,
+        tc1_0.price,
+        tc1_0.total_quantity,
+        tc1_0.version 
+    from
+        ticket_categories tc1_0
+Hibernate: 
+    delete 
+    from
+        ticket_categories 
+    where
+        id=? 
+        and version=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.artist_biography,
+        c1_0.description,
+        c1_0.end_time,
+        c1_0.location,
+        c1_0.name,
+        c1_0.start_time 
+    from
+        concerts c1_0
+Hibernate: 
+    delete 
+    from
+        concerts 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    delete 
+    from
+        users 
+    where
+        id=?
+]]></system-out>
+  </testcase>
+</testsuite>

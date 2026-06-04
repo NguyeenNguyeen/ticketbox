@@ -113,3 +113,17 @@ ticketbox:
   payment:
     reservation-ttl-minutes: 10
     cleanup-interval-seconds: 60
+
+  ai:
+    provider: gemini # default to gemini
+    gemini:
+      key: ${GEMINI_API_KEY:}
+    openai:
+      key: ${OPENAI_API_KEY:}
+
+  email:
+    provider: resend # default to resend
+    resend:
+      key: ${RESEND_API_KEY:}
+    brevo:
+      key: ${BREVO_API_KEY:}

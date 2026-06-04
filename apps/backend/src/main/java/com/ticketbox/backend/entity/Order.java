@@ -38,4 +38,9 @@ public class Order {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "email_status", nullable = false)
+    @Builder.Default
+    private EmailStatus emailStatus = EmailStatus.PENDING;
 }

@@ -50,6 +50,9 @@ public class AiWorkerTest {
     private ConcertRepository concertRepository;
 
     @Autowired
+    private com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
+
+    @Autowired
     private AiJobTracker jobTracker;
 
     @MockBean
@@ -62,6 +65,7 @@ public class AiWorkerTest {
 
     @BeforeEach
     public void setup() throws IOException {
+        ticketCategoryRepository.deleteAll();
         concertRepository.deleteAll();
 
         // Drain queues
