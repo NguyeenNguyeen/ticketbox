@@ -86,7 +86,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 2. **Circuit Breaker + Bulkhead** — Not started (requires payment service interface from Member 1)
 3. **RabbitMQ Spring AMQP config** — Not started
 4. **DLQ + Retry mechanism** — ✅ Complete and validated
-5. **CSV Import Worker** — Not started
+5. **CSV Import Worker** — ✅ Complete and fully verified (`16_csv_worker_validation.md`)
 6. **AI Worker** — Not started
 7. **Email Worker** — Not started
 8. **Docker Compose fixes** — PostgreSQL healthcheck bug still present

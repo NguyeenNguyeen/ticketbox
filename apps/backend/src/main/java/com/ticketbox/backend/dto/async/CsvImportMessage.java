@@ -9,15 +9,27 @@ public class CsvImportMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private String jobId;
     private String fileId;
     private Long concertId;
+    private Long organizerId;
 
     public CsvImportMessage() {
     }
 
-    public CsvImportMessage(String fileId, Long concertId) {
+    public CsvImportMessage(String jobId, String fileId, Long concertId, Long organizerId) {
+        this.jobId = jobId;
         this.fileId = fileId;
         this.concertId = concertId;
+        this.organizerId = organizerId;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     public String getFileId() {
@@ -36,11 +48,21 @@ public class CsvImportMessage implements Serializable {
         this.concertId = concertId;
     }
 
+    public Long getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(Long organizerId) {
+        this.organizerId = organizerId;
+    }
+
     @Override
     public String toString() {
         return "CsvImportMessage{" +
-                "fileId='" + fileId + '\'' +
+                "jobId='" + jobId + '\'' +
+                ", fileId='" + fileId + '\'' +
                 ", concertId=" + concertId +
+                ", organizerId=" + organizerId +
                 '}';
     }
 }

@@ -19,6 +19,7 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/PayingState.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/factory/TicketFactory.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/config/PaymentHealthIndicator.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvImportService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/config/PaymentProtectionConfig.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/config/RedisConfig.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/factory/StandardTicketFactory.java
@@ -28,11 +29,15 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/RoleName.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/scheduler/StaleOrderCleanupJob.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/OrderState.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvImportConsumer.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/strategy/StandardPricingStrategy.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/TicketStatus.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/JwtTokenProvider.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/ratelimit/RateLimitFilter.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/dto/async/EmailTaskMessage.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/repository/GuestRepository.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvRowValidator.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/Guest.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/Application.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/ratelimit/RateLimitConfig.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/strategy/PricingStrategy.java
@@ -42,6 +47,7 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/PaymentGatewayService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/repository/TicketCategoryRepository.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/repository/TicketRepository.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvImportProgressTracker.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/dto/async/AiGenerationMessage.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/TicketCategory.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/PaymentFallbackHandler.java
@@ -52,6 +58,7 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/pattern/state/CancelledState.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/SecurityConfig.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/entity/Ticket.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/worker/csv/CsvImportProgress.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/security/JwtAuthenticationFilter.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/service/ConcertService.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/config/RabbitMQConfig.java

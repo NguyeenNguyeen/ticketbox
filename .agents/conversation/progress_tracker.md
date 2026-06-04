@@ -172,13 +172,30 @@ Last Updated: 2026-06-03
 - [x] Runtime Validation: `12_5_async_infrastructure_validation.md` (CRITICAL FAILURE: Message Loss in DLQ Routing)
 - [x] DLQ Routing Fix: `12_6_dlq_routing_fix.md` (RepublishMessageRecoverer prefix removed, integration test assertions added, APPROVED FOR RE-VALIDATION)
 
-### CSV Import Worker
+### CSV Import Worker — DESIGN COMPLETE
+- [x] Stream processing architecture defined
+- [x] Idempotency strategy documented
+- [x] Error handling (row-level vs system-level) defined
+- [x] Progress tracking mechanism designed
+- [x] Design document: `13_csv_worker_design.md`
 
-- [ ] CSV streaming reader
-- [ ] Fault-tolerant line-by-line processing
-- [ ] Idempotent import logic
-- [ ] Duplicate detection
-- [ ] Error logging for malformed lines
+### CSV Import Worker — IMPLEMENTATION
+- [x] Update `CsvImportMessage`
+- [x] Implement `CsvRowValidator`
+- [x] Implement `ImportProgressTracker`
+- [x] CSV streaming reader (`CsvImportService`)
+- [x] Fault-tolerant line-by-line processing
+- [x] Idempotent import logic
+- [x] Duplicate detection
+- [x] Error logging for malformed lines
+- [x] Integration tests (`CsvWorkerTest.java`)
+- [x] Implementation document: `14_csv_worker_implementation.md`
+
+### CSV Import Worker — VALIDATION
+- [x] Code Review complete (`15_csv_worker_review.md`)
+- [x] Runtime Validation tests executed (`CsvWorkerExtendedValidationTest.java`)
+- [x] DLQ, Retry, and large file integrity verified
+- [x] Validation document: `16_csv_worker_validation.md`
 
 ### AI Worker
 
