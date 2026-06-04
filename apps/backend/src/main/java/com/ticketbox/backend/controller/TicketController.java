@@ -25,24 +25,18 @@ public class TicketController {
 
     @PostMapping("/purchase")
     public ResponseEntity<?> purchaseTicket(@RequestBody PurchaseRequest request) {
-        try {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-            Order order = purchaseService.purchaseTicket(
-                    user, 
-                    request.getCategoryId(), 
-                    request.getQuantity(), 
-                    request.getIdempotencyKey()
-            );
+        Order order = purchaseService.purchaseTicket(
+                user, 
+                request.getCategoryId(), 
+                request.getQuantity(), 
+                request.getIdempotencyKey()
+        );
 
-            return ResponseEntity.ok(order);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+        return ResponseEntity.ok(order);
     }
 
     @Data

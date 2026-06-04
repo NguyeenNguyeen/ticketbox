@@ -1,8 +1,12 @@
 package com.ticketbox.backend.exception;
 
 import com.ticketbox.backend.dto.ErrorResponse;
+import com.ticketbox.backend.service.PaymentFallbackHandler;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +29,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @Autowired
+    private PaymentFallbackHandler paymentFallbackHandler;
 
     /**
      * HTTP 403 — Access denied (RBAC check failed).
@@ -83,6 +90,36 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * HTTP 400 — Payment Declined (business logic, e.g. insufficient funds)
+     */
+    @ExceptionHandler(PaymentDeclinedException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentDeclined(PaymentDeclinedException ex) {
+        log.warn("Payment declined: {}", ex.getMessage());
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code("PAYMENT_DECLINED")
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * HTTP 200 (PAYMENT_MAINTENANCE) — Payment Infrastructure Errors 
+     * Handled via graceful degradation (Circuit Breaker OPEN, Bulkhead FULL, Gateway Error)
+     */
+    @ExceptionHandler({
+        PaymentGatewayException.class,
+        CallNotPermittedException.class,
+        BulkheadFullException.class
+    })
+    public ResponseEntity<Object> handlePaymentInfrastructureError(RuntimeException ex) {
+        log.warn("Payment infrastructure degraded: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
+        // We do not need the orderId here for the fallback response structure we designed.
+        // The fallback handler will return the generic maintenance message.
+        return paymentFallbackHandler.handlePaymentMaintenance(null);
     }
 
     /**
