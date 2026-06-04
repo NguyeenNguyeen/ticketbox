@@ -176,6 +176,27 @@ public class EmailWorkerTest {
         Message dlqMessage = rabbitTemplate.receive(RabbitMQConfig.QUEUE_EMAIL_DLQ, 5000);
         assertNotNull(dlqMessage, "Message should be routed to DLQ after exhausting retries");
     }
+    @Test
+    public void testPermanent4xxErrorRoutesToDlqImmediately() throws Exception {
+        // Mock permanent 4xx error
+        when(restTemplate.postForObject(anyString(), any(HttpEntity.class), org.mockito.ArgumentMatchers.eq(String.class)))
+                .thenThrow(new org.springframework.web.client.HttpClientErrorException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid API Key"));
+
+        String jobId = UUID.randomUUID().toString();
+        EmailTaskMessage msg = new EmailTaskMessage(jobId, testOrder.getId(), testUser.getId(), "test@ticketbox.com", List.of(testTicket.getId()), "corr-4");
+
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_COMMANDS, RabbitMQConfig.ROUTING_KEY_EMAIL, msg);
+
+        // Wait only a short time since no retries should happen (1s should be enough)
+        Thread.sleep(3000);
+
+        Order updated = orderRepository.findById(testOrder.getId()).orElseThrow();
+        assertEquals(EmailStatus.FAILED, updated.getEmailStatus()); // Should be marked FAILED immediately
+
+        // Check DLQ
+        Message dlqMessage = rabbitTemplate.receive(RabbitMQConfig.QUEUE_EMAIL_DLQ, 5000);
+        assertNotNull(dlqMessage, "Message should be routed to DLQ immediately without retries");
+    }
 
     @Test
     public void testDuplicateJobIgnored() throws Exception {

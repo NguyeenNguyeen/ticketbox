@@ -156,9 +156,25 @@ public class RabbitMQConfig {
         RepublishMessageRecoverer recoverer = new RepublishMessageRecoverer(rabbitTemplate, EXCHANGE_DLX);
         recoverer.setErrorRoutingKeyPrefix(""); // Prevent "error." prefix to align with DLQ bindings
         
+        Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
+        retryableExceptions.put(Throwable.class, true); // Retry everything by default
+        retryableExceptions.put(org.springframework.amqp.AmqpRejectAndDontRequeueException.class, false); // Except permanent errors
+        
+        org.springframework.retry.policy.SimpleRetryPolicy retryPolicy = 
+            new org.springframework.retry.policy.SimpleRetryPolicy(3, retryableExceptions, true);
+            
+        org.springframework.retry.backoff.ExponentialBackOffPolicy backOffPolicy = 
+            new org.springframework.retry.backoff.ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(1000);
+        backOffPolicy.setMultiplier(2.0);
+        backOffPolicy.setMaxInterval(10000);
+        
+        org.springframework.retry.support.RetryTemplate retryTemplate = new org.springframework.retry.support.RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+        
         factory.setAdviceChain(RetryInterceptorBuilder.stateless()
-                .maxAttempts(3)
-                .backOffOptions(1000, 2.0, 10000)
+                .retryOperations(retryTemplate)
                 .recoverer(recoverer)
                 .build());
                 

@@ -31,12 +31,13 @@ public class ResendEmailClient implements EmailProviderClient {
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename, String jobId) {
         log.info("Sending request to Resend API for email to: {}", maskEmail(to));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
+        headers.set("Idempotency-Key", jobId);
 
         String base64Attachment = Base64.getEncoder().encodeToString(attachment);
 

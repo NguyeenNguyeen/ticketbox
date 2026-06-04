@@ -32,12 +32,13 @@ public class BrevoEmailClient implements EmailProviderClient {
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename, String jobId) {
         log.info("Sending request to Brevo API for email to: {}", maskEmail(to));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("api-key", apiKey);
+        headers.set("Idempotency-Key", jobId);
 
         String base64Attachment = Base64.getEncoder().encodeToString(attachment);
 
