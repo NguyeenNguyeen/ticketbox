@@ -149,6 +149,10 @@ public class RabbitMQConfig {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         configurer.configure(factory, connectionFactory);
         
+        // Mitigate stateless retry thread-blocking by allowing concurrent consumers
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
+        
         factory.setAdviceChain(RetryInterceptorBuilder.stateless()
                 .maxAttempts(3)
                 .backOffOptions(1000, 2.0, 10000)

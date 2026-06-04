@@ -167,6 +167,8 @@ Last Updated: 2026-06-03
 - [x] Retry mechanism (max 3 retries)
 - [x] Spring AMQP configuration
 - [x] Implementation documentation: `10_async_infrastructure_implementation.md`
+- [x] Independent review: `11_async_infrastructure_review.md` (Identified concurrency bottleneck in stateless retries)
+- [x] Remediation applied: `12_async_infrastructure_remediation.md` (Concurrency fixed, YML configured)
 
 ### CSV Import Worker
 
