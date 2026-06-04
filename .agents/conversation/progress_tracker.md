@@ -147,23 +147,55 @@ Last Updated: 2026-06-03
 
 ---
 
-## Phase 3 — Async Processing (Member 4) — Not Started
+## Phase 3 — Async Processing (Member 4) — DESIGN COMPLETE
 
-### RabbitMQ Configuration
+### Async Architecture Design ✅ COMPLETE
+- [x] Backend analysis and integration points
+- [x] Exchange topology (Commands, Events, DLX)
+- [x] Queue topology (Email, CSV, AI, DLQ)
+- [x] Retry strategy (Spring AMQP Retry + DLQ)
+- [x] Worker boundaries and Idempotency
+- [x] Failure analysis (Poison messages, RabbitMQ outages)
+- [x] Monitoring strategy
+- [x] Design document: `09_async_architecture_design.md`
 
-- [ ] Exchange definitions
-- [ ] Queue definitions
-- [ ] DLQ configuration
-- [ ] Retry mechanism (max 3 retries)
-- [ ] Spring AMQP configuration
+### RabbitMQ Configuration ✅ COMPLETE
+- [x] Add `spring-boot-starter-amqp`
+- [x] Exchange definitions
+- [x] Queue definitions
+- [x] DLQ configuration
+- [x] Retry mechanism (max 3 retries)
+- [x] Spring AMQP configuration
+- [x] Implementation documentation: `10_async_infrastructure_implementation.md`
+- [x] Independent review: `11_async_infrastructure_review.md` (Identified concurrency bottleneck in stateless retries)
+- [x] Remediation applied: `12_async_infrastructure_remediation.md` (Concurrency fixed, YML configured)
+- [x] Runtime Validation: `12_5_async_infrastructure_validation.md` (CRITICAL FAILURE: Message Loss in DLQ Routing)
+- [x] DLQ Routing Fix: `12_6_dlq_routing_fix.md` (RepublishMessageRecoverer prefix removed, integration test assertions added, APPROVED FOR RE-VALIDATION)
 
-### CSV Import Worker
+### CSV Import Worker — DESIGN COMPLETE
+- [x] Stream processing architecture defined
+- [x] Idempotency strategy documented
+- [x] Error handling (row-level vs system-level) defined
+- [x] Progress tracking mechanism designed
+- [x] Design document: `13_csv_worker_design.md`
 
-- [ ] CSV streaming reader
-- [ ] Fault-tolerant line-by-line processing
-- [ ] Idempotent import logic
-- [ ] Duplicate detection
-- [ ] Error logging for malformed lines
+### CSV Import Worker — IMPLEMENTATION
+- [x] Update `CsvImportMessage`
+- [x] Implement `CsvRowValidator`
+- [x] Implement `ImportProgressTracker`
+- [x] CSV streaming reader (`CsvImportService`)
+- [x] Fault-tolerant line-by-line processing
+- [x] Idempotent import logic
+- [x] Duplicate detection
+- [x] Error logging for malformed lines
+- [x] Integration tests (`CsvWorkerTest.java`)
+- [x] Implementation document: `14_csv_worker_implementation.md`
+
+### CSV Import Worker — VALIDATION
+- [x] Code Review complete (`15_csv_worker_review.md`)
+- [x] Runtime Validation tests executed (`CsvWorkerExtendedValidationTest.java`)
+- [x] DLQ, Retry, and large file integrity verified
+- [x] Validation document: `16_csv_worker_validation.md`
 
 ### AI Worker
 
@@ -187,7 +219,7 @@ Last Updated: 2026-06-03
 
 | Task | Blocked By | Reason |
 |------|-----------|--------|
-| All Workers | Design phase | Requires RabbitMQ setup first |
+| All Workers | Business requirements | Implementation of workers requires parsing and generation logic |
 
 ---
 

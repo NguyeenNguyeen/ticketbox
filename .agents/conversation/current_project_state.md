@@ -6,14 +6,15 @@ Last Updated: 2026-06-04 (Post-Payment Protection Design)
 
 ## Current Phase
 
-**Phase 2 — API Protection**
-- ✅ Rate Limiting: Implemented, tested, reviewed, remediated (29 tests passing)
-- ✅ Payment Protection: Design and Implementation complete.
-- ✅ Payment Protection: Review complete (`07_payment_protection_review.md`)
-- ✅ Payment Protection: Remediation complete (`08_payment_protection_remediation.md`) (33 tests passing)
+**Phase 3 — Async Processing**
+- ✅ Async Architecture: Design complete (`09_async_architecture_design.md`)
+- ✅ RabbitMQ Config: Implementation complete (`10_async_infrastructure_implementation.md`)
+- ✅ RabbitMQ Review: Review complete (`11_async_infrastructure_review.md`)
+- ✅ RabbitMQ Remediation: Remediation complete (`12_async_infrastructure_remediation.md`)
+- ✅ RabbitMQ Validation: Validation failed (`12_5_async_infrastructure_validation.md`), then fixed and re-validated (`12_6_dlq_routing_fix.md`)
+- ⏳ Async Workers: Pending implementation
 
-The Spring Boot backend has Rate Limiting fully implemented with all security fixes applied.
-Payment Protection is fully implemented, reviewed, and successfully remediated against critical AOP self-invocation transaction bypasses and blind cancellations. Phase 2 is 100% complete. Ready for Phase 3.
+Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `RepublishMessageRecoverer` misrouting bug has been fixed, and DLQ message retention works correctly without message loss. The infrastructure is now approved for worker implementation.
 
 ---
 
@@ -84,8 +85,8 @@ Payment Protection is fully implemented, reviewed, and successfully remediated a
 1. **Rate Limiting** — Design complete, implementation pending approval
 2. **Circuit Breaker + Bulkhead** — Not started (requires payment service interface from Member 1)
 3. **RabbitMQ Spring AMQP config** — Not started
-4. **DLQ + Retry mechanism** — Not started
-5. **CSV Import Worker** — Not started
+4. **DLQ + Retry mechanism** — ✅ Complete and validated
+5. **CSV Import Worker** — ✅ Complete and fully verified (`16_csv_worker_validation.md`)
 6. **AI Worker** — Not started
 7. **Email Worker** — Not started
 8. **Docker Compose fixes** — PostgreSQL healthcheck bug still present

@@ -26,8 +26,10 @@ com/ticketbox/backend/security/ratelimit/RateLimitProperties$TierProperties.clas
 com/ticketbox/backend/pattern/factory/VIPTicketFactory.class
 com/ticketbox/backend/dto/ErrorResponse.class
 com/ticketbox/backend/service/PaymentGatewayService.class
+com/ticketbox/backend/dto/async/AiGenerationMessage.class
 com/ticketbox/backend/pattern/state/PendingState.class
 com/ticketbox/backend/entity/User$UserBuilder.class
+com/ticketbox/backend/dto/async/CsvImportMessage.class
 com/ticketbox/backend/config/RedisConfig.class
 com/ticketbox/backend/service/PaymentFallbackHandler.class
 com/ticketbox/backend/entity/TicketStatus.class
