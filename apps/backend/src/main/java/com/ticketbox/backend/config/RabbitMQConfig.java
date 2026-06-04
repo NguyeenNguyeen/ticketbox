@@ -153,10 +153,13 @@ public class RabbitMQConfig {
         factory.setConcurrentConsumers(3);
         factory.setMaxConcurrentConsumers(10);
         
+        RepublishMessageRecoverer recoverer = new RepublishMessageRecoverer(rabbitTemplate, EXCHANGE_DLX);
+        recoverer.setErrorRoutingKeyPrefix(""); // Prevent "error." prefix to align with DLQ bindings
+        
         factory.setAdviceChain(RetryInterceptorBuilder.stateless()
                 .maxAttempts(3)
                 .backOffOptions(1000, 2.0, 10000)
-                .recoverer(new RepublishMessageRecoverer(rabbitTemplate, EXCHANGE_DLX))
+                .recoverer(recoverer)
                 .build());
                 
         return factory;

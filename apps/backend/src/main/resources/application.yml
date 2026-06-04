@@ -6,8 +6,8 @@ spring:
     name: ticketbox-backend
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ticketbox}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USER:ticketbox}
+    password: ${DB_PASSWORD:ticketbox}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -24,8 +24,8 @@ spring:
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
+    username: ${RABBITMQ_USERNAME:ticketbox}
+    password: ${RABBITMQ_PASSWORD:ticketbox}
 
 jwt:
   secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}

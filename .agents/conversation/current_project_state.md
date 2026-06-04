@@ -11,9 +11,10 @@ Last Updated: 2026-06-04 (Post-Payment Protection Design)
 - ✅ RabbitMQ Config: Implementation complete (`10_async_infrastructure_implementation.md`)
 - ✅ RabbitMQ Review: Review complete (`11_async_infrastructure_review.md`)
 - ✅ RabbitMQ Remediation: Remediation complete (`12_async_infrastructure_remediation.md`)
+- ✅ RabbitMQ Validation: Validation failed (`12_5_async_infrastructure_validation.md`), then fixed and re-validated (`12_6_dlq_routing_fix.md`)
 - ⏳ Async Workers: Pending implementation
 
-Phase 3 RabbitMQ infrastructure is fully implemented, reviewed, and remediated. Scalability bottlenecks in stateless retries have been resolved. The infrastructure is officially approved for the implementation of the async workers (Email, CSV, AI).
+Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `RepublishMessageRecoverer` misrouting bug has been fixed, and DLQ message retention works correctly without message loss. The infrastructure is now approved for worker implementation.
 
 ---
 
@@ -84,7 +85,7 @@ Phase 3 RabbitMQ infrastructure is fully implemented, reviewed, and remediated. 
 1. **Rate Limiting** — Design complete, implementation pending approval
 2. **Circuit Breaker + Bulkhead** — Not started (requires payment service interface from Member 1)
 3. **RabbitMQ Spring AMQP config** — Not started
-4. **DLQ + Retry mechanism** — Not started
+4. **DLQ + Retry mechanism** — ✅ Complete and validated
 5. **CSV Import Worker** — Not started
 6. **AI Worker** — Not started
 7. **Email Worker** — Not started

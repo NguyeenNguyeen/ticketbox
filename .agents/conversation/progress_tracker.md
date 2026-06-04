@@ -169,6 +169,8 @@ Last Updated: 2026-06-03
 - [x] Implementation documentation: `10_async_infrastructure_implementation.md`
 - [x] Independent review: `11_async_infrastructure_review.md` (Identified concurrency bottleneck in stateless retries)
 - [x] Remediation applied: `12_async_infrastructure_remediation.md` (Concurrency fixed, YML configured)
+- [x] Runtime Validation: `12_5_async_infrastructure_validation.md` (CRITICAL FAILURE: Message Loss in DLQ Routing)
+- [x] DLQ Routing Fix: `12_6_dlq_routing_fix.md` (RepublishMessageRecoverer prefix removed, integration test assertions added, APPROVED FOR RE-VALIDATION)
 
 ### CSV Import Worker
 
