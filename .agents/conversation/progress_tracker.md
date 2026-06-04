@@ -137,6 +137,14 @@ Last Updated: 2026-06-03
 - [x] Order state consistency review (Critical Flaw Found: Blind Cancellation)
 - [x] Review documentation: 07_payment_protection_review.md
 
+### Payment Protection — REMEDIATION ✅ COMPLETE
+
+- [x] Fix AOP self-invocation transaction bypass
+- [x] Fix blind cancellation in stale order cleanup
+- [x] Tune Resilience4j thresholds and bulkhead wait duration
+- [x] Add Micrometer observability to background jobs
+- [x] Remediation documentation: 08_payment_protection_remediation.md
+
 ---
 
 ## Phase 3 — Async Processing (Member 4) — Not Started
@@ -179,8 +187,6 @@ Last Updated: 2026-06-03
 
 | Task | Blocked By | Reason |
 |------|-----------|--------|
-| Payment Protection Remediation | Review phase | Must fix critical flaws identified in 07_payment_protection_review.md |
-| RabbitMQ Spring Config | Phase 2 completion | Payment protection remediation must be completed first |
 | All Workers | Design phase | Requires RabbitMQ setup first |
 
 ---

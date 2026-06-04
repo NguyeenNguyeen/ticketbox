@@ -42,6 +42,10 @@ public class TicketPurchaseService {
     @Autowired
     private PaymentGatewayService paymentGatewayService;
 
+    @Autowired
+    @org.springframework.context.annotation.Lazy
+    private TicketPurchaseService self;
+
     /**
      * Handles ticket purchase with Concurrency & Idempotency protection.
      * This method orchestrates the 3-phase payment protection flow.
@@ -58,7 +62,7 @@ public class TicketPurchaseService {
         // Phase A: Reserve Tickets (Transaction 1)
         Order order;
         try {
-            order = reserveTickets(user, categoryId, quantity, idempotencyKey);
+            order = self.reserveTickets(user, categoryId, quantity, idempotencyKey);
         } catch (Exception e) {
             redisService.releaseLock("lock:purchase:" + user.getId() + ":" + categoryId);
             throw e; // e.g. IllegalStateException if oversold
@@ -69,7 +73,7 @@ public class TicketPurchaseService {
             paymentGatewayService.processPayment(order);
         } catch (com.ticketbox.backend.exception.PaymentDeclinedException e) {
             // Payment declined (insufficient funds). Cancel and restore.
-            return finalizeOrderFailure(order.getId(), categoryId, quantity);
+            return self.finalizeOrderFailure(order.getId(), categoryId, quantity);
         } catch (Exception e) {
             // Infrastructure error (PaymentGatewayException, CallNotPermittedException, BulkheadFullException).
             // Do NOT restore tickets. Keep in PAYING state for 10 minutes.
@@ -78,7 +82,7 @@ public class TicketPurchaseService {
         }
 
         // Phase C: Finalize Success (Transaction 2)
-        return finalizeOrderSuccess(order.getId(), categoryId, quantity, user);
+        return self.finalizeOrderSuccess(order.getId(), categoryId, quantity, user);
     }
 
     @Transactional

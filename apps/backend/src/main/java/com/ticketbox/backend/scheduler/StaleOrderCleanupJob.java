@@ -1,11 +1,14 @@
 package com.ticketbox.backend.scheduler;
 
+import com.ticketbox.backend.dto.PaymentResult;
 import com.ticketbox.backend.entity.Order;
 import com.ticketbox.backend.entity.OrderItem;
 import com.ticketbox.backend.entity.OrderStatus;
 import com.ticketbox.backend.repository.OrderItemRepository;
 import com.ticketbox.backend.repository.OrderRepository;
+import com.ticketbox.backend.service.PaymentGatewayService;
 import com.ticketbox.backend.service.TicketPurchaseService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,12 @@ public class StaleOrderCleanupJob {
 
     @Autowired
     private TicketPurchaseService ticketPurchaseService;
+
+    @Autowired
+    private PaymentGatewayService paymentGatewayService;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Value("${ticketbox.payment.reservation-ttl-minutes:10}")
     private int reservationTtlMinutes;
@@ -59,18 +68,28 @@ public class StaleOrderCleanupJob {
                 
                 List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
                 if (items.isEmpty()) {
-                    log.error("Order {} has no items, cannot restore inventory.", order.getId());
+                    log.error("Order {} has no items, cannot process.", order.getId());
                     continue;
                 }
-                
-                // For TicketBox, we only allow one category per purchase flow right now
                 OrderItem item = items.get(0);
-                
-                ticketPurchaseService.finalizeOrderFailure(order.getId(), item.getTicketCategory().getId(), item.getQuantity());
-                
-                cancelledCount++;
+
+                // Check actual status at gateway before blindly cancelling
+                PaymentResult result = paymentGatewayService.checkPaymentStatus(order);
+
+                if (result.getStatus() == PaymentResult.PaymentStatus.SUCCESS) {
+                    log.warn("Stale order {} actually succeeded at gateway! Finalizing order...", order.getId());
+                    ticketPurchaseService.finalizeOrderSuccess(order.getId(), item.getTicketCategory().getId(), item.getQuantity(), order.getUser());
+                    meterRegistry.counter("ticketbox.payment.cleanup.recovered").increment();
+                } else {
+                    log.warn("Stale order {} was abandoned. Cancelling and restoring inventory...", order.getId());
+                    ticketPurchaseService.finalizeOrderFailure(order.getId(), item.getTicketCategory().getId(), item.getQuantity());
+                    meterRegistry.counter("ticketbox.payment.cleanup.cancelled").increment();
+                    cancelledCount++;
+                }
+
             } catch (Exception e) {
                 log.error("Failed to cleanup stale order {}", order.getId(), e);
+                meterRegistry.counter("ticketbox.payment.cleanup.error").increment();
             }
         }
         

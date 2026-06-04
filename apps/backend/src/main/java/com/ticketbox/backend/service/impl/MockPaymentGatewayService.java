@@ -43,6 +43,26 @@ public class MockPaymentGatewayService implements PaymentGatewayService {
                 .build();
     }
 
+    @Override
+    public PaymentResult checkPaymentStatus(Order order) {
+        log.info("Checking actual payment status for Order: {}", order.getId());
+        
+        // Simulate checking with provider. In this mock, we assume 1% of stuck orders actually succeeded.
+        int random = ThreadLocalRandom.current().nextInt(100);
+        if (random < 1) {
+            return PaymentResult.builder()
+                    .status(PaymentResult.PaymentStatus.SUCCESS)
+                    .transactionId("TX-RECOVERED-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                    .message("Payment succeeded previously but was not synced")
+                    .build();
+        }
+        
+        return PaymentResult.builder()
+                .status(PaymentResult.PaymentStatus.ERROR)
+                .message("Payment never completed or was abandoned")
+                .build();
+    }
+
     private void simulateLatency() {
         try {
             long latency = ThreadLocalRandom.current().nextLong(200, 1500);

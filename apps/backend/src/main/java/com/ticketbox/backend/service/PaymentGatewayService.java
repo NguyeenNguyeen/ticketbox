@@ -11,4 +11,14 @@ public interface PaymentGatewayService {
      * @return PaymentResult indicating success or decline
      */
     PaymentResult processPayment(Order order);
+
+    /**
+     * Checks the payment status of an order directly with the provider.
+     * Used by the cleanup job to verify if a payment actually succeeded
+     * before cancelling an abandoned order.
+     * 
+     * @param order the order to check
+     * @return PaymentResult indicating the actual status at the provider
+     */
+    PaymentResult checkPaymentStatus(Order order);
 }

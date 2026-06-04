@@ -26,6 +26,26 @@ jwt:
   secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   expiration: 86400000 # 1 day in ms
 
+# --- Resilience4j: Payment Protection ---
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 50
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  bulkhead:
+    instances:
+      paymentGateway:
+        max-concurrent-calls: 10
+        max-wait-duration: 500ms
+
 ticketbox:
   rate-limit:
     # Set to false to disable rate limiting entirely (e.g. integration tests, local dev)
@@ -82,29 +102,6 @@ ticketbox:
       - /v3/api-docs/**
       - /error
       - /favicon.ico
-
-# --- Resilience4j: Payment Protection ---
-resilience4j:
-  circuitbreaker:
-    instances:
-      paymentGateway:
-        sliding-window-type: COUNT_BASED
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-        failure-rate-threshold: 50
-        slow-call-rate-threshold: 80
-        slow-call-duration-threshold: 3s
-        wait-duration-in-open-state: 30s
-        permitted-number-of-calls-in-half-open-state: 3
-        automatic-transition-from-open-to-half-open-enabled: true
-  bulkhead:
-    instances:
-      paymentGateway:
-        max-concurrent-calls: 10
-        max-wait-duration: 0ms
-
-# --- Payment settings ---
-ticketbox:
   payment:
     reservation-ttl-minutes: 10
     cleanup-interval-seconds: 60

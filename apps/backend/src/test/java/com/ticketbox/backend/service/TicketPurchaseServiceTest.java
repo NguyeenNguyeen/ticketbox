@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -64,6 +65,8 @@ class TicketPurchaseServiceTest {
                 .availableQuantity(50)
                 .build();
         idempKey = UUID.randomUUID().toString();
+        
+        ReflectionTestUtils.setField(ticketPurchaseService, "self", ticketPurchaseService);
     }
 
     @Test
