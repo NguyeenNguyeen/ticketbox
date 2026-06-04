@@ -15,9 +15,9 @@ Load project context.
 Read:
 
 ```text
-agent/rules/*
-agent/knowledge/*
-agent/conversation/*
+.agents/rules/*
+.agents/knowledge/*
+.agents/conversation/*
 ```
 
 ---
@@ -72,7 +72,7 @@ Update project state.
 Before finishing, the agent MUST update:
 
 ```text
-agent/conversation/
+.agents/conversation/
 ```
 
 to reflect:
@@ -98,7 +98,7 @@ Therefore:
 Everything necessary for continuation must be written into:
 
 ```text
-agent/conversation/
+.agents/conversation/
 ```
 
 before finishing a task.

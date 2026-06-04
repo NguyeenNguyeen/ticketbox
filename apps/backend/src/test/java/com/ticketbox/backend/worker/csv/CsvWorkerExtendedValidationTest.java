@@ -40,6 +40,9 @@ public class CsvWorkerExtendedValidationTest {
     private ConcertRepository concertRepository;
 
     @Autowired
+    private com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
+
+    @Autowired
     private CsvImportProgressTracker progressTracker;
 
     private Concert testConcert;
@@ -48,6 +51,7 @@ public class CsvWorkerExtendedValidationTest {
     @BeforeEach
     public void setup() throws IOException {
         guestRepository.deleteAll();
+        ticketCategoryRepository.deleteAll();
         concertRepository.deleteAll();
 
         // Drain queues before tests

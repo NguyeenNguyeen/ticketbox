@@ -199,19 +199,24 @@ Last Updated: 2026-06-03
 
 ### AI Worker
 
-- [ ] PDF text extraction
-- [ ] Text cleaning/preprocessing
-- [ ] Gemini API integration
-- [ ] Request throttling
-- [ ] Async consumer from RabbitMQ
+- [x] AI Worker Design (`17_ai_worker_design.md`)
+- [x] PDF text extraction (`PdfExtractionService`)
+- [x] AI Provider integration (`AiProviderClient`, `GeminiAiClient`, `OpenAiClient`)
+- [x] Prompt generation (`AiPromptBuilder`)
+- [x] Response parsing (`AiResponseValidator`)
+- [x] Result storage (`AiBioService`, `Concert.artistBiography`)
+- [x] AI Worker Implementation (`18_ai_worker_implementation.md`)
 
 ### Email Worker
 
-- [ ] Resend API integration
-- [ ] Email queue consumer
-- [ ] Retry handling
-- [ ] E-ticket email with QR attachment
-- [ ] Event reminder email
+- [x] Email Worker Design (`23_email_worker_design.md`)
+- [x] E-ticket email with QR attachment
+- [x] Resend API integration
+- [x] Email queue consumer
+- [x] Retry handling
+- [x] Email Worker Implementation (`24_email_worker_implementation.md`)
+- [x] Email Worker Review (`25_email_worker_review.md`)
+- [ ] Email Worker Remediation
 
 ---
 

@@ -1,5 +1,7 @@
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/security/ratelimit/RateLimitFilterTest.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/worker/csv/CsvWorkerTest.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/worker/ai/AiWorkerTest.java
+/home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/worker/email/EmailWorkerTest.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/config/RabbitMQConfigTest.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/service/TicketPurchaseServiceTest.java
 /home/daonguyennguyen/Documents/code/softwareDesign/final_project/ticketbox/apps/backend/src/test/java/com/ticketbox/backend/config/RabbitMQValidationTest.java

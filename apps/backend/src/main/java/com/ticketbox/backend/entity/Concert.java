@@ -29,4 +29,7 @@ public class Concert {
     private LocalDateTime endTime;
 
     private String location;
+
+    @Column(columnDefinition = "TEXT")
+    private String artistBiography;
 }

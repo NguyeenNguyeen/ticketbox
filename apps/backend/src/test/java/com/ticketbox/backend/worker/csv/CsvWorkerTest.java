@@ -38,6 +38,9 @@ public class CsvWorkerTest {
     private ConcertRepository concertRepository;
 
     @Autowired
+    private com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
+
+    @Autowired
     private CsvImportProgressTracker progressTracker;
 
     private Concert testConcert;
@@ -46,6 +49,7 @@ public class CsvWorkerTest {
     @BeforeEach
     public void setup() throws IOException {
         guestRepository.deleteAll();
+        ticketCategoryRepository.deleteAll();
         concertRepository.deleteAll();
 
         testConcert = Concert.builder()
