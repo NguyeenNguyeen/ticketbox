@@ -12,7 +12,9 @@ Last Updated: 2026-06-04 (Post-Payment Protection Design)
 - ✅ RabbitMQ Review: Review complete (`11_async_infrastructure_review.md`)
 - ✅ RabbitMQ Remediation: Remediation complete (`12_async_infrastructure_remediation.md`)
 - ✅ RabbitMQ Validation: Validation failed (`12_5_async_infrastructure_validation.md`), then fixed and re-validated (`12_6_dlq_routing_fix.md`)
-- ⏳ Async Workers: Pending implementation
+- ✅ CSV Worker: Fully validated (`16_csv_worker_validation.md`)
+- ✅ AI Worker: Implemented and tested (`18_ai_worker_implementation.md`)
+- ⏳ Email Worker: Pending implementation
 
 Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `RepublishMessageRecoverer` misrouting bug has been fixed, and DLQ message retention works correctly without message loss. The infrastructure is now approved for worker implementation.
 
@@ -87,7 +89,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 3. **RabbitMQ Spring AMQP config** — Not started
 4. **DLQ + Retry mechanism** — ✅ Complete and validated
 5. **CSV Import Worker** — ✅ Complete and fully verified (`16_csv_worker_validation.md`)
-6. **AI Worker** — Not started
+6. **AI Worker** — ✅ Implementation and Integration Tests complete (`18_ai_worker_implementation.md`)
 7. **Email Worker** — Not started
 8. **Docker Compose fixes** — PostgreSQL healthcheck bug still present
 9. **GlobalExceptionHandler** — Not started (planned with rate limiting)

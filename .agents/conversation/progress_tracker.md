@@ -199,11 +199,13 @@ Last Updated: 2026-06-03
 
 ### AI Worker
 
-- [ ] PDF text extraction
-- [ ] Text cleaning/preprocessing
-- [ ] Gemini API integration
-- [ ] Request throttling
-- [ ] Async consumer from RabbitMQ
+- [x] AI Worker Design (`17_ai_worker_design.md`)
+- [x] PDF text extraction (`PdfExtractionService`)
+- [x] AI Provider integration (`AiProviderClient`, `GeminiAiClient`, `OpenAiClient`)
+- [x] Prompt generation (`AiPromptBuilder`)
+- [x] Response parsing (`AiResponseValidator`)
+- [x] Result storage (`AiBioService`, `Concert.artistBiography`)
+- [x] AI Worker Implementation (`18_ai_worker_implementation.md`)
 
 ### Email Worker
 
