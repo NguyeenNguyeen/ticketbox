@@ -1,0 +1,129 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ticketbox-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ticketbox}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:ticketbox}
+    password: ${RABBITMQ_PASSWORD:ticketbox}
+    listener:
+      simple:
+        prefetch: 1
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: 86400000 # 1 day in ms
+
+# --- Resilience4j: Payment Protection ---
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 50
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  bulkhead:
+    instances:
+      paymentGateway:
+        max-concurrent-calls: 10
+        max-wait-duration: 500ms
+
+ticketbox:
+  rate-limit:
+    # Set to false to disable rate limiting entirely (e.g. integration tests, local dev)
+    enabled: true
+
+    # -----------------------------------------------------------------------
+    # IP Spoofing protection (Security Fix 2.1)
+    # -----------------------------------------------------------------------
+    # Set to true ONLY when running behind a trusted reverse proxy (Nginx/ALB).
+    # When false (default), request.getRemoteAddr() is used exclusively.
+    # When true, also enable: server.forward-headers-strategy=framework
+    # -----------------------------------------------------------------------
+    trust-proxy-headers: false
+
+    # Pre-auth IP gate: fast local in-memory check (Caffeine, per-node)
+    # Blocks floods BEFORE JWT parsing and DB access (Security Fix 2.2)
+    pre-auth:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 60
+
+    # Auth tier: strict Redis-backed limit for login/register (Security Fix 3.1)
+    # Prevents credential brute-forcing (10 attempts/min per IP)
+    auth:
+      capacity: 10
+      refill-tokens: 10
+      refill-duration-seconds: 60
+
+    # Public API tier: limits unauthenticated non-auth requests by client IP
+    public:
+      capacity: 100
+      refill-tokens: 100
+      refill-duration-seconds: 60
+
+    # Private API tier: limits authenticated requests by username (from JWT)
+    private:
+      capacity: 10
+      refill-tokens: 10
+      refill-duration-seconds: 60
+
+    # Paths that receive the stricter 'auth' tier instead of 'public' tier
+    auth-paths:
+      - /api/auth/**
+
+    # Paths that completely bypass rate limiting.
+    # Keep this list as narrow as possible (Docker health probes only).
+    # Actuator endpoints are NO LONGER whitelisted — they now use the
+    # standard private-tier limit (authenticated) to prevent abuse (Fix 3.3).
+    whitelisted-paths:
+      - /actuator/health
+      - /actuator/info
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /v3/api-docs/**
+      - /error
+      - /favicon.ico
+  payment:
+    reservation-ttl-minutes: 10
+    cleanup-interval-seconds: 60
+
+  ai:
+    provider: gemini # default to gemini
+    gemini:
+      key: ${GEMINI_API_KEY:}
+    openai:
+      key: ${OPENAI_API_KEY:}
+
+  email:
+    provider: resend # default to resend
+    resend:
+      key: ${RESEND_API_KEY:}
+    brevo:
+      key: ${BREVO_API_KEY:}
