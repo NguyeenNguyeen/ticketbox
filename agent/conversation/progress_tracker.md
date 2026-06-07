@@ -82,6 +82,7 @@
 - [x] Dynamic seat availability mapping based on database ticket category quantities
 - [x] Complete purchase flow integration via `/api/tickets/purchase`
 - [x] Real QR code ticket lookup via `/api/tickets/{id}`
+- [x] Fixed Spring Boot PostgreSQL default authentication fallback from postgres to ticketbox
 
 ## Remaining Work
 - [ ] Real SSE connection for seat updates (requires active backend event streams)

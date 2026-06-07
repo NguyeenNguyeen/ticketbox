@@ -42,7 +42,8 @@ All routes: /, /admin, /admin/concerts, /admin/concerts/[id]/edit, /admin/concer
 ```
 
 ## Recommended Next Step
-1. Start database, redis, and backend services.
-2. Launch Next.js local dev server (`cmd /c npm run dev`).
-3. Log in with sample credentials (`customer1` / `password` or `admin1` / `password`).
-4. Test the seat selection wizard, verify the seat statuses reflect backend categories, perform checkout, and verify E-Ticket rendering.
+1. Start database, redis, and backend services via `docker-compose up -d`.
+2. Run backend via IDE or Maven.
+3. Launch Next.js local dev server (`cmd /c npm run dev`).
+4. Log in with sample credentials (`customer1` / `password` or `admin1` / `password`).
+5. Test the seat selection wizard, verify the seat statuses reflect backend categories, perform checkout, and verify E-Ticket rendering.

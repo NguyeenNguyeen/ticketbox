@@ -32,7 +32,12 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     });
 
     if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return res.json();
+    const text = await res.text();
+    try {
+      return text ? JSON.parse(text) : {};
+    } catch {
+      return text as unknown as T;
+    }
   } catch (error) {
     console.error(`Request failed: ${fullUrl}`, error);
     throw error;

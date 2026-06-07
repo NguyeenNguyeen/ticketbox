@@ -6,8 +6,8 @@ spring:
     name: ticketbox-backend
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ticketbox}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USER:ticketbox}
+    password: ${DB_PASSWORD:ticketbox}
     driver-class-name: org.postgresql.Driver
   jpa:
     defer-datasource-initialization: true
