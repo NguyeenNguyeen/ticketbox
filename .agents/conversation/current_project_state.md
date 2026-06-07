@@ -96,6 +96,14 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 
 ---
 
+## Phase 4 — Frontend Bug Fixes & Integration
+
+- ✅ Fixed GA seat rendering in SeatMap (SVG viewBox adjusted)
+- ✅ Fixed Quick Login Demo to use real backend authentication instead of mock tokens
+- ✅ Fixed `data.sql` test account passwords to match correct Bcrypt hashes (`password`) and added `checker1` account
+
+---
+
 ## Recommended Next Task
 
 **Remediate Email Worker**

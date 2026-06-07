@@ -220,6 +220,18 @@ Last Updated: 2026-06-03
 
 ---
 
+## Phase 4 — Frontend Bug Fixes & Integration
+
+- [x] Fix GA seat missing in SeatMap (SVG viewBox adjustment)
+- [x] Fix Quick Login Demo (use real login logic with default test accounts instead of mock tokens)
+- [x] Fix `data.sql` to include correct Bcrypt hashes for test accounts (customer1, admin1, checker1)
+- [x] Feature: Admin specific features - redirected ORGANIZER directly to `/admin` upon login.
+- [x] Feature: Customer Order History - Added `OrderController` with `/api/orders/history` and Frontend `/orders` page.
+- [x] Feature: Admin Order & User Management - Added `UserController`, `GET /api/admin/orders`, `GET /api/admin/users` and corresponding admin dashboard pages.
+- [x] Fix: Logout logic now properly redirects to `/auth/login`.
+
+---
+
 ## Blocked Tasks
 
 | Task | Blocked By | Reason |

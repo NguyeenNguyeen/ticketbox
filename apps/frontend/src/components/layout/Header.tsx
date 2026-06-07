@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Menu, X, Ticket, LogOut, ChevronDown, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 
 export function Header() {
@@ -10,6 +11,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const router = useRouter();
   const roleLabels: Record<string, string> = { CUSTOMER: "Khán giả", ORGANIZER: "Ban tổ chức", CHECKER: "Soát vé" };
 
   return (
@@ -51,7 +53,12 @@ export function Header() {
                         Trang quản trị
                       </Link>
                     )}
-                    <button onClick={() => { logout(); setDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-secondary transition-colors text-destructive flex items-center gap-2">
+                    {user.role === "CUSTOMER" && (
+                      <Link href="/orders" className="block px-3 py-2 text-sm rounded-lg hover:bg-secondary transition-colors" onClick={() => setDropdownOpen(false)}>
+                        Lịch sử mua hàng
+                      </Link>
+                    )}
+                    <button onClick={() => { logout(); setDropdownOpen(false); router.push("/auth/login"); }} className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-secondary transition-colors text-destructive flex items-center gap-2">
                       <LogOut className="w-4 h-4" /> Đăng xuất
                     </button>
                   </div>
@@ -80,7 +87,7 @@ export function Header() {
             <Link href="/#concerts" className="block text-sm font-medium py-2" onClick={() => setMobileOpen(false)}>Sự kiện</Link>
             <hr className="border-border" />
             {isAuthenticated ? (
-              <button onClick={() => { logout(); setMobileOpen(false); }} className="block text-sm font-medium py-2 text-destructive">Đăng xuất</button>
+              <button onClick={() => { logout(); setMobileOpen(false); router.push("/auth/login"); }} className="block text-sm font-medium py-2 text-destructive">Đăng xuất</button>
             ) : (
               <>
                 <Link href="/auth/login" className="block text-sm font-medium py-2" onClick={() => setMobileOpen(false)}>Đăng nhập</Link>

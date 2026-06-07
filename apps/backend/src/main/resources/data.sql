@@ -3,9 +3,10 @@
 -- Insert sample users (password is 'password' encoded with BCrypt)
 INSERT INTO users (id, username, password, role)
 VALUES 
-(1, 'customer1', '$2a$10$slYQmyNdGzTn7ZLBIAChCO218bE4U2r/g.mI1vI5s9J6Q/Y/o3WwW', 'CUSTOMER'),
-(2, 'admin1', '$2a$10$slYQmyNdGzTn7ZLBIAChCO218bE4U2r/g.mI1vI5s9J6Q/Y/o3WwW', 'ORGANIZER')
-ON CONFLICT (id) DO NOTHING;
+(1, 'customer1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'CUSTOMER'),
+(2, 'admin1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'ORGANIZER'),
+(3, 'checker1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'CHECKER')
+ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, username = EXCLUDED.username, role = EXCLUDED.role;
 
 -- Insert sample concerts
 INSERT INTO concerts (id, name, description, start_time, end_time, location, artist_biography)

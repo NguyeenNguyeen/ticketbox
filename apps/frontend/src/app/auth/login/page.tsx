@@ -27,7 +27,12 @@ function LoginForm() {
     try {
       const success = await login(email, password);
       if (success) {
-        router.push(redirect);
+        const userRole = useAuthStore.getState().user?.role;
+        if (userRole === "ORGANIZER") {
+          router.push("/admin");
+        } else {
+          router.push(redirect);
+        }
       } else {
         setError("Email hoặc mật khẩu không đúng.");
       }
@@ -38,9 +43,23 @@ function LoginForm() {
     }
   };
 
-  const handleQuickLogin = (role: "CUSTOMER" | "ORGANIZER" | "CHECKER") => {
-    loginAs(role);
-    router.push(redirect);
+  const handleQuickLogin = async (role: "CUSTOMER" | "ORGANIZER" | "CHECKER") => {
+    let username = "";
+    if (role === "CUSTOMER") username = "customer1";
+    if (role === "ORGANIZER") username = "admin1";
+    if (role === "CHECKER") username = "checker1";
+
+    const success = await login(username, "password");
+    if (success) {
+      const userRole = useAuthStore.getState().user?.role;
+      if (userRole === "ORGANIZER") {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
+    } else {
+      setError("Đăng nhập nhanh thất bại. Backend có thể chưa được khởi tạo đúng.");
+    }
   };
 
   return (

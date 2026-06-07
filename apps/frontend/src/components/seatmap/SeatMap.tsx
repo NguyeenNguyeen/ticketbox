@@ -75,7 +75,7 @@ export function SeatMap({ concertId }: SeatMapProps) {
   return (
     <div>
       <div className="w-full overflow-x-auto">
-        <svg viewBox="0 0 800 620" className="w-full max-w-3xl mx-auto" style={{ minWidth: 500 }}>
+        <svg viewBox="0 0 800 800" className="w-full max-w-3xl mx-auto" style={{ minWidth: 500 }}>
           {/* Glow filter for selected seats */}
           <defs>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -97,8 +97,8 @@ export function SeatMap({ concertId }: SeatMapProps) {
             { label: "SVIP", y: 140, color: ZONE_COLORS.SVIP },
             { label: "VIP", y: 230, color: ZONE_COLORS.VIP },
             { label: "CAT1", y: 370, color: ZONE_COLORS.CAT1 },
-            { label: "CAT2", y: 490, color: ZONE_COLORS.CAT2 },
-            { label: "GA", y: 570, color: ZONE_COLORS.GA },
+            { label: "CAT2", y: 530, color: ZONE_COLORS.CAT2 },
+            { label: "GA", y: 660, color: ZONE_COLORS.GA },
           ].map((z) => (
             <text key={z.label} x={30} y={z.y} fontSize={11} fontWeight={700} fill={z.color} opacity={0.7}>
               {z.label}
