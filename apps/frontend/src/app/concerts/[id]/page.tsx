@@ -1,27 +1,61 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ConcertInfo } from "@/components/concert/ConcertInfo";
 import { SeatMap } from "@/components/seatmap/SeatMap";
 import { useSeatStore } from "@/stores/useSeatStore";
 import { useCartStore } from "@/stores/useCartStore";
-import { mockConcerts } from "@/mocks/concerts";
+import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { ShoppingCart, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { OrderItem } from "@/types/order";
+import type { Concert } from "@/types/concert";
 
 export default function ConcertDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const concertId = params.id as string;
-  const concert = mockConcerts.find((c) => c.id === concertId);
+  const [concert, setConcert] = useState<Concert | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const selectedSeats = useSeatStore((s) => s.selectedSeats);
   const seats = useSeatStore((s) => s.seats);
   const clearSelection = useSeatStore((s) => s.clearSelection);
   const setItems = useCartStore((s) => s.setItems);
+
+  useEffect(() => {
+    async function fetchConcert() {
+      try {
+        setLoading(true);
+        const data = await api.get<Concert>(`/concerts/${concertId}`);
+        setConcert(data);
+      } catch (err) {
+        console.error("Failed to load concert details", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (concertId) fetchConcert();
+  }, [concertId]);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Đang tải thông tin sự kiện...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   if (!concert) {
     return (
@@ -68,7 +102,7 @@ export default function ConcertDetailPage() {
     const holdExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     useCartStore.getState().setHoldExpiry(holdExpiry);
 
-    window.location.href = "/checkout";
+    router.push("/checkout");
   };
 
   return (

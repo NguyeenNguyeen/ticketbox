@@ -24,22 +24,19 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     ...getAuthHeader(),
   };
 
-  // Simulate network delay for mock
-  await new Promise((r) => setTimeout(r, 300));
+  try {
+    const res = await fetch(fullUrl, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  const res = await fetch(fullUrl, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  }).catch(() => null);
-
-  if (!res) {
-    // When backend isn't running, return empty — components use mock data
-    return {} as T;
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  } catch (error) {
+    console.error(`Request failed: ${fullUrl}`, error);
+    throw error;
   }
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
 }
 
 export const api = {

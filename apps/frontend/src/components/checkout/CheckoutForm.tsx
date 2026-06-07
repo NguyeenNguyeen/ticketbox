@@ -6,22 +6,72 @@ import { OrderSummary } from "./OrderSummary";
 import { CountdownTimer } from "./CountdownTimer";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { Shield } from "lucide-react";
+import { api } from "@/lib/api";
+import { generateIdempotencyKey } from "@/lib/utils";
 
 export function CheckoutForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const { holdExpiresAt, paymentMethod, isProcessing, setPaymentMethod, startPayment, completePayment } = useCartStore();
+  const { holdExpiresAt, paymentMethod, isProcessing, setPaymentMethod, startPayment, completePayment, cancelPayment } = useCartStore();
 
   const handlePay = async () => {
     if (!paymentMethod) { toast({ title: "Vui lòng chọn phương thức thanh toán", variant: "error" }); return; }
     startPayment();
     toast({ title: "Đang xử lý thanh toán...", description: "Vui lòng không đóng trang", variant: "default" });
 
-    // Simulate payment
-    await new Promise((r) => setTimeout(r, 2500));
-    completePayment();
-    toast({ title: "Thanh toán thành công! 🎉", variant: "success" });
-    router.push("/tickets/tkt-001");
+    try {
+      const concertId = useCartStore.getState().concertId;
+      const items = useCartStore.getState().items;
+
+      const categories = await api.get<any[]>(`/concerts/${concertId}/categories`);
+
+      const zoneCounts = new Map<string, number>();
+      for (const item of items) {
+        zoneCounts.set(item.zone, (zoneCounts.get(item.zone) || 0) + 1);
+      }
+
+      const baseKey = useCartStore.getState().idempotencyKey || generateIdempotencyKey();
+      let lastOrder: any = null;
+
+      for (const [zone, quantity] of zoneCounts.entries()) {
+        const category = categories.find((c) => c.name.toUpperCase() === zone.toUpperCase());
+        if (!category) {
+          throw new Error(`Không tìm thấy hạng vé cho khu vực ${zone}`);
+        }
+
+        const key = zoneCounts.size > 1 ? `${baseKey}-${category.id}` : baseKey;
+
+        const order = await api.post<any>("/tickets/purchase", {
+          categoryId: category.id,
+          quantity,
+          idempotencyKey: key,
+        });
+
+        lastOrder = order;
+      }
+
+      completePayment();
+      toast({ title: "Thanh toán thành công! 🎉", variant: "success" });
+
+      if (lastOrder && lastOrder.id) {
+        const tickets = await api.get<any[]>(`/tickets/order/${lastOrder.id}`);
+        if (tickets && tickets.length > 0) {
+          router.push(`/tickets/${tickets[0].id}`);
+        } else {
+          router.push("/");
+        }
+      } else {
+        router.push("/");
+      }
+    } catch (error: any) {
+      cancelPayment();
+      console.error(error);
+      toast({
+        title: "Thanh toán thất bại",
+        description: error.message || "Có lỗi xảy ra trong quá trình đặt vé. Vui lòng kiểm tra lại.",
+        variant: "error",
+      });
+    }
   };
 
   return (

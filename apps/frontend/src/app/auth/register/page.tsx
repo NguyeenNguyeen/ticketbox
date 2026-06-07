@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { api } from "@/lib/api";
 import { Eye, EyeOff, Ticket, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const loginAs = useAuthStore((s) => s.loginAs);
+  const login = useAuthStore((s) => s.login);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,11 +36,25 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    // Mock register - in production this would call API
-    setTimeout(() => {
-      loginAs("CUSTOMER");
-      router.push("/");
-    }, 1000);
+    try {
+      await api.post("/auth/register", {
+        username: email,
+        password: password,
+        role: "CUSTOMER",
+      });
+
+      const success = await login(email, password);
+      if (success) {
+        router.push("/");
+      } else {
+        setError("Đăng ký thành công nhưng đăng nhập thất bại.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Đăng ký thất bại. Tên đăng nhập có thể đã tồn tại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

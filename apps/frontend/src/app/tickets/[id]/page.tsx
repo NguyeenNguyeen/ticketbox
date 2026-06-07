@@ -1,35 +1,74 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ETicket } from "@/components/ticket/ETicket";
-import { CheckCircle, Download, ArrowLeft } from "lucide-react";
+import { CheckCircle, Download, ArrowLeft, Ticket as TicketIcon } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/lib/api";
 import type { ETicket as ETicketType } from "@/types/order";
-
-// Mock ticket data - in production this would come from API
-const mockTicket: ETicketType = {
-  id: "tkt-001",
-  orderId: "ord-001",
-  concertId: "concert-1",
-  concertTitle: "Anh Trai Say Hi - Live Concert 2026",
-  concertDate: "2026-12-20T19:30:00+07:00",
-  venue: "Sân vận động Mỹ Đình, Hà Nội",
-  zone: "VIP",
-  row: "E",
-  seatNumber: 5,
-  qrCode: "TICKETBOX-TKT001-CONCERT1-VIPE5-2026",
-  holderName: "Nguyễn Văn A",
-  holderEmail: "nguyenvana@gmail.com",
-};
 
 export default function TicketPage() {
   const params = useParams();
   const ticketId = params.id as string;
+  const [ticket, setTicket] = useState<ETicketType | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // In production, fetch ticket by ID
-  const ticket = { ...mockTicket, id: ticketId };
+  useEffect(() => {
+    async function fetchTicket() {
+      try {
+        setLoading(true);
+        const data = await api.get<ETicketType>(`/tickets/${ticketId}`);
+        setTicket(data);
+      } catch (err) {
+        console.error("Failed to fetch ticket", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (ticketId) fetchTicket();
+  }, [ticketId]);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Đang tải thông tin vé...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <TicketIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Không tìm thấy vé</h1>
+            <p className="text-muted-foreground mb-6">
+              Vé này không tồn tại hoặc bạn không có quyền truy cập.
+            </p>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-hover transition-colors"
+            >
+              Về trang chủ
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

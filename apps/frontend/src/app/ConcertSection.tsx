@@ -1,20 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ConcertGrid } from "@/components/concert/ConcertGrid";
-import { mockConcerts } from "@/mocks/concerts";
 import type { ConcertListItem } from "@/types/concert";
+import { api } from "@/lib/api";
 
 export function ConcertSection() {
-  const concertList: ConcertListItem[] = mockConcerts.map((c) => ({
-    id: c.id,
-    title: c.title,
-    venue: c.venue,
-    date: c.date,
-    bannerUrl: c.bannerUrl,
-    status: c.status,
-    priceFrom: Math.min(...c.ticketCategories.map((tc) => tc.price)),
-    artists: c.artists,
-  }));
+  const [concertList, setConcertList] = useState<ConcertListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchConcerts() {
+      try {
+        const data = await api.get<ConcertListItem[]>("/concerts");
+        setConcertList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load concerts", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchConcerts();
+  }, []);
 
   return (
     <section id="concerts" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { User, UserRole } from "@/types/user";
 import { decodeJwt, getMockToken } from "@/lib/auth";
+import { api } from "@/lib/api";
 
 interface AuthState {
   user: User | null;
@@ -19,30 +20,37 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: null,
   isAuthenticated: false,
 
-  login: async (email: string, _password: string) => {
-    await new Promise((r) => setTimeout(r, 500));
-    // Mock: any credentials work, role based on email
-    let role: UserRole = "CUSTOMER";
-    if (email.includes("admin") || email.includes("organizer")) role = "ORGANIZER";
-    else if (email.includes("checker")) role = "CHECKER";
+  login: async (email: string, password: string) => {
+    try {
+      const res = await api.post<{ accessToken: string }>("/auth/login", {
+        username: email,
+        password,
+      });
 
-    const token = getMockToken(role);
-    localStorage.setItem(STORAGE_KEY, token);
-    document.cookie = `token=${token}; path=/; max-age=86400`;
-    const payload = decodeJwt(token)!;
-    set({
-      token,
-      isAuthenticated: true,
-      user: {
-        id: payload.sub,
-        name: payload.name,
-        email: payload.email,
-        phone: "0912345678",
-        role: payload.role,
-        createdAt: new Date().toISOString(),
-      },
-    });
-    return true;
+      if (res && res.accessToken) {
+        const token = res.accessToken;
+        localStorage.setItem(STORAGE_KEY, token);
+        document.cookie = `token=${token}; path=/; max-age=86400`;
+        const payload = decodeJwt(token)!;
+        set({
+          token,
+          isAuthenticated: true,
+          user: {
+            id: payload.sub,
+            name: payload.name || payload.sub,
+            email: payload.email || `${payload.sub}@ticketbox.vn`,
+            phone: "0912345678",
+            role: payload.role || "CUSTOMER",
+            createdAt: new Date().toISOString(),
+          },
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed", error);
+      return false;
+    }
   },
 
   loginAs: (role: UserRole) => {
@@ -77,6 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const payload = decodeJwt(token);
     if (!payload || payload.exp * 1000 < Date.now()) {
       localStorage.removeItem(STORAGE_KEY);
+      document.cookie = "token=; path=/; max-age=0";
       return;
     }
     set({
@@ -84,10 +93,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: true,
       user: {
         id: payload.sub,
-        name: payload.name,
-        email: payload.email,
+        name: payload.name || payload.sub,
+        email: payload.email || `${payload.sub}@ticketbox.vn`,
         phone: "0912345678",
-        role: payload.role,
+        role: payload.role || "CUSTOMER",
         createdAt: new Date().toISOString(),
       },
     });

@@ -25,8 +25,16 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        String role = userPrincipal.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority().replace("ROLE_", ""))
+                .findFirst()
+                .orElse("CUSTOMER");
+
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
+                .claim("role", role)
+                .claim("email", userPrincipal.getUsername() + "@ticketbox.vn")
+                .claim("name", userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(key())

@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import type { Seat, SeatStatus } from "@/types/seat";
 import { generateSeats } from "@/mocks/seats";
+import { api } from "@/lib/api";
 
 interface SeatState {
   seats: Record<string, Seat>;
   selectedSeats: string[];
   loading: boolean;
-  loadSeats: (concertId: string) => void;
+  loadSeats: (concertId: string) => Promise<void>;
   selectSeat: (seatId: string) => void;
   updateSeatStatus: (seatId: string, status: SeatStatus) => void;
   clearSelection: () => void;
@@ -18,14 +19,76 @@ export const useSeatStore = create<SeatState>((set, get) => ({
   selectedSeats: [],
   loading: false,
 
-  loadSeats: (concertId: string) => {
+  loadSeats: async (concertId: string) => {
     set({ loading: true });
-    const seatList = generateSeats(concertId);
-    const seatMap: Record<string, Seat> = {};
-    for (const s of seatList) {
-      seatMap[s.id] = s;
+    try {
+      const categories = await api.get<any[]>(`/concerts/${concertId}/categories`);
+      const seatList = generateSeats(concertId);
+      
+      const categoriesMap = new Map<string, any>();
+      for (const cat of categories) {
+        categoriesMap.set(cat.name.toUpperCase(), cat);
+      }
+      
+      const zoneTakenCount = new Map<string, number>();
+      const zoneSeats = new Map<string, Seat[]>();
+      
+      for (const cat of categories) {
+        const name = cat.name.toUpperCase();
+        const taken = Math.max(0, cat.totalQuantity - cat.availableQuantity);
+        zoneTakenCount.set(name, taken);
+        zoneSeats.set(name, []);
+      }
+      
+      for (const seat of seatList) {
+        const zone = seat.zone.toUpperCase();
+        if (!zoneSeats.has(zone)) {
+          zoneSeats.set(zone, []);
+        }
+        zoneSeats.get(zone)!.push(seat);
+      }
+      
+      const updatedSeats: Seat[] = [];
+      
+      for (const [zone, seatsInZone] of zoneSeats.entries()) {
+        const cat = categoriesMap.get(zone);
+        const price = cat ? cat.price : 100000;
+        const takenLimit = zoneTakenCount.get(zone) || 0;
+        
+        for (let i = 0; i < seatsInZone.length; i++) {
+          const seat = seatsInZone[i];
+          seat.price = price;
+          
+          if (i < takenLimit) {
+            seat.status = "taken";
+          } else {
+            seat.status = "available";
+          }
+          updatedSeats.push(seat);
+        }
+      }
+      
+      for (const seat of seatList) {
+        if (!updatedSeats.find(s => s.id === seat.id)) {
+          updatedSeats.push(seat);
+        }
+      }
+      
+      const seatMap: Record<string, Seat> = {};
+      for (const s of updatedSeats) {
+        seatMap[s.id] = s;
+      }
+      
+      set({ seats: seatMap, selectedSeats: [], loading: false });
+    } catch (error) {
+      console.error("Failed to load seats from backend categories", error);
+      const seatList = generateSeats(concertId);
+      const seatMap: Record<string, Seat> = {};
+      for (const s of seatList) {
+        seatMap[s.id] = s;
+      }
+      set({ seats: seatMap, selectedSeats: [], loading: false });
     }
-    set({ seats: seatMap, selectedSeats: [], loading: false });
   },
 
   selectSeat: (seatId: string) => {

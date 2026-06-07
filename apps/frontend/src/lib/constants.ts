@@ -34,4 +34,4 @@ export const SEAT_STATUS_STYLES: Record<SeatStatus, { opacity: number; cursor: s
 export const HOLD_TIMEOUT_MINUTES = 10;
 export const POLLING_INTERVAL = 10000;
 export const MAX_RETRY_COUNT = 3;
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+export const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;

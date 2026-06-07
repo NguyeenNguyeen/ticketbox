@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.ticketbox.backend.worker.ai.AiWorkerTest
--------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 67.74 s -- in com.ticketbox.backend.worker.ai.AiWorkerTest
