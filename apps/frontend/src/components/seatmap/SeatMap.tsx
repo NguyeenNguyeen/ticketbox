@@ -4,7 +4,8 @@ import { useSeatStore } from "@/stores/useSeatStore";
 import { mockZoneInfo } from "@/mocks/seats";
 import { Seat } from "./Seat";
 import { ZoneLegend } from "./ZoneLegend";
-import { ZONE_COLORS } from "@/lib/constants";
+import { ZONE_COLORS, API_BASE_URL, POLLING_INTERVAL } from "@/lib/constants";
+import { useSSE } from "@/hooks/useSSE";
 import type { ZoneName } from "@/types/seat";
 
 interface SeatMapProps { concertId: string; }
@@ -60,10 +61,26 @@ function getSeatPositions(concertId: string) {
 
 export function SeatMap({ concertId }: SeatMapProps) {
   const loadSeats = useSeatStore((s) => s.loadSeats);
+  const updateSeatStatus = useSeatStore((s) => s.updateSeatStatus);
   const loading = useSeatStore((s) => s.loading);
   const hasSeats = useSeatStore((s) => Object.keys(s.seats).length > 0);
 
-  useEffect(() => { loadSeats(concertId); }, [concertId, loadSeats]);
+  // Initial load and Polling
+  useEffect(() => { 
+    loadSeats(concertId);
+    
+    // Polling interval 10s for total tickets
+    const interval = setInterval(() => {
+      loadSeats(concertId);
+    }, POLLING_INTERVAL);
+    
+    return () => clearInterval(interval);
+  }, [concertId, loadSeats]);
+
+  // Realtime updates via SSE
+  useSSE(`${API_BASE_URL}/concerts/${concertId}/seats/stream`, (event) => {
+    updateSeatStatus(event.seatId, event.status);
+  });
 
   const positions = useMemo(() => getSeatPositions(concertId), [concertId]);
   const zones = useMemo(() => mockZoneInfo(concertId), [concertId]);

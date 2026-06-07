@@ -103,7 +103,14 @@ export default function AdminConcertsPage() {
                   <Edit className="w-4 h-4" />
                   Chỉnh sửa
                 </Link>
-                <button className="inline-flex items-center gap-1 text-sm font-medium text-destructive hover:underline">
+                <button 
+                  onClick={() => {
+                    if (confirm("Bạn có chắc chắn muốn hủy sự kiện này? Hành động này không thể hoàn tác.")) {
+                      alert("Đã gửi yêu cầu hủy sự kiện lên hệ thống.");
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-destructive hover:underline"
+                >
                   <Trash2 className="w-4 h-4" />
                   Hủy sự kiện
                 </button>

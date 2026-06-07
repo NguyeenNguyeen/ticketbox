@@ -17,11 +17,24 @@ function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
+export class ApiError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function request<T>(method: string, url: string, body?: unknown, customHeaders?: Record<string, string>): Promise<T> {
+  if (typeof window !== "undefined" && !navigator.onLine) {
+    throw new ApiError("Không có kết nối Internet. Vui lòng kiểm tra lại mạng.", 0);
+  }
+
   const fullUrl = `${API_BASE_URL}${url}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...getAuthHeader(),
+    ...customHeaders,
   };
 
   try {
@@ -31,22 +44,26 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    if (!res.ok) throw new ApiError(`API error: ${res.status}`, res.status);
     const text = await res.text();
     try {
       return text ? JSON.parse(text) : {};
     } catch {
       return text as unknown as T;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Request failed: ${fullUrl}`, error);
+    // Network errors (like CORS, timeout, unreachable)
+    if (error.name === "TypeError" && error.message === "Failed to fetch") {
+      throw new ApiError("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.", 0);
+    }
     throw error;
   }
 }
 
 export const api = {
-  get: <T>(url: string) => request<T>("GET", url),
-  post: <T>(url: string, body?: unknown) => request<T>("POST", url, body),
-  put: <T>(url: string, body?: unknown) => request<T>("PUT", url, body),
-  delete: <T>(url: string) => request<T>("DELETE", url),
+  get: <T>(url: string, headers?: Record<string, string>) => request<T>("GET", url, undefined, headers),
+  post: <T>(url: string, body?: unknown, headers?: Record<string, string>) => request<T>("POST", url, body, headers),
+  put: <T>(url: string, body?: unknown, headers?: Record<string, string>) => request<T>("PUT", url, body, headers),
+  delete: <T>(url: string, headers?: Record<string, string>) => request<T>("DELETE", url, undefined, headers),
 };

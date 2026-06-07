@@ -93,7 +93,10 @@ export default function TicketPage() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-            <button className="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-hover transition-all">
+            <button 
+              onClick={() => window.print()}
+              className="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-hover transition-all"
+            >
               <Download className="w-5 h-5" />
               Tải vé về máy
             </button>

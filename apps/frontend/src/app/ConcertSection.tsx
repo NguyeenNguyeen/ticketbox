@@ -1,28 +1,11 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { ConcertGrid } from "@/components/concert/ConcertGrid";
 import type { ConcertListItem } from "@/types/concert";
-import { api } from "@/lib/api";
 
-export function ConcertSection() {
-  const [concertList, setConcertList] = useState<ConcertListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ConcertSectionProps {
+  concerts: ConcertListItem[];
+}
 
-  useEffect(() => {
-    async function fetchConcerts() {
-      try {
-        const data = await api.get<ConcertListItem[]>("/concerts");
-        setConcertList(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to load concerts", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchConcerts();
-  }, []);
-
+export function ConcertSection({ concerts }: ConcertSectionProps) {
   return (
     <section id="concerts" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
@@ -33,7 +16,7 @@ export function ConcertSection() {
           Khám phá các concert âm nhạc hot nhất đang chờ bạn. Đặt vé ngay để không bỏ lỡ!
         </p>
       </div>
-      <ConcertGrid concerts={concertList} />
+      <ConcertGrid concerts={concerts} />
     </section>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
+import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, UploadCloud, FileType2, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { Concert } from "@/types/concert";
 
@@ -54,7 +55,32 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
 
   const { fields, append, remove } = useFieldArray({ control, name: "ticketCategories" });
 
+  const [svgFile, setSvgFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
+  const [extractionComplete, setExtractionComplete] = useState(false);
+
+  const handleSvgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSvgFile(e.target.files[0]);
+    }
+  };
+
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPdfFile(e.target.files[0]);
+      // Simulate AI Extraction
+      setIsExtractingPdf(true);
+      setExtractionComplete(false);
+      setTimeout(() => {
+        setIsExtractingPdf(false);
+        setExtractionComplete(true);
+      }, 3000);
+    }
+  };
+
   const onValid = async (data: FormData) => {
+    // We would normally upload svgFile and pdfFile here
     await onSubmit(data as unknown as Record<string, unknown>);
   };
 
@@ -97,6 +123,61 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Bắt đầu</label>
             <input type="time" {...register("showTime")} className={inputClass} />
+          </div>
+        </div>
+      </div>
+
+      {/* File Uploads */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* SVG Upload */}
+        <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer">
+          <input 
+            type="file" 
+            accept=".svg" 
+            onChange={handleSvgChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          />
+          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
+            <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+              <FileType2 className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Sơ đồ ghế (SVG)</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {svgFile ? svgFile.name : "Kéo thả hoặc click để tải lên file .svg"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* PDF Upload */}
+        <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer">
+          <input 
+            type="file" 
+            accept=".pdf" 
+            onChange={handlePdfChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          />
+          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
+            <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+              {isExtractingPdf ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : extractionComplete ? (
+                <CheckCircle2 className="w-6 h-6 text-success" />
+              ) : (
+                <FileText className="w-6 h-6" />
+              )}
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Press Kit Nghệ sĩ (PDF)</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isExtractingPdf 
+                  ? "AI đang phân tích và trích xuất tiểu sử..." 
+                  : extractionComplete 
+                    ? `Đã trích xuất thành công từ ${pdfFile?.name}` 
+                    : "Tải lên hồ sơ PDF để AI sinh tiểu sử tự động"}
+              </p>
+            </div>
           </div>
         </div>
       </div>

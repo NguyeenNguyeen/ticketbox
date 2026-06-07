@@ -88,14 +88,14 @@ ticketbox:
 
     # Public API tier: limits unauthenticated non-auth requests by client IP
     public:
-      capacity: 100
-      refill-tokens: 100
+      capacity: 300
+      refill-tokens: 300
       refill-duration-seconds: 60
 
     # Private API tier: limits authenticated requests by username (from JWT)
     private:
-      capacity: 10
-      refill-tokens: 10
+      capacity: 300
+      refill-tokens: 300
       refill-duration-seconds: 60
 
     # Paths that receive the stricter 'auth' tier instead of 'public' tier

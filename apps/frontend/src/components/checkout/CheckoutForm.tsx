@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
 import { useToast } from "@/components/ui/Toast";
@@ -13,6 +14,19 @@ export function CheckoutForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { holdExpiresAt, paymentMethod, isProcessing, setPaymentMethod, startPayment, completePayment, cancelPayment } = useCartStore();
+
+  // Listen for offline network drops
+  useEffect(() => {
+    const handleOffline = () => {
+      toast({
+        title: "Mất kết nối Internet",
+        description: "Vui lòng kiểm tra lại đường truyền mạng của bạn.",
+        variant: "error",
+      });
+    };
+    window.addEventListener("offline", handleOffline);
+    return () => window.removeEventListener("offline", handleOffline);
+  }, [toast]);
 
   const handlePay = async () => {
     if (!paymentMethod) { toast({ title: "Vui lòng chọn phương thức thanh toán", variant: "error" }); return; }
@@ -41,11 +55,40 @@ export function CheckoutForm() {
 
         const key = zoneCounts.size > 1 ? `${baseKey}-${category.id}` : baseKey;
 
-        const order = await api.post<any>("/tickets/purchase", {
-          categoryId: category.id,
-          quantity,
-          idempotencyKey: key,
-        });
+        // Exponential backoff retry logic
+        let order = null;
+        let retries = 0;
+        const maxRetries = 3;
+
+        while (retries <= maxRetries) {
+          try {
+            order = await api.post<any>("/tickets/purchase", {
+              categoryId: category.id,
+              quantity,
+            }, { "Idempotency-Key": key });
+            break; // Success, exit retry loop
+          } catch (error: any) {
+            const status = error.status;
+            
+            if (status === 400) {
+              throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
+            }
+            
+            if (status >= 500 && retries < maxRetries) {
+              retries++;
+              const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
+              console.warn(`Payment failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            }
+            
+            if (status >= 500 && retries === maxRetries) {
+              throw new Error("Cổng thanh toán đang bảo trì hoặc quá tải. Giao dịch đang được xử lý ngầm, bạn vẫn có thể xem vé ở lịch sử giao dịch sau vài phút.");
+            }
+            
+            throw error;
+          }
+        }
 
         lastOrder = order;
       }

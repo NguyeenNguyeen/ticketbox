@@ -1,7 +1,7 @@
 "use client";
 
-import { Users, Search, Download } from "lucide-react";
-import { useState } from "react";
+import { Users, Search, Download, UploadCloud, X, CheckCircle2, AlertTriangle } from "lucide-react";
+import { useState, useRef } from "react";
 
 interface GuestEntry {
   id: string;
@@ -70,8 +70,54 @@ const mockGuests: GuestEntry[] = [
 export default function AdminGuestsPage() {
   const [search, setSearch] = useState("");
   const [filterConcert, setFilterConcert] = useState("all");
+  const [isImporting, setIsImporting] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [previewData, setPreviewData] = useState<{row: number, data: string[], error: string}[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const concerts = [...new Set(mockGuests.map((g) => g.concert))];
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCsvFile(file);
+      
+      // Simple manual CSV parsing for demo
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        if (text) {
+          const lines = text.split('\n').filter(line => line.trim().length > 0);
+          const preview = lines.slice(1, 6).map((line, index) => {
+            const cols = line.split(',');
+            let error = "";
+            // Mock validation: check if email is missing or invalid
+            if (cols.length < 2 || !cols[1]?.includes('@')) {
+              error = "Email không hợp lệ hoặc bị thiếu";
+            } else if (cols.length < 3 || cols[2]?.length < 9) {
+              error = "Số điện thoại không hợp lệ";
+            }
+            return { row: index + 2, data: cols, error };
+          });
+          setPreviewData(preview);
+          setIsImporting(true);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const cancelImport = () => {
+    setIsImporting(false);
+    setCsvFile(null);
+    setPreviewData([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const confirmImport = () => {
+    alert("Đã gửi yêu cầu import danh sách khách mời!");
+    cancelImport();
+  };
 
   const filtered = mockGuests.filter((g) => {
     const matchSearch =
@@ -82,10 +128,38 @@ export default function AdminGuestsPage() {
     return matchSearch && matchConcert;
   });
 
-  const statusMap = {
+  const statusMap: Record<string, { label: string; color: string }> = {
     confirmed: { label: "Đã xác nhận", color: "bg-success/10 text-success" },
     pending: { label: "Chờ xác nhận", color: "bg-warning/10 text-warning" },
     checked_in: { label: "Đã check-in", color: "bg-blue-50 text-blue-600" },
+  };
+
+  const handleExportCsv = () => {
+    if (filtered.length === 0) {
+      alert("Không có dữ liệu để xuất");
+      return;
+    }
+
+    // Create CSV header
+    const headers = ["Họ tên", "Email", "SĐT", "Sự kiện", "Nhãn hàng", "Trạng thái"];
+    const rows = filtered.map(g => [
+      `"${g.name}"`, 
+      `"${g.email}"`, 
+      `"${g.phone}"`, 
+      `"${g.concert}"`, 
+      `"${g.sponsor}"`, 
+      `"${statusMap[g.status]?.label || g.status}"`
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `khach_moi_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -101,11 +175,77 @@ export default function AdminGuestsPage() {
             Danh sách khách mời được import từ CSV nhãn hàng tài trợ
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-white text-foreground font-medium px-5 py-2.5 rounded-xl border border-border hover:bg-secondary transition-all">
-          <Download className="w-5 h-5" />
-          Xuất CSV
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-2 bg-primary text-white font-medium px-5 py-2.5 rounded-xl hover:bg-primary-hover transition-all shadow-sm"
+          >
+            <UploadCloud className="w-5 h-5" />
+            Import CSV
+          </button>
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+          />
+          <button 
+            onClick={handleExportCsv}
+            className="inline-flex items-center gap-2 bg-white text-foreground font-medium px-5 py-2.5 rounded-xl border border-border hover:bg-secondary transition-all"
+          >
+            <Download className="w-5 h-5" />
+            Xuất CSV
+          </button>
+        </div>
       </div>
+
+      {/* Import Preview Modal / Section */}
+      {isImporting && (
+        <div className="bg-white rounded-2xl border border-border overflow-hidden mb-8 shadow-sm animate-fade-in relative">
+          <button onClick={cancelImport} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+          <div className="p-6 border-b border-border bg-secondary/30">
+            <h2 className="text-lg font-bold">Xem trước dữ liệu Import</h2>
+            <p className="text-sm text-muted-foreground">Tệp: {csvFile?.name}</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-secondary/50 border-b border-border">
+                  <th className="text-left px-6 py-3 font-semibold">Dòng</th>
+                  <th className="text-left px-6 py-3 font-semibold">Dữ liệu</th>
+                  <th className="text-left px-6 py-3 font-semibold">Kiểm tra</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.map((row, i) => (
+                  <tr key={i} className={`border-b border-border ${row.error ? 'bg-destructive/5' : ''}`}>
+                    <td className="px-6 py-3 text-muted-foreground">#{row.row}</td>
+                    <td className="px-6 py-3 font-mono text-xs">{row.data.join(', ')}</td>
+                    <td className="px-6 py-3">
+                      {row.error ? (
+                        <span className="flex items-center gap-1 text-destructive font-medium">
+                          <AlertTriangle className="w-4 h-4" /> {row.error}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-success font-medium">
+                          <CheckCircle2 className="w-4 h-4" /> Hợp lệ
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-6 bg-secondary/30 flex justify-end gap-3">
+            <button onClick={cancelImport} className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-xl transition-colors">Hủy bỏ</button>
+            <button onClick={confirmImport} className="px-6 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-hover shadow-sm transition-all">Xác nhận Import</button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">

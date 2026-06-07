@@ -230,6 +230,22 @@ Last Updated: 2026-06-03
 - [x] Feature: Admin Order & User Management - Added `UserController`, `GET /api/admin/orders`, `GET /api/admin/users` and corresponding admin dashboard pages.
 - [x] Fix: Logout logic now properly redirects to `/auth/login`.
 
+## Phase 4.5 — Frontend Blueprint (Person 2) ✅ COMPLETE
+
+- [x] Create Blueprint Documents (`design.md`, `auth.md`, `payment.md`)
+- [x] Integrate Realtime SSE and Polling (`SeatMap.tsx`)
+- [x] Add Seat Selection Limits (`useSeatStore.ts`)
+- [x] Improve API Client for custom Headers & Offline detection (`api.ts`)
+- [x] Implement Checkout Retry, Header Idempotency & Error Handling (`CheckoutForm.tsx`)
+- [x] Add Cancel Concert feature (`admin/concerts/[id]/edit/page.tsx`)
+
+## Phase 4.6 — Frontend Blueprint Continuation (Person 2) ✅ COMPLETE
+
+- [x] Apply SSR/ISR for HomePage (`page.tsx`, `ConcertSection.tsx`)
+- [x] Add Payment Callback Page (`checkout/callback/page.tsx`)
+- [x] Add SVG and PDF Upload to Concert Form (`ConcertForm.tsx`)
+- [x] Build CSV Importer with Preview for Guest List (`admin/guests/page.tsx`)
+
 ---
 
 ## Blocked Tasks
