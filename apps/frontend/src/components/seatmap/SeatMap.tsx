@@ -61,14 +61,14 @@ function getSeatPositions(concertId: string) {
 export function SeatMap({ concertId }: SeatMapProps) {
   const loadSeats = useSeatStore((s) => s.loadSeats);
   const loading = useSeatStore((s) => s.loading);
-  const seatKeys = useSeatStore((s) => Object.keys(s.seats));
+  const hasSeats = useSeatStore((s) => Object.keys(s.seats).length > 0);
 
   useEffect(() => { loadSeats(concertId); }, [concertId, loadSeats]);
 
   const positions = useMemo(() => getSeatPositions(concertId), [concertId]);
   const zones = useMemo(() => mockZoneInfo(concertId), [concertId]);
 
-  if (loading || seatKeys.length === 0) {
+  if (loading || !hasSeats) {
     return <div className="flex items-center justify-center h-96 text-muted-foreground">Đang tải sơ đồ chỗ ngồi...</div>;
   }
 

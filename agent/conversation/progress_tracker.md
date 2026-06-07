@@ -83,6 +83,7 @@
 - [x] Complete purchase flow integration via `/api/tickets/purchase`
 - [x] Real QR code ticket lookup via `/api/tickets/{id}`
 - [x] Fixed Spring Boot PostgreSQL default authentication fallback from postgres to ticketbox
+- [x] Fixed React useSyncExternalStore infinite loop in SeatMap.tsx by removing array reference recreation from Zustand selector
 
 ## Remaining Work
 - [ ] Real SSE connection for seat updates (requires active backend event streams)
