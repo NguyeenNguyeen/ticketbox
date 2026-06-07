@@ -33,7 +33,7 @@ public class ConcertController {
             dto.setId(c.getId().toString());
             dto.setTitle(c.getName());
             dto.setVenue(c.getLocation());
-            dto.setDate(c.getStartTime().toString());
+            dto.setDate(c.getStartTime() != null ? c.getStartTime().toString() : "");
             // Map the sample concert names to their banner URLs
             if (c.getName().contains("Anh Trai Say Hi")) dto.setBannerUrl("/concert-anh-trai-say-hi.png");
             else if (c.getName().contains("Anh Trai Vượt Ngàn")) dto.setBannerUrl("/concert-anh-trai-vuot-ngan.png");
@@ -96,7 +96,7 @@ public class ConcertController {
         
         dto.setVenue(c.getLocation());
         dto.setAddress(c.getLocation());
-        dto.setDate(c.getStartTime().toString());
+        dto.setDate(c.getStartTime() != null ? c.getStartTime().toString() : "");
         dto.setDoors("18:00");
         dto.setShowTime("19:30");
         
