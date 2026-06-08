@@ -1,69 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/stores/useCartStore";
-import { api } from "@/lib/api";
+import { useSeatStore } from "@/stores/useSeatStore";
 
 export default function PaymentCallbackPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
-  const [orderId, setOrderId] = useState<string | null>(null);
-
+  
   const clearCart = useCartStore((s) => s.clearCart);
+  const clearSeats = useSeatStore((s) => s.clearSelection);
 
   useEffect(() => {
     // VNPAY uses vnp_ResponseCode (00 is success)
     // MoMo uses resultCode (0 is success)
-    // Demo uses generic 'status=success'
+    // We also support a generic 'status=success' for testing
+    const searchParams = new URLSearchParams(window.location.search);
     const vnpResponse = searchParams.get("vnp_ResponseCode");
-    const vnpTxnRef = searchParams.get("vnp_TxnRef");
     const momoResult = searchParams.get("resultCode");
     const genericStatus = searchParams.get("status");
 
+    // Simulate checking with backend
     const verifyPayment = async () => {
       try {
-        const isSuccess =
-          vnpResponse === "00" ||
-          momoResult === "0" ||
+        // Just checking params for now
+        const isSuccess = 
+          vnpResponse === "00" || 
+          momoResult === "0" || 
           genericStatus === "success";
 
         if (isSuccess) {
-          // Notify backend that payment was confirmed so it can finalize the order
-          // (In production this would be a server-to-server webhook, but for demo
-          // we call the verify endpoint from the client with the transaction ref)
-          try {
-            await api.post<any>("/payments/verify", {
-              provider: vnpResponse !== null ? "VNPAY" : "MOMO",
-              transactionRef: vnpTxnRef || searchParams.get("transactionId") || "DEMO",
-              responseCode: vnpResponse || momoResult || "00",
-            });
-          } catch (verifyErr) {
-            // Non-fatal: payment was already finalized server-side during purchase
-            console.warn("Payment verify call failed (non-fatal):", verifyErr);
-          }
-
-          setOrderId(vnpTxnRef);
           setStatus("success");
           clearCart();
+          clearSeats();
         } else {
           setStatus("error");
-          const codeMap: Record<string, string> = {
-            "24": "Khách hàng hủy giao dịch.",
-            "11": "Đã hết hạn thanh toán.",
-            "12": "Thẻ/Tài khoản bị khóa.",
-            "75": "Ngân hàng đang bảo trì. Vui lòng thử lại sau.",
-          };
-          const code = vnpResponse || momoResult || "";
-          setErrorMessage(
-            codeMap[code] || "Giao dịch bị từ chối hoặc đã bị huỷ bởi người dùng."
-          );
+          setErrorMessage("Giao dịch bị từ chối hoặc đã bị huỷ bởi người dùng.");
         }
       } catch (err) {
         setStatus("error");
@@ -77,7 +55,7 @@ export default function PaymentCallbackPage() {
       setStatus("error");
       setErrorMessage("Không tìm thấy thông tin giao dịch hợp lệ.");
     }
-  }, [searchParams, clearCart]);
+  }, [clearCart, clearSeats]);
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">
@@ -87,7 +65,7 @@ export default function PaymentCallbackPage() {
           {status === "loading" && (
             <div className="py-8">
               <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto mb-6" />
-              <h1 className="text-2xl font-bold mb-2">Đang xác nhận thanh toán</h1>
+              <h1 className="text-2xl font-bold mb-2">Đang xử lý thanh toán</h1>
               <p className="text-muted-foreground">
                 Vui lòng không đóng trình duyệt trong lúc này...
               </p>
@@ -126,7 +104,9 @@ export default function PaymentCallbackPage() {
                 <XCircle className="w-10 h-10 text-destructive" />
               </div>
               <h1 className="text-3xl font-bold mb-4">Thanh toán thất bại</h1>
-              <p className="text-muted-foreground mb-8">{errorMessage}</p>
+              <p className="text-muted-foreground mb-8">
+                {errorMessage}
+              </p>
               <div className="space-y-3">
                 <button
                   onClick={() => router.push("/checkout")}

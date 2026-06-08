@@ -29,74 +29,96 @@ export function CheckoutForm() {
   }, [toast]);
 
   const handlePay = async () => {
-    if (!paymentMethod) {
-      toast({ title: "Vui lòng chọn phương thức thanh toán", variant: "error" });
-      return;
-    }
+    if (!paymentMethod) { toast({ title: "Vui lòng chọn phương thức thanh toán", variant: "error" }); return; }
     startPayment();
     toast({ title: "Đang xử lý thanh toán...", description: "Vui lòng không đóng trang", variant: "default" });
 
     try {
+      const concertId = useCartStore.getState().concertId;
       const items = useCartStore.getState().items;
-      if (items.length === 0) throw new Error("Giỏ hàng trống");
 
-      // Generate one base key, then derive per-item keys to ensure each item
-      // has its own idempotency key while still being bound to this checkout session.
+      const categories = await api.get<any[]>(`/concerts/${concertId}/categories`);
+
+      const zoneCounts = new Map<string, number>();
+      for (const item of items) {
+        zoneCounts.set(item.zone, (zoneCounts.get(item.zone) || 0) + 1);
+      }
+
       const baseKey = useCartStore.getState().idempotencyKey || generateIdempotencyKey();
+      let lastOrder: any = null;
 
-      let lastPaymentUrl = "";
+      for (const [zone, quantity] of zoneCounts.entries()) {
+        const category = categories.find((c) => c.name.toUpperCase() === zone.toUpperCase());
+        if (!category) {
+          throw new Error(`Không tìm thấy hạng vé cho khu vực ${zone}`);
+        }
 
-      // Purchase each item sequentially (one category at a time)
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const itemKey = `${baseKey}-item${i}-cat${item.categoryId}`;
+        const key = zoneCounts.size > 1 ? `${baseKey}-${category.id}` : baseKey;
 
+        // Exponential backoff retry logic
+        let order = null;
         let retries = 0;
         const maxRetries = 3;
-        let purchased = false;
 
-        while (retries <= maxRetries && !purchased) {
+        while (retries <= maxRetries) {
           try {
-            const response = await api.post<any>("/tickets/purchase", {
-              categoryId: item.categoryId,
-              quantity: item.quantity,
-              idempotencyKey: itemKey,
-            });
-
-            // Use the payment URL from the last successful item (they're all the same mock gateway)
-            lastPaymentUrl =
-              response.paymentUrl ||
-              `/payment/callback?vnp_ResponseCode=00&vnp_TxnRef=${response.id || "DEMO"}`;
-            purchased = true;
+            order = await api.post<any>("/tickets/purchase", {
+              categoryId: category.id,
+              quantity,
+              idempotencyKey: key,
+            }, { "Idempotency-Key": key });
+            break; // Success, exit retry loop
           } catch (error: any) {
             const status = error.status;
+            const backendMessage = error.message || "Có lỗi xảy ra. Vui lòng thử lại.";
+
             if (status === 400) {
-              // Out of stock or per-user limit exceeded — abort everything
-              throw new Error(
-                error.message?.includes("limit")
-                  ? `Bạn đã đạt giới hạn số vé cho loại "${item.name}". Vui lòng giảm số lượng.`
-                  : `Rất tiếc, loại vé "${item.name}" vừa hết. Vui lòng chọn số lượng khác.`
-              );
+              const lowStockPattern = /vé này vừa được mua mất|not enough tickets available|oversell prevented/i;
+              if (lowStockPattern.test(backendMessage)) {
+                throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
+              }
+              // Show the actual backend message for other business failures.
+              throw new Error(backendMessage);
             }
+
             if (status >= 500 && retries < maxRetries) {
               retries++;
-              // Exponential backoff: 2s, 4s, 8s
-              await new Promise((resolve) => setTimeout(resolve, Math.pow(2, retries) * 1000));
+              const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
+              console.warn(`Payment failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+              await new Promise(resolve => setTimeout(resolve, delay));
               continue;
             }
+
+            if (status >= 500 && retries === maxRetries) {
+              throw new Error("Cổng thanh toán đang bảo trì hoặc quá tải. Giao dịch đang được xử lý ngầm, bạn vẫn có thể xem vé ở lịch sử giao dịch sau vài phút.");
+            }
+
             throw error;
           }
         }
+
+        lastOrder = order;
       }
 
-      // Redirect to payment gateway after all items are reserved
-      window.location.href = lastPaymentUrl;
+      completePayment();
+      toast({ title: "Thanh toán thành công! 🎉", variant: "success" });
+
+      if (lastOrder && lastOrder.id) {
+        const tickets = await api.get<any[]>(`/tickets/order/${lastOrder.id}`);
+        if (tickets && tickets.length > 0) {
+          router.push(`/tickets/${tickets[0].id}`);
+        } else {
+          router.push("/");
+        }
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
       cancelPayment();
       console.error(error);
       toast({
-        title: "Khởi tạo thanh toán thất bại",
-        description: error.message || "Có lỗi xảy ra. Vui lòng thử lại.",
+        title: "Thanh toán thất bại",
+        description: error.message || "Có lỗi xảy ra trong quá trình đặt vé. Vui lòng kiểm tra lại.",
         variant: "error",
       });
     }
