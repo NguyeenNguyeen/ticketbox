@@ -50,6 +50,9 @@ public class TicketPurchaseService {
     @Lazy
     private TicketPurchaseService self;
 
+    @Autowired
+    private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
     /**
      * Handles ticket purchase with Concurrency, Idempotency and payment protection.
      */
@@ -156,10 +159,27 @@ public class TicketPurchaseService {
         order = orderRepository.save(order);
 
         TicketFactory factory = ticketFactoryProvider.getFactory(category.getName());
+        java.util.List<Long> ticketIds = new java.util.ArrayList<>();
         for (int i = 0; i < quantity; i++) {
             Ticket ticket = factory.createTicket(category, user, order);
-            ticketRepository.save(ticket);
+            ticket = ticketRepository.save(ticket);
+            ticketIds.add(ticket.getId());
         }
+
+        String jobId = java.util.UUID.randomUUID().toString();
+        com.ticketbox.backend.dto.async.EmailTaskMessage message = new com.ticketbox.backend.dto.async.EmailTaskMessage(
+                jobId,
+                order.getId(),
+                user.getId(),
+                user.getEmail(),
+                ticketIds,
+                order.getIdempotencyKey()
+        );
+        rabbitTemplate.convertAndSend(
+                com.ticketbox.backend.config.RabbitMQConfig.EXCHANGE_COMMANDS,
+                com.ticketbox.backend.config.RabbitMQConfig.ROUTING_KEY_EMAIL,
+                message
+        );
 
         return order;
     }

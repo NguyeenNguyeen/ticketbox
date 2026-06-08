@@ -14,7 +14,7 @@ Last Updated: 2026-06-04 (Post-Payment Protection Design)
 - ✅ RabbitMQ Validation: Validation failed (`12_5_async_infrastructure_validation.md`), then fixed and re-validated (`12_6_dlq_routing_fix.md`)
 - ✅ CSV Worker: Fully validated (`16_csv_worker_validation.md`)
 - ✅ AI Worker: Implemented and tested (`18_ai_worker_implementation.md`)
-- ✅ Email Worker: Implemented (`24_email_worker_implementation.md`) and Reviewed (`25_email_worker_review.md`), pending remediation.
+- ✅ Email Worker: Implemented (`24_email_worker_implementation.md`), Reviewed (`25_email_worker_review.md`), and Remediated with missing producer logic (`28_email_delivery_fix.md`).
 
 Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `RepublishMessageRecoverer` misrouting bug has been fixed, and DLQ message retention works correctly without message loss. The infrastructure is now approved for worker implementation.
 

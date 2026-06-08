@@ -23,8 +23,10 @@ public class BrevoEmailClient implements EmailProviderClient {
     @Value("${ticketbox.email.brevo.key}")
     private String apiKey;
 
+    @Value("${ticketbox.email.from}")
+    private String senderEmail;
+
     private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
-    private static final String SENDER_EMAIL = "tickets@ticketbox.com";
     private static final String SENDER_NAME = "TicketBox";
 
     public BrevoEmailClient(RestTemplate restTemplate) {
@@ -43,7 +45,7 @@ public class BrevoEmailClient implements EmailProviderClient {
         String base64Attachment = Base64.getEncoder().encodeToString(attachment);
 
         Map<String, Object> body = Map.of(
-                "sender", Map.of("name", SENDER_NAME, "email", SENDER_EMAIL),
+                "sender", Map.of("name", "TicketBox", "email", senderEmail),
                 "to", List.of(Map.of("email", to)),
                 "subject", subject,
                 "htmlContent", htmlBody,

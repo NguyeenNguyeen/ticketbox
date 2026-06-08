@@ -23,8 +23,10 @@ public class ResendEmailClient implements EmailProviderClient {
     @Value("${ticketbox.email.resend.key}")
     private String apiKey;
 
+    @Value("${ticketbox.email.from}")
+    private String senderEmail;
+
     private static final String RESEND_API_URL = "https://api.resend.com/emails";
-    private static final String SENDER_EMAIL = "tickets@ticketbox.com"; // Configure as needed
 
     public ResendEmailClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -42,7 +44,7 @@ public class ResendEmailClient implements EmailProviderClient {
         String base64Attachment = Base64.getEncoder().encodeToString(attachment);
 
         Map<String, Object> body = Map.of(
-                "from", SENDER_EMAIL,
+                "from", senderEmail,
                 "to", List.of(to),
                 "subject", subject,
                 "html", htmlBody,

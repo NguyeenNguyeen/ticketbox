@@ -130,6 +130,7 @@ ticketbox:
 
   email:
     provider: resend # default to resend
+    from: ${EMAIL_FROM:onboarding@resend.dev}
     resend:
       key: ${RESEND_API_KEY:}
     brevo:
