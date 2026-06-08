@@ -7,7 +7,7 @@ import type { ConcertListItem } from "@/types/concert";
 async function getConcerts(): Promise<ConcertListItem[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/concerts`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) {
       console.error("Failed to fetch concerts:", res.status, res.statusText);

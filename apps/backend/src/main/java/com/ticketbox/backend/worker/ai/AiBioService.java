@@ -20,6 +20,7 @@ public class AiBioService {
     private final AiResponseValidator aiResponseValidator;
     private final ConcertRepository concertRepository;
     private final AiJobTracker aiJobTracker;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     @Transactional
     public void processBiographyGeneration(AiBioMessage message) {
@@ -37,10 +38,13 @@ public class AiBioService {
             boolean overwrite = message.getMetadata() != null && 
                                 Boolean.TRUE.equals(message.getMetadata().get("overwrite"));
                                 
-            if (concert.getArtistBiography() != null && !concert.getArtistBiography().isEmpty() && !overwrite) {
-                log.warn("Job {}: Concert {} already has a biography. Skipping overwrite.", message.getJobId(), concert.getId());
-                aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "COMPLETED", "Skipped: Already exists");
-                return;
+            if (concert.getArtists() != null && !concert.getArtists().isEmpty()) {
+                com.ticketbox.backend.entity.Artist firstArtist = concert.getArtists().iterator().next();
+                if (firstArtist.getBio() != null && !firstArtist.getBio().isEmpty() && !overwrite) {
+                    log.warn("Job {}: Concert {} already has a biography. Skipping overwrite.", message.getJobId(), concert.getId());
+                    aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "COMPLETED", "Skipped: Already exists");
+                    return;
+                }
             }
 
             // 3. Extract Text from PDF
@@ -56,8 +60,23 @@ public class AiBioService {
             String biography = aiResponseValidator.validateAndExtractBiography(rawAiResponse);
             
             // 7. Save to DB
-            concert.setArtistBiography(biography);
+            if (concert.getArtists() != null && !concert.getArtists().isEmpty()) {
+                com.ticketbox.backend.entity.Artist firstArtist = concert.getArtists().iterator().next();
+                firstArtist.setBio(biography);
+            } else {
+                com.ticketbox.backend.entity.Artist newArtist = new com.ticketbox.backend.entity.Artist();
+                newArtist.setName("Nghệ sĩ chính");
+                newArtist.setBio(biography);
+                concert.getArtists().add(newArtist);
+            }
             concertRepository.save(concert);
+            
+            // Clear cache so frontend sees the updated artists immediately
+            org.springframework.cache.Cache concertsCache = cacheManager.getCache("concerts");
+            if (concertsCache != null) concertsCache.evict(concert.getId());
+            
+            org.springframework.cache.Cache listCache = cacheManager.getCache("concertsList");
+            if (listCache != null) listCache.clear();
             
             // 8. Mark Complete
             aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "COMPLETED", null);

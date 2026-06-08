@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Guest {
+public class Guest implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +30,15 @@ public class Guest {
 
     @Column(nullable = false)
     private String fullName;
+    
+    private String phone;
+    
+    private String sponsor;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    @Builder.Default
+    private GuestStatus status = GuestStatus.PENDING;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

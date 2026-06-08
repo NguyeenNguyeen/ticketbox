@@ -1,18 +1,46 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ConcertForm } from "@/components/admin/ConcertForm";
-import { mockConcerts } from "@/mocks/concerts";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import type { Concert } from "@/types/concert";
 
 export default function EditConcertPage() {
   const params = useParams();
   const router = useRouter();
   const concertId = params.id as string;
-  const concert = mockConcerts.find((c) => c.id === concertId);
+
+  const [concert, setConcert] = useState<Concert | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchConcert() {
+      try {
+        const data = await api.get<Concert>(`/concerts/${concertId}`);
+        setConcert(data);
+      } catch (err) {
+        console.error("Failed to load concert", err);
+        toast({ title: "Lỗi", description: "Không thể tải thông tin sự kiện", variant: "error" });
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (concertId) fetchConcert();
+  }, [concertId]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Đang tải thông tin sự kiện...</p>
+      </div>
+    );
+  }
 
   if (!concert) {
     return (
@@ -25,19 +53,21 @@ export default function EditConcertPage() {
     );
   }
 
-  const { toast } = useToast();
-
   const handleSubmit = async (data: Record<string, unknown>) => {
-    console.log("Updating concert:", concertId, data);
-    await new Promise((res) => setTimeout(res, 1000));
-    router.push("/admin/concerts");
+    const res = await api.put<{ id: string }>(`/admin/concerts/${concertId}`, data);
+    toast({ title: "Cập nhật thành công", variant: "success" });
+    return res?.id || concertId;
   };
 
   const handleCancel = async () => {
-    if (!window.confirm("Bạn có chắc chắn muốn huỷ/hoãn sự kiện này không? Hành động này không thể hoàn tác.")) {
+    if (
+      !window.confirm(
+        "Bạn có chắc chắn muốn huỷ/hoãn sự kiện này không? Hành động này không thể hoàn tác."
+      )
+    ) {
       return;
     }
-    
+
     try {
       await api.delete(`/admin/concerts/${concertId}`);
       toast({ title: "Đã huỷ sự kiện thành công", variant: "success" });
@@ -62,8 +92,8 @@ export default function EditConcertPage() {
           <h1 className="text-3xl font-bold mb-2">Chỉnh sửa sự kiện</h1>
           <p className="text-muted-foreground">{concert.title}</p>
         </div>
-        
-        <button 
+
+        <button
           onClick={handleCancel}
           className="px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl text-sm font-medium transition-colors"
         >

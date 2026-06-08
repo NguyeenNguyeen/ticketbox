@@ -65,7 +65,7 @@ public class TicketPurchaseService {
             order = self.reserveTickets(user, categoryId, quantity, idempotencyKey);
         } catch (Exception e) {
             redisService.releaseLock("lock:purchase:" + user.getId() + ":" + categoryId);
-            throw e; // e.g. IllegalStateException if oversold
+            throw e; // e.g. IllegalStateException if oversold or per-user limit exceeded
         }
 
         // Phase B: Process Payment (No Database Transaction, External I/O)
@@ -99,6 +99,17 @@ public class TicketPurchaseService {
 
             if (category.getAvailableQuantity() < quantity) {
                 throw new IllegalStateException("Not enough tickets available. Oversell prevented.");
+            }
+
+            // Per-user limit enforcement
+            int maxPerUser = getMaxPerUser(category.getName());
+            int alreadyPurchased = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
+                    user.getId(), categoryId, OrderStatus.COMPLETED);
+            if (alreadyPurchased + quantity > maxPerUser) {
+                throw new IllegalStateException(
+                    "Purchase limit exceeded. You can only buy " + maxPerUser +
+                    " tickets of type " + category.getName() + " per account. " +
+                    "You have already purchased " + alreadyPurchased + ".");
             }
 
             // Update quantity
@@ -177,5 +188,12 @@ public class TicketPurchaseService {
 
         orderStateContext.cancelOrder(order);
         return orderRepository.save(order);
+    }
+
+    private int getMaxPerUser(String categoryName) {
+        String upper = categoryName.toUpperCase();
+        if (upper.contains("SVIP")) return 2;
+        if (upper.contains("VIP")) return 2;
+        return 4;
     }
 }

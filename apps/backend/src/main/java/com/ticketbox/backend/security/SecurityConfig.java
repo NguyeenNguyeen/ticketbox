@@ -52,10 +52,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/concerts/**").permitAll()
+                // Concert listing & details are public; admin CRUD is under /api/admin/concerts
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/concerts/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ORGANIZER")
                 .requestMatchers("/api/checker/**").hasRole("CHECKER")
-                .requestMatchers("/api/tickets/purchase").hasRole("CUSTOMER")
+                // Purchase requires authentication (any role: CUSTOMER or ORGANIZER for testing)
+                .requestMatchers("/api/tickets/purchase").authenticated()
+                // Payment verification endpoint — called by frontend after payment callback
+                .requestMatchers("/api/payments/**").authenticated()
                 .anyRequest().authenticated()
             );
 

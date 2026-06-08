@@ -1,15 +1,36 @@
 "use client";
 
-import { mockConcerts } from "@/mocks/concerts";
+import { useEffect, useState } from "react";
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from "@/lib/utils";
 import { Plus, Search, Calendar, MapPin, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import type { ConcertListItem } from "@/types/concert";
 
 export default function AdminConcertsPage() {
   const [search, setSearch] = useState("");
-  const concerts = mockConcerts.filter((c) =>
+  const [allConcerts, setAllConcerts] = useState<ConcertListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchConcerts = async () => {
+    try {
+      const data = await api.get<ConcertListItem[]>("/concerts");
+      setAllConcerts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch concerts", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConcerts();
+  }, []);
+
+  const concerts = allConcerts.filter((c) =>
     c.title.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -84,14 +105,9 @@ export default function AdminConcertsPage() {
 
               {/* Ticket summary */}
               <div className="flex flex-wrap gap-2 mt-3">
-                {concert.ticketCategories.map((tc) => (
-                  <span
-                    key={tc.id}
-                    className="text-xs bg-secondary px-2 py-1 rounded-lg"
-                  >
-                    {tc.name}: {formatCurrency(tc.price)} ({tc.availableQuantity}/{tc.totalQuantity})
-                  </span>
-                ))}
+                <span className="text-xs bg-secondary px-2 py-1 rounded-lg">
+                  Giá từ: {formatCurrency(concert.priceFrom || 0)}
+                </span>
               </div>
 
               {/* Actions */}
@@ -104,9 +120,15 @@ export default function AdminConcertsPage() {
                   Chỉnh sửa
                 </Link>
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     if (confirm("Bạn có chắc chắn muốn hủy sự kiện này? Hành động này không thể hoàn tác.")) {
-                      alert("Đã gửi yêu cầu hủy sự kiện lên hệ thống.");
+                      try {
+                        await api.delete(`/admin/concerts/${concert.id}`);
+                        toast({ title: "Đã hủy sự kiện thành công", variant: "success" });
+                        fetchConcerts();
+                      } catch (err: any) {
+                        toast({ title: "Lỗi", description: err.message || "Không thể hủy sự kiện", variant: "error" });
+                      }
                     }
                   }}
                   className="inline-flex items-center gap-1 text-sm font-medium text-destructive hover:underline"

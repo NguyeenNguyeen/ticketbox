@@ -18,17 +18,17 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-3">Về chúng tôi</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-primary transition-colors">Giới thiệu</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Liên hệ</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Tuyển dụng</Link></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">Giới thiệu</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Liên hệ</Link></li>
+              <li><Link href="/careers" className="hover:text-primary transition-colors">Tuyển dụng</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-3">Chính sách</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-primary transition-colors">Điều khoản sử dụng</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Chính sách bảo mật</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Chính sách hoàn vé</Link></li>
+              <li><Link href="/terms" className="hover:text-primary transition-colors">Điều khoản sử dụng</Link></li>
+              <li><Link href="/privacy" className="hover:text-primary transition-colors">Chính sách bảo mật</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-primary transition-colors">Chính sách hoàn vé</Link></li>
             </ul>
           </div>
         </div>

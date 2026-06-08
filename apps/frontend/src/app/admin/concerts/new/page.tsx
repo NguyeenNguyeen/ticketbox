@@ -4,15 +4,17 @@ import { ConcertForm } from "@/components/admin/ConcertForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 export default function NewConcertPage() {
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    // Mock API call
-    console.log("Creating concert:", data);
-    await new Promise((res) => setTimeout(res, 1000));
-    router.push("/admin/concerts");
+    const res = await api.post<{ id: string }>("/admin/concerts", data);
+    toast({ title: "Tạo sự kiện thành công!", variant: "success" });
+    return res?.id || "1";
   };
 
   return (

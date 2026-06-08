@@ -4,10 +4,9 @@ export type OrderStatus = 'PENDING' | 'PAYING' | 'COMPLETED' | 'CANCELLED' | 'EX
 export type PaymentMethod = 'VNPAY' | 'MOMO';
 
 export interface OrderItem {
-  seatId: string;
-  zone: string;
-  row: string;
-  number: number;
+  categoryId: number;
+  name: string;
+  quantity: number;
   price: number;
 }
 

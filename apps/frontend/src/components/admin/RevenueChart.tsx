@@ -2,20 +2,15 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 
-const data = [
-  { day: "T2", revenue: 320000000 },
-  { day: "T3", revenue: 450000000 },
-  { day: "T4", revenue: 280000000 },
-  { day: "T5", revenue: 520000000 },
-  { day: "T6", revenue: 680000000 },
-  { day: "T7", revenue: 410000000 },
-  { day: "CN", revenue: 190000000 },
-];
+export function RevenueChart({ data }: { data: { day: string; revenue: number }[] }) {
+  const chartData = data.length > 0 ? data : [
+    { day: "T2", revenue: 0 }, { day: "T3", revenue: 0 }, { day: "T4", revenue: 0 },
+    { day: "T5", revenue: 0 }, { day: "T6", revenue: 0 }, { day: "T7", revenue: 0 }, { day: "CN", revenue: 0 }
+  ];
 
-export function RevenueChart() {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
+      <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
         <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="#94a3b8" />
         <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v: number) => `${(v / 1000000).toFixed(0)}M`} />

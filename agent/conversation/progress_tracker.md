@@ -13,6 +13,7 @@
 - [x] Create constants (zone colors, labels, prices)
 - [x] Create mock JWT auth utilities
 - [x] Create API client wrapper
+- [x] Fix TypeScript error in api.ts (empty object generic cast)
 
 ## Phase 3: State Management ✅
 - [x] Auth store (useAuthStore) - mock login, role-based, localStorage
@@ -49,11 +50,12 @@
 - [x] OrderSummary (grouped by zone)
 - [x] CountdownTimer (color transitions, pulse)
 - [x] PaymentMethodSelector (VNPAY + MoMo)
-- [x] CheckoutForm (full checkout flow)
+- [x] CheckoutForm (full checkout flow — ALL items sent, idempotency key in body)
+- [x] TicketSelector (maxPerUser from API, zone color dot, limit label)
 - [x] ETicket (QR code, perforated edge design)
 - [x] StatsCards (admin dashboard)
 - [x] RevenueChart (Recharts line chart)
-- [x] ConcertForm (zod validation, dynamic ticket categories)
+- [x] ConcertForm (zod validation, dynamic ticket categories, missing api import fixed)
 
 ## Phase 8: Pages ✅
 - [x] Homepage (hero + concert grid)
@@ -65,6 +67,9 @@
 - [x] Admin Dashboard (/admin)
 - [x] Admin Concerts CRUD (/admin/concerts)
 - [x] Admin Guests (/admin/guests)
+- [x] Admin Orders (/admin/orders)
+- [x] Admin Users (/admin/users)
+- [x] Payment Callback (/payment/callback) — backend verify call, VNPAY error codes
 
 ## Phase 9: Security ✅
 - [x] Middleware for /admin/* route protection
@@ -72,18 +77,34 @@
 - [x] Role-based UI rendering
 
 ## Phase 10: Build & Verification ✅
-- [x] TypeScript compilation: PASSED
-- [x] Next.js production build: PASSED
-- [x] All 11 routes generated successfully
+- [x] TypeScript compilation: PASSED (0 errors after fix)
+- [x] All routes generated successfully
 
 ## Phase 11: Backend & Connection Integration ✅
 - [x] Real REST API integration for authentication and registration
 - [x] Real REST API connection for concert listing & concert details
 - [x] Dynamic seat availability mapping based on database ticket category quantities
-- [x] Complete purchase flow integration via `/api/tickets/purchase`
+- [x] Complete purchase flow integration via `/api/tickets/purchase` (all items, idempotency in body)
 - [x] Real QR code ticket lookup via `/api/tickets/{id}`
-- [x] Fixed Spring Boot PostgreSQL default authentication fallback from postgres to ticketbox
-- [x] Fixed React useSyncExternalStore infinite loop in SeatMap.tsx by removing array reference recreation from Zustand selector
+- [x] Admin: create concert via `POST /api/admin/concerts`
+- [x] Admin: update concert via `PUT /api/admin/concerts/{id}`
+- [x] Admin: cancel concert via `DELETE /api/admin/concerts/{id}`
+- [x] Payment callback verify via `POST /api/payments/verify`
+
+## Phase 12: Bug Fixes & Completeness Audit ✅
+- [x] Fix CheckoutForm: only sent items[0] → now sends ALL items sequentially
+- [x] Fix idempotency key: was in Header → now in request body (matches backend DTO)
+- [x] Fix admin concert edit: mock handleSubmit → real PUT API call
+- [x] Fix admin concert new: mock handleSubmit → real POST API call
+- [x] Fix admin concerts list: alert() cancel → real DELETE API call
+- [x] Fix TicketSelector: hardcoded max=10 → uses maxPerUser from API
+- [x] Fix concert status: hardcoded "ON_SALE" → dynamic getEffectiveStatus()
+- [x] Fix saleStartTime: hardcoded string → real DB value
+- [x] Add per-user limit enforcement in backend TicketPurchaseService
+- [x] Add PaymentController with /api/payments/verify endpoint
+- [x] Add ConcertController admin CRUD endpoints (POST, PUT, DELETE)
+- [x] Add Concert.cancelledStatus and Concert.saleStartTime fields
+- [x] Fix TypeScript api.ts empty object generic type error
 
 ## Remaining Work
 - [ ] Real SSE connection for seat updates (requires active backend event streams)

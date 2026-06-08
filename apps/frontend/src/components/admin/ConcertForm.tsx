@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, Trash2, UploadCloud, FileType2, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { api } from "@/lib/api";
 import type { Concert } from "@/types/concert";
 
 const ticketSchema = z.object({
@@ -30,7 +31,7 @@ type FormData = z.infer<typeof formSchema>;
 
 interface ConcertFormProps {
   initialData?: Concert;
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSubmit: (data: Record<string, unknown>) => Promise<string | void>;
 }
 
 export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
@@ -80,8 +81,48 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
   };
 
   const onValid = async (data: FormData) => {
-    // We would normally upload svgFile and pdfFile here
-    await onSubmit(data as unknown as Record<string, unknown>);
+    try {
+      const returnedId = await onSubmit(data as unknown as Record<string, unknown>);
+      const cid = returnedId || initialData?.id || "1";
+      
+      if (pdfFile) {
+        setIsExtractingPdf(true);
+        setExtractionComplete(false);
+        try {
+          // Upload PDF
+          const { jobId } = await api.uploadFile<{jobId: string}>(`/admin/concerts/${cid}/upload-bio`, pdfFile, "file");
+          
+          // Poll for status
+          let isDone = false;
+          while (!isDone) {
+            await new Promise(r => setTimeout(r, 2000));
+            try {
+              const statusData = await api.get<{status: string, errorReason: string}>(`/admin/concerts/ai-jobs/${jobId}`);
+              if (statusData.status === "COMPLETED") {
+                isDone = true;
+                setExtractionComplete(true);
+              } else if (statusData.status === "FAILED") {
+                isDone = true;
+                console.error("AI Bio extraction failed:", statusData.errorReason);
+                alert("Lỗi khi phân tích PDF: " + (statusData.errorReason || "Unknown error"));
+              }
+            } catch (err) {
+              console.error("Error polling AI status", err);
+            }
+          }
+        } catch (err: any) {
+          console.error("Failed to upload PDF", err);
+          alert("Lỗi upload PDF: " + err.message);
+        } finally {
+          setIsExtractingPdf(false);
+        }
+      }
+      
+      // Redirect after everything is done
+      window.location.href = "/admin/concerts";
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const inputClass = "w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm";
@@ -133,11 +174,11 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
         <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer">
           <input 
             type="file" 
-            accept=".svg" 
+            onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
             onChange={handleSvgChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
           />
-          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
+          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none relative z-0">
             <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
               <FileType2 className="w-6 h-6" />
             </div>
@@ -154,11 +195,11 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
         <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer">
           <input 
             type="file" 
-            accept=".pdf" 
+            onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
             onChange={handlePdfChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
           />
-          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
+          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none relative z-0">
             <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
               {isExtractingPdf ? (
                 <Loader2 className="w-6 h-6 animate-spin" />

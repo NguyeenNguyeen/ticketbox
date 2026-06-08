@@ -8,24 +8,40 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ConcertListItem } from "@/types/concert";
 
+export interface AdminStats {
+  totalRevenue: number;
+  ticketsSold: number;
+  activeEvents: number;
+  totalAudience: number;
+  revenueChart: { day: string; revenue: number }[];
+}
+
 export default function AdminDashboardPage() {
   const [recentConcerts, setRecentConcerts] = useState<ConcertListItem[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadConcerts() {
+    async function loadData() {
       try {
-        const data = await api.get<ConcertListItem[]>("/concerts");
-        if (Array.isArray(data)) {
-          setRecentConcerts(data.slice(0, 3));
+        const [concertsData, statsData] = await Promise.all([
+          api.get<ConcertListItem[]>("/concerts"),
+          api.get<AdminStats>("/admin/stats")
+        ]);
+        
+        if (Array.isArray(concertsData)) {
+          setRecentConcerts(concertsData.slice(0, 3));
+        }
+        if (statsData) {
+          setStats(statsData);
         }
       } catch (err) {
-        console.error("Failed to load recent concerts", err);
+        console.error("Failed to load dashboard data", err);
       } finally {
         setLoading(false);
       }
     }
-    loadConcerts();
+    loadData();
   }, []);
 
   return (
@@ -39,7 +55,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <StatsCards />
+      <StatsCards stats={stats} />
 
       {/* Charts & Recent */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
@@ -53,7 +69,7 @@ export default function AdminDashboardPage() {
               </h2>
             </div>
           </div>
-          <RevenueChart />
+          <RevenueChart data={stats?.revenueChart || []} />
         </div>
 
         {/* Recent Concerts */}

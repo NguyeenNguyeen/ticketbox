@@ -11,12 +11,18 @@ export interface TicketCategory {
   color: string;           // hex color for seat map
 }
 
+export interface Artist {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  bio: string;
+}
+
 export interface Concert {
   id: string;
   title: string;
   description: string;
-  artistBio: string;
-  artists: string[];
+  artists: Artist[];
   venue: string;
   address: string;
   date: string;            // ISO datetime

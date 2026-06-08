@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -27,8 +29,18 @@ public class TicketController {
     @Autowired
     private TicketRepository ticketRepository;
 
+    /**
+     * Purchase a ticket category.
+     * idempotencyKey is required in the request body to prevent double-charges.
+     * Returns the order details and a mock paymentUrl for the demo.
+     */
     @PostMapping("/purchase")
     public ResponseEntity<?> purchaseTicket(@RequestBody PurchaseRequest request) {
+        if (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "idempotencyKey is required"));
+        }
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -40,7 +52,16 @@ public class TicketController {
                 request.getIdempotencyKey()
         );
 
-        return ResponseEntity.ok(order);
+        // Build response with paymentUrl for frontend redirect
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", order.getId().toString());
+        response.put("status", order.getStatus().name());
+        response.put("totalAmount", order.getTotalAmount());
+        // Mock payment gateway redirect URL (simulates VNPAY/MoMo redirect)
+        response.put("paymentUrl",
+                "/payment/callback?vnp_ResponseCode=00&vnp_TxnRef=" + order.getId());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/order/{orderId}")
@@ -69,21 +90,29 @@ public class TicketController {
         dto.setVenue(ticket.getCategory().getConcert().getLocation());
         dto.setZone(ticket.getCategory().getName());
         
-        // Mock row and seat number based on ticket ID
+        // Deterministic row/seat assignment from ticket ID
         char rowChar = (char) ('A' + (ticket.getId() % 8));
         dto.setRow(String.valueOf(rowChar));
         dto.setSeatNumber((int) (ticket.getId() % 15 + 1));
         
         dto.setQrCode(ticket.getQrCode());
         dto.setHolderName(ticket.getOwner().getUsername());
-        dto.setHolderEmail(ticket.getOwner().getUsername() + "@ticketbox.vn");
+        // Use actual email if available, else derive from username
+        String email = ticket.getOwner().getUsername();
+        dto.setHolderEmail(email.contains("@") ? email : email + "@ticketbox.vn");
         return dto;
     }
 
     @Data
     static class PurchaseRequest {
+        /** Category ID to purchase */
         private Long categoryId;
+        /** Quantity to purchase */
         private Integer quantity;
+        /** 
+         * Client-generated idempotency key (UUID recommended).
+         * Prevents double-charges if client retries the same request.
+         */
         private String idempotencyKey;
     }
 

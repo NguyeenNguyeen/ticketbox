@@ -18,4 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserOrderByCreatedAtDesc(com.ticketbox.backend.entity.User user);
     
     List<Order> findAllByOrderByCreatedAtDesc();
+    
+    @org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status = :status")
+    java.math.BigDecimal sumTotalAmountByStatus(@org.springframework.data.repository.query.Param("status") OrderStatus status);
+    
+    List<Order> findByStatusAndCreatedAtAfter(OrderStatus status, LocalDateTime dateTime);
 }

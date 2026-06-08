@@ -47,7 +47,7 @@ async function request<T>(method: string, url: string, body?: unknown, customHea
     if (!res.ok) throw new ApiError(`API error: ${res.status}`, res.status);
     const text = await res.text();
     try {
-      return text ? JSON.parse(text) : {};
+      return text ? JSON.parse(text) : ({} as unknown as T);
     } catch {
       return text as unknown as T;
     }
@@ -66,4 +66,25 @@ export const api = {
   post: <T>(url: string, body?: unknown, headers?: Record<string, string>) => request<T>("POST", url, body, headers),
   put: <T>(url: string, body?: unknown, headers?: Record<string, string>) => request<T>("PUT", url, body, headers),
   delete: <T>(url: string, headers?: Record<string, string>) => request<T>("DELETE", url, undefined, headers),
+  uploadFile: async <T>(url: string, file: File, fieldName: string = "file") => {
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const formData = new FormData();
+    formData.append(fieldName, file);
+    
+    const headers: Record<string, string> = {
+      ...getAuthHeader(),
+    };
+    
+    const res = await fetch(fullUrl, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new ApiError(err.error || `Upload failed: ${res.status}`, res.status);
+    }
+    return res.json() as Promise<T>;
+  }
 };

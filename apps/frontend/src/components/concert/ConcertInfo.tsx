@@ -35,14 +35,7 @@ export function ConcertInfo({ concert }: { concert: Concert }) {
 
         <p className="text-muted-foreground mb-6">{concert.description}</p>
 
-        {/* Artists */}
-        <div className="mb-6">
-          <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><Users className="w-4 h-4 text-primary" />Nghệ sĩ</h3>
-          <div className="flex flex-wrap gap-2">
-            {concert.artists.map((a) => <Badge key={a} variant="outline">{a}</Badge>)}
-          </div>
-          {concert.artistBio && <p className="text-sm text-muted-foreground mt-2 italic">{concert.artistBio}</p>}
-        </div>
+
 
         {/* Ticket Categories */}
         <h3 className="font-semibold text-sm mb-3">Bảng giá vé</h3>
