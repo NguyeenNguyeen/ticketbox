@@ -136,8 +136,8 @@ public class AiWorkerTest {
         Thread.sleep(3000); // Wait for async processing
 
         Concert updated = concertRepository.findById(testConcert.getId()).orElseThrow();
-        assertNotNull(updated.getArtistBiography());
-        assertTrue(updated.getArtistBiography().contains("John Doe is a legendary rock artist"));
+        assertFalse(updated.getArtists().isEmpty());
+        assertTrue(updated.getArtists().iterator().next().getBio().contains("John Doe is a legendary rock artist"));
 
         AiJobProgress progress = jobTracker.getProgress(jobId);
         assertNotNull(progress);
@@ -154,7 +154,7 @@ public class AiWorkerTest {
         Thread.sleep(2000);
 
         Concert updated = concertRepository.findById(testConcert.getId()).orElseThrow();
-        assertNull(updated.getArtistBiography());
+        assertTrue(updated.getArtists().isEmpty() || updated.getArtists().iterator().next().getBio() == null);
 
         AiJobProgress progress = jobTracker.getProgress(jobId);
         assertNotNull(progress);
@@ -172,7 +172,7 @@ public class AiWorkerTest {
         Thread.sleep(2000);
 
         Concert updated = concertRepository.findById(testConcert.getId()).orElseThrow();
-        assertNull(updated.getArtistBiography());
+        assertTrue(updated.getArtists().isEmpty() || updated.getArtists().iterator().next().getBio() == null);
 
         AiJobProgress progress = jobTracker.getProgress(jobId);
         assertNotNull(progress);
@@ -203,7 +203,7 @@ public class AiWorkerTest {
         Thread.sleep(3000);
 
         Concert updated = concertRepository.findById(testConcert.getId()).orElseThrow();
-        assertNull(updated.getArtistBiography(), "Biography should remain null on invalid JSON");
+        assertTrue(updated.getArtists().isEmpty() || updated.getArtists().iterator().next().getBio() == null, "Biography should remain null on invalid JSON");
 
         AiJobProgress progress = jobTracker.getProgress(jobId);
         assertNotNull(progress);
@@ -226,7 +226,7 @@ public class AiWorkerTest {
         Thread.sleep(12000);
 
         Concert updated = concertRepository.findById(testConcert.getId()).orElseThrow();
-        assertNull(updated.getArtistBiography());
+        assertTrue(updated.getArtists().isEmpty() || updated.getArtists().iterator().next().getBio() == null);
 
         // Check DLQ
         Message dlqMessage = rabbitTemplate.receive("ai_queue.dlq", 5000);

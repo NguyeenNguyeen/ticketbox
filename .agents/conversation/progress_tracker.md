@@ -220,6 +220,42 @@ Last Updated: 2026-06-03
 
 ---
 
+## Phase 4 — Frontend Bug Fixes & Integration
+
+- [x] Fix GA seat missing in SeatMap (SVG viewBox adjustment)
+- [x] Fix Quick Login Demo (use real login logic with default test accounts instead of mock tokens)
+- [x] Fix `data.sql` to include correct Bcrypt hashes for test accounts (customer1, admin1, checker1)
+- [x] Feature: Admin specific features - redirected ORGANIZER directly to `/admin` upon login.
+- [x] Feature: Customer Order History - Added `OrderController` with `/api/orders/history` and Frontend `/orders` page.
+- [x] Feature: Admin Order & User Management - Added `UserController`, `GET /api/admin/orders`, `GET /api/admin/users` and corresponding admin dashboard pages.
+- [x] Fix: Logout logic now properly redirects to `/auth/login`.
+
+## Phase 4.5 — Frontend Blueprint (Person 2) ✅ COMPLETE
+
+- [x] Create Blueprint Documents (`design.md`, `auth.md`, `payment.md`)
+- [x] Integrate Realtime SSE and Polling (`SeatMap.tsx`)
+- [x] Add Seat Selection Limits (`useSeatStore.ts`)
+- [x] Improve API Client for custom Headers & Offline detection (`api.ts`)
+- [x] Implement Checkout Retry, Header Idempotency & Error Handling (`CheckoutForm.tsx`)
+- [x] Add Cancel Concert feature (`admin/concerts/[id]/edit/page.tsx`)
+
+## Phase 4.6 — Frontend Blueprint Continuation (Person 2) ✅ COMPLETE
+
+- [x] Apply SSR/ISR for HomePage (`page.tsx`, `ConcertSection.tsx`)
+- [x] Add Payment Callback Page (`checkout/callback/page.tsx`)
+- [x] Add SVG and PDF Upload to Concert Form (`ConcertForm.tsx`)
+- [x] Build CSV Importer with Preview for Guest List (`admin/guests/page.tsx`)
+
+## Phase 4.7 — Frontend Bug Fixes (Member 4) ✅ COMPLETE
+
+- [x] Fix: Prevent freezing at update event page after importing file (added timeout and error handling for AI job polling in `ConcertForm.tsx`).
+- [x] Fix: Allow editing max tickets per person in event editing (added `maxPerUser` field to `TicketCategory` entity and updated `ConcertController.java`).
+- [x] Feature: Add functionality to resume a postponed event (added `resumeConcert` in `ConcertService.java` and `ConcertController.java`, added `Tiếp tục sự kiện` button in `admin/concerts/[id]/edit/page.tsx`).
+- [x] Fix: Block ticket booking on the customer side if the event is postponed/cancelled (updated `TicketPurchaseService.java` and disabled buttons in `TicketSelector.tsx`).
+- [x] Fix: Ensure updated AI biography artist data is immediately visible on frontend (corrected cache eviction names to `concertsV7` and `concertsListV7` in `AiBioService.java`).
+
+---
+
 ## Blocked Tasks
 
 | Task | Blocked By | Reason |

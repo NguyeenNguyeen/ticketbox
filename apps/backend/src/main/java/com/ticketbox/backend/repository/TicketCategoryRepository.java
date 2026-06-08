@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,4 +18,6 @@ public interface TicketCategoryRepository extends JpaRepository<TicketCategory, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT tc FROM TicketCategory tc WHERE tc.id = :id")
     Optional<TicketCategory> findByIdWithPessimisticLock(@Param("id") Long id);
+
+    List<TicketCategory> findByConcertId(Long concertId);
 }

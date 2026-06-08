@@ -37,8 +37,14 @@ public class GlobalExceptionHandler {
      * HTTP 403 — Access denied (RBAC check failed).
      */
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
-        log.warn("Access denied: {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, jakarta.servlet.http.HttpServletRequest request) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        log.warn("Access denied: {} | URI: {} | Method: {} | User: {} | Authorities: {}", 
+                 ex.getMessage(), 
+                 request.getRequestURI(), 
+                 request.getMethod(),
+                 auth != null ? auth.getName() : "anonymous",
+                 auth != null ? auth.getAuthorities() : "none");
         ErrorResponse body = ErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN.value())
                 .code("ACCESS_DENIED")
@@ -131,7 +137,7 @@ public class GlobalExceptionHandler {
         ErrorResponse body = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .code("INTERNAL_SERVER_ERROR")
-                .message("An unexpected error occurred. Please try again later.")
+                .message(ex.getClass().getName() + ": " + (ex.getMessage() != null ? ex.getMessage() : "Unknown Error"))
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

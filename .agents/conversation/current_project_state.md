@@ -96,6 +96,22 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 
 ---
 
+## Phase 4 — Frontend Bug Fixes & Integration
+
+- [x] Fixed GA seat missing in SeatMap (SVG viewBox adjustment)
+- [x] Fixed Quick Login Demo to use real backend authentication instead of mock tokens
+- [x] Fixed `data.sql` test account passwords to match correct Bcrypt hashes (`password`) and added `checker1` account
+- [x] **Frontend Blueprint (Person 2) Implemented**: Realtime SSE/Polling, Idempotency headers, Network error handling, Seat limits, Cancel Concert feature.
+- [x] **Frontend Blueprint Continuation (Person 2) Implemented**: ISR for HomePage, Payment Callback Page, SVG/PDF Upload to Concert Form, CSV Importer with Preview for Guest List.
+- [x] **Admin Concert Bug Fixes**:
+  - Prevented infinite loop freezing during PDF upload/import on Concert Edit page.
+  - Added `maxPerUser` persistence logic so Max/Người works correctly during event updates.
+  - Added "Tiếp tục sự kiện" (Resume event) functionality for postponed events.
+  - Blocked ticket booking on the customer side if the event is postponed/cancelled.
+  - Corrected cache eviction names in `AiBioService.java` to ensure AI biography updates are instantly visible.
+
+---
+
 ## Recommended Next Task
 
 **Remediate Email Worker**

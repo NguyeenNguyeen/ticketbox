@@ -11,14 +11,25 @@ public class TicketFactoryProvider {
     @Autowired
     private Map<String, TicketFactory> factories;
 
-    public TicketFactory getFactory(String ticketType) {
-        // Assume ticketType is "STANDARD" or "VIP"
-        // Spring bean names are typically camelCase, e.g., "standardTicketFactory"
-        String beanName = ticketType.toLowerCase() + "TicketFactory";
+    /**
+     * Maps category names (from DB) to Spring bean names of TicketFactory implementations.
+     * - "STANDARD" → standardTicketFactory
+     * - "VIP"      → vIPTicketFactory
+     * - "SVIP"     → vIPTicketFactory  (SVIP uses VIP factory, same ticketing logic)
+     * Any unknown category falls back to standardTicketFactory.
+     */
+    private static final Map<String, String> CATEGORY_TO_BEAN = Map.of(
+            "STANDARD", "standardTicketFactory",
+            "VIP",      "VIPTicketFactory",
+            "SVIP",     "VIPTicketFactory"
+    );
+
+    public TicketFactory getFactory(String categoryName) {
+        String beanName = CATEGORY_TO_BEAN.getOrDefault(
+                categoryName.toUpperCase(), "standardTicketFactory");
         TicketFactory factory = factories.get(beanName);
         if (factory == null) {
-            // Fallback to standard
-            return factories.get("standardTicketFactory");
+            factory = factories.get("standardTicketFactory");
         }
         return factory;
     }

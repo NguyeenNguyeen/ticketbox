@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.util.Date;
+import java.util.HexFormat;
 
 @Component
 public class JwtTokenProvider {
@@ -25,8 +27,16 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        String role = userPrincipal.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority().replace("ROLE_", ""))
+                .findFirst()
+                .orElse("CUSTOMER");
+
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
+                .claim("role", role)
+                .claim("email", userPrincipal.getUsername() + "@ticketbox.vn")
+                .claim("name", userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(key())
@@ -34,7 +44,13 @@ public class JwtTokenProvider {
     }
 
     private SecretKey key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        byte[] keyBytes;
+        if (jwtSecret.matches("^[0-9A-Fa-f]+$") && jwtSecret.length() % 2 == 0) {
+            keyBytes = HexFormat.of().parseHex(jwtSecret);
+        } else {
+            keyBytes = Decoders.BASE64.decode(jwtSecret);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String getUsernameFromJWT(String token) {

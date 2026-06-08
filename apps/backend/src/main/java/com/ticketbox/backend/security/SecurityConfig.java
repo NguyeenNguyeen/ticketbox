@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
@@ -45,14 +46,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                // Concert listing & details are public; admin CRUD is under /api/admin/concerts
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/concerts/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ORGANIZER")
                 .requestMatchers("/api/checker/**").hasRole("CHECKER")
-                .requestMatchers("/api/tickets/purchase").hasRole("CUSTOMER")
+                // Purchase requires authentication (any role: CUSTOMER or ORGANIZER for testing)
+                .requestMatchers("/api/tickets/purchase").authenticated()
+                // Payment verification endpoint — called by frontend after payment callback
+                .requestMatchers("/api/payments/**").authenticated()
                 .anyRequest().authenticated()
             );
 

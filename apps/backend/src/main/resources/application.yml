@@ -4,12 +4,15 @@ server:
 spring:
   application:
     name: ticketbox-backend
+  dotenv:
+    directory: ../../
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ticketbox}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USER:ticketbox}
+    password: ${DB_PASSWORD:ticketbox}
     driver-class-name: org.postgresql.Driver
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -21,6 +24,9 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  sql:
+    init:
+      mode: always
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
@@ -84,14 +90,14 @@ ticketbox:
 
     # Public API tier: limits unauthenticated non-auth requests by client IP
     public:
-      capacity: 100
-      refill-tokens: 100
+      capacity: 300
+      refill-tokens: 300
       refill-duration-seconds: 60
 
     # Private API tier: limits authenticated requests by username (from JWT)
     private:
-      capacity: 10
-      refill-tokens: 10
+      capacity: 300
+      refill-tokens: 300
       refill-duration-seconds: 60
 
     # Paths that receive the stricter 'auth' tier instead of 'public' tier
@@ -118,6 +124,7 @@ ticketbox:
     provider: gemini # default to gemini
     gemini:
       key: ${GEMINI_API_KEY:}
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
     openai:
       key: ${OPENAI_API_KEY:}
 

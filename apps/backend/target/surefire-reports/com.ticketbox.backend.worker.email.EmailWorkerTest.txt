@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.ticketbox.backend.worker.email.EmailWorkerTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 50.94 s -- in com.ticketbox.backend.worker.email.EmailWorkerTest
