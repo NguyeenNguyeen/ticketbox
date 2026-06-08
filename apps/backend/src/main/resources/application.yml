@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: ticketbox-backend
+  dotenv:
+    directory: ../../
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ticketbox}
     username: ${DB_USER:ticketbox}
@@ -122,6 +124,7 @@ ticketbox:
     provider: gemini # default to gemini
     gemini:
       key: ${GEMINI_API_KEY:}
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
     openai:
       key: ${OPENAI_API_KEY:}
 

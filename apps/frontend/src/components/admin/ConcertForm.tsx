@@ -70,13 +70,8 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setPdfFile(e.target.files[0]);
-      // Simulate AI Extraction
-      setIsExtractingPdf(true);
+      setIsExtractingPdf(false);
       setExtractionComplete(false);
-      setTimeout(() => {
-        setIsExtractingPdf(false);
-        setExtractionComplete(true);
-      }, 3000);
     }
   };
 
@@ -222,7 +217,9 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
                   ? "AI đang phân tích và trích xuất tiểu sử..." 
                   : extractionComplete 
                     ? `Đã trích xuất thành công từ ${pdfFile?.name}` 
-                    : "Tải lên hồ sơ PDF để AI sinh tiểu sử tự động"}
+                    : pdfFile 
+                      ? `Đã chọn: ${pdfFile.name} (Sẽ xử lý khi lưu)`
+                      : "Tải lên hồ sơ PDF để AI sinh tiểu sử tự động"}
               </p>
             </div>
           </div>
