@@ -96,6 +96,16 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 
 ---
 
+## Phase 4 — Frontend Bug Fixes & Integration
+
+- ✅ Fixed GA seat rendering in SeatMap (SVG viewBox adjusted)
+- ✅ Fixed Quick Login Demo to use real backend authentication instead of mock tokens
+- ✅ Fixed `data.sql` test account passwords to match correct Bcrypt hashes (`password`) and added `checker1` account
+- ✅ **Frontend Blueprint (Person 2) Implemented**: Realtime SSE/Polling, Idempotency headers, Network error handling, Seat limits, Cancel Concert feature.
+- ✅ **Frontend Blueprint Continuation (Person 2) Implemented**: ISR for HomePage, Payment Callback Page, SVG/PDF Upload to Concert Form, CSV Importer with Preview for Guest List.
+
+---
+
 ## Recommended Next Task
 
 **Remediate Email Worker**

@@ -1,4 +1,5 @@
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
+import { AdminHeader } from "@/components/layout/AdminHeader";
 
 export const metadata = {
   title: "Quản trị",
@@ -13,9 +14,10 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen flex bg-secondary/30">
       <AdminSidebar />
-      <main className="flex-1 min-h-screen lg:ml-64">
-        <div className="p-6 lg:p-8">{children}</div>
-      </main>
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
+        <AdminHeader />
+        <main className="flex-1 p-6 lg:p-8">{children}</main>
+      </div>
     </div>
   );
 }

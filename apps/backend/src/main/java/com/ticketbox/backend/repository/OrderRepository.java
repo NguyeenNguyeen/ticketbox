@@ -14,4 +14,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByIdempotencyKey(String idempotencyKey);
     
     List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime dateTime);
+    
+    List<Order> findByUserOrderByCreatedAtDesc(com.ticketbox.backend.entity.User user);
+    
+    List<Order> findAllByOrderByCreatedAtDesc();
 }

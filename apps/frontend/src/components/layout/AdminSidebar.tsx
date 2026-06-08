@@ -6,14 +6,19 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/useAuthStore";
 
+import { useRouter } from "next/navigation";
+
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Sự kiện", href: "/admin/concerts", icon: Calendar },
+  { label: "Quản lý Đơn hàng", href: "/admin/orders", icon: Ticket },
   { label: "Khách mời VIP", href: "/admin/guests", icon: Users },
+  { label: "Quản lý Người dùng", href: "/admin/users", icon: Users },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const logout = useAuthStore((s) => s.logout);
 
@@ -44,14 +49,6 @@ export function AdminSidebar() {
           </Link>
         ))}
       </nav>
-      <div className="p-3 border-t border-border">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-secondary transition-all">
-          ← Về trang chủ
-        </Link>
-        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-all">
-          <LogOut className="w-5 h-5" /> Đăng xuất
-        </button>
-      </div>
     </div>
   );
 

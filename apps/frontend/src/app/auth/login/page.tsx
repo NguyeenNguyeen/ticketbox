@@ -27,7 +27,12 @@ function LoginForm() {
     try {
       const success = await login(email, password);
       if (success) {
-        router.push(redirect);
+        const userRole = useAuthStore.getState().user?.role;
+        if (userRole === "ORGANIZER") {
+          router.push("/admin");
+        } else {
+          router.push(redirect);
+        }
       } else {
         setError("Email hoặc mật khẩu không đúng.");
       }
@@ -38,9 +43,22 @@ function LoginForm() {
     }
   };
 
-  const handleQuickLogin = (role: "CUSTOMER" | "ORGANIZER" | "CHECKER") => {
-    loginAs(role);
-    router.push(redirect);
+  const handleQuickLogin = async (role: "CUSTOMER" | "ORGANIZER") => {
+    let username = "";
+    if (role === "CUSTOMER") username = "customer1";
+    if (role === "ORGANIZER") username = "admin1";
+
+    const success = await login(username, "password");
+    if (success) {
+      const userRole = useAuthStore.getState().user?.role;
+      if (userRole === "ORGANIZER") {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
+    } else {
+      setError("Đăng nhập nhanh thất bại. Backend có thể chưa được khởi tạo đúng.");
+    }
   };
 
   return (
@@ -136,7 +154,7 @@ function LoginForm() {
             <p className="text-sm text-muted-foreground mb-3 text-center">
               🔑 Đăng nhập nhanh (Demo)
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleQuickLogin("CUSTOMER")}
                 className="text-sm font-medium px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
@@ -148,12 +166,6 @@ function LoginForm() {
                 className="text-sm font-medium px-3 py-2 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
               >
                 Ban tổ chức
-              </button>
-              <button
-                onClick={() => handleQuickLogin("CHECKER")}
-                className="text-sm font-medium px-3 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-              >
-                Soát vé
               </button>
             </div>
           </div>
