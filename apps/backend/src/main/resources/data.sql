@@ -1,12 +1,13 @@
 -- data.sql
 
 -- Insert sample users (password is 'password' encoded with BCrypt)
-INSERT INTO users (id, username, password, role)
+-- LƯU Ý: TÀI KHOẢN NÀY KHÔNG DÙNG ĐỂ TEST EMAIL. EMAIL CHỈ HOẠT ĐỘNG VỚI RESEND NẾU BẠN TỰ TẠO TÀI KHOẢN MỚI CÙNG EMAIL RESEND.
+INSERT INTO users (id, username, password, email, role)
 VALUES 
-(1, 'customer1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'CUSTOMER'),
-(2, 'admin1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'ORGANIZER'),
-(3, 'checker1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'CHECKER')
-ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, username = EXCLUDED.username, role = EXCLUDED.role;
+(1, 'customer1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'customer1@gmail.com', 'CUSTOMER'),
+(2, 'admin1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'admin1@ticketbox.vn', 'ORGANIZER'),
+(3, 'checker1', '$2a$10$c45d7ef7xEUGOOxi.l4L9.GwTFTzK5kp02CrIfiadl7iffCA6xY1G', 'checker1@ticketbox.vn', 'CHECKER')
+ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, username = EXCLUDED.username, email = EXCLUDED.email, role = EXCLUDED.role;
 
 -- Insert sample concerts
 INSERT INTO concerts (id, name, description, start_time, end_time, location, sale_start_time, cancelled_status)

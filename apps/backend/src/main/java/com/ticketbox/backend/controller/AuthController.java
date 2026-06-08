@@ -55,9 +55,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Username is already taken!");
         }
 
+        if (registerRequest.getEmail() == null || !registerRequest.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            return ResponseEntity.badRequest().body("Invalid email format!");
+        }
+
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            return ResponseEntity.badRequest().body("Email is already registered!");
+        }
+
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .email(registerRequest.getEmail())
                 .role(registerRequest.getRole() != null ? registerRequest.getRole() : RoleName.CUSTOMER)
                 .build();
 
@@ -76,6 +85,7 @@ public class AuthController {
     static class RegisterRequest {
         private String username;
         private String password;
+        private String email;
         private RoleName role;
     }
 

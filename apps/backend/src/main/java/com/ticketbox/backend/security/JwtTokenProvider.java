@@ -12,6 +12,8 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HexFormat;
+import com.ticketbox.backend.repository.UserRepository;
+import com.ticketbox.backend.entity.User;
 
 @Component
 public class JwtTokenProvider {
@@ -21,6 +23,12 @@ public class JwtTokenProvider {
 
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
+
+    private final UserRepository userRepository;
+
+    public JwtTokenProvider(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
@@ -32,10 +40,14 @@ public class JwtTokenProvider {
                 .findFirst()
                 .orElse("CUSTOMER");
 
+        String email = userRepository.findByUsername(userPrincipal.getUsername())
+                .map(User::getEmail)
+                .orElse(userPrincipal.getUsername() + "@ticketbox.vn");
+
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .claim("role", role)
-                .claim("email", userPrincipal.getUsername() + "@ticketbox.vn")
+                .claim("email", email)
                 .claim("name", userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
