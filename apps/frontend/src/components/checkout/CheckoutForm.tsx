@@ -39,21 +39,19 @@ export function CheckoutForm() {
 
       const categories = await api.get<any[]>(`/concerts/${concertId}/categories`);
 
-      const zoneCounts = new Map<string, number>();
-      for (const item of items) {
-        zoneCounts.set(item.zone, (zoneCounts.get(item.zone) || 0) + 1);
-      }
-
       const baseKey = useCartStore.getState().idempotencyKey || generateIdempotencyKey();
       let lastOrder: any = null;
 
-      for (const [zone, quantity] of zoneCounts.entries()) {
-        const category = categories.find((c) => c.name.toUpperCase() === zone.toUpperCase());
+      for (const item of items) {
+        const categoryId = item.categoryId;
+        const quantity = item.quantity;
+        
+        const category = categories.find((c) => c.id === categoryId);
         if (!category) {
-          throw new Error(`Không tìm thấy hạng vé cho khu vực ${zone}`);
+          throw new Error(`Không tìm thấy hạng vé: ${item.name}`);
         }
 
-        const key = zoneCounts.size > 1 ? `${baseKey}-${category.id}` : baseKey;
+        const key = items.length > 1 ? `${baseKey}-${categoryId}` : baseKey;
 
         // Exponential backoff retry logic
         let order = null;
