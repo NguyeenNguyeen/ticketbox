@@ -64,7 +64,13 @@ public class TicketPurchaseService {
                     .orElseThrow(() -> new IllegalStateException("Order is processing"));
         }
 
-        Order order = self.reserveTickets(user, categoryId, quantity, idempotencyKey);
+        Order order;
+        try {
+            order = self.reserveTickets(user, categoryId, quantity, idempotencyKey);
+        } catch (RuntimeException ex) {
+            redisService.releaseLock(idempKeyRedis);
+            throw ex;
+        }
 
         try {
             PaymentResult result = paymentGatewayService.processPayment(order);
@@ -111,7 +117,7 @@ public class TicketPurchaseService {
             Order order = Order.builder()
                     .user(user)
                     .totalAmount(totalPrice)
-                    .status(OrderStatus.PAYING)
+                    .status(OrderStatus.PENDING)
                     .idempotencyKey(idempotencyKey)
                     .createdAt(LocalDateTime.now())
                     .build();

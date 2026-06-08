@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,16 +29,27 @@ public class TicketController {
     private TicketRepository ticketRepository;
 
     @PostMapping("/purchase")
-    public ResponseEntity<?> purchaseTicket(@RequestBody PurchaseRequest request) {
+    public ResponseEntity<?> purchaseTicket(
+            @RequestBody PurchaseRequest request,
+            @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKeyHeader
+    ) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        String idempotencyKey = idempotencyKeyHeader;
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = request.getIdempotencyKey();
+        }
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        }
+
         Order order = purchaseService.purchaseTicket(
-                user, 
-                request.getCategoryId(), 
-                request.getQuantity(), 
-                request.getIdempotencyKey()
+                user,
+                request.getCategoryId(),
+                request.getQuantity(),
+                idempotencyKey
         );
 
         return ResponseEntity.ok(order);

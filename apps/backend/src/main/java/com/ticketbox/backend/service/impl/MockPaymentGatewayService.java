@@ -74,12 +74,8 @@ public class MockPaymentGatewayService implements PaymentGatewayService {
     }
 
     private void simulateFailures() {
-        int random = ThreadLocalRandom.current().nextInt(100);
-        
-        if (random < 5) { // 5% chance of network error (triggers Circuit Breaker)
-            throw new PaymentGatewayException("Simulated connection timeout to payment provider");
-        } else if (random < 10) { // 5% chance of payment declined (does NOT trigger CB)
-            throw new PaymentDeclinedException("Insufficient funds on card");
-        }
+        // For local development, disable random failure simulation so payment succeeds.
+        // In a real production integration this would call the actual payment provider.
     }
 }
+

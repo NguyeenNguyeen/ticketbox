@@ -65,15 +65,22 @@ export function CheckoutForm() {
             order = await api.post<any>("/tickets/purchase", {
               categoryId: category.id,
               quantity,
+              idempotencyKey: key,
             }, { "Idempotency-Key": key });
             break; // Success, exit retry loop
           } catch (error: any) {
             const status = error.status;
-            
+            const backendMessage = error.message || "Có lỗi xảy ra. Vui lòng thử lại.";
+
             if (status === 400) {
-              throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
+              const lowStockPattern = /vé này vừa được mua mất|not enough tickets available|oversell prevented/i;
+              if (lowStockPattern.test(backendMessage)) {
+                throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
+              }
+              // Show the actual backend message for other business failures.
+              throw new Error(backendMessage);
             }
-            
+
             if (status >= 500 && retries < maxRetries) {
               retries++;
               const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
@@ -81,11 +88,11 @@ export function CheckoutForm() {
               await new Promise(resolve => setTimeout(resolve, delay));
               continue;
             }
-            
+
             if (status >= 500 && retries === maxRetries) {
               throw new Error("Cổng thanh toán đang bảo trì hoặc quá tải. Giao dịch đang được xử lý ngầm, bạn vẫn có thể xem vé ở lịch sử giao dịch sau vài phút.");
             }
-            
+
             throw error;
           }
         }

@@ -44,13 +44,22 @@ async function request<T>(method: string, url: string, body?: unknown, customHea
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    if (!res.ok) throw new ApiError(`API error: ${res.status}`, res.status);
     const text = await res.text();
+    let data: unknown;
     try {
-      return text ? JSON.parse(text) : {};
+      data = text ? JSON.parse(text) : null;
     } catch {
-      return text as unknown as T;
+      data = text;
     }
+
+    if (!res.ok) {
+      const message = typeof data === "object" && data !== null && "message" in data
+        ? (data as any).message
+        : `API error: ${res.status}`;
+      throw new ApiError(message, res.status);
+    }
+
+    return data as T;
   } catch (error: any) {
     console.error(`Request failed: ${fullUrl}`, error);
     // Network errors (like CORS, timeout, unreachable)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
@@ -10,18 +10,18 @@ import { useCartStore } from "@/stores/useCartStore";
 import { useSeatStore } from "@/stores/useSeatStore";
 
 export default function PaymentCallbackPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
   
-  const clearCart = useCartStore((s) => s.clearItems);
+  const clearCart = useCartStore((s) => s.clearCart);
   const clearSeats = useSeatStore((s) => s.clearSelection);
 
   useEffect(() => {
     // VNPAY uses vnp_ResponseCode (00 is success)
     // MoMo uses resultCode (0 is success)
     // We also support a generic 'status=success' for testing
+    const searchParams = new URLSearchParams(window.location.search);
     const vnpResponse = searchParams.get("vnp_ResponseCode");
     const momoResult = searchParams.get("resultCode");
     const genericStatus = searchParams.get("status");
@@ -55,7 +55,7 @@ export default function PaymentCallbackPage() {
       setStatus("error");
       setErrorMessage("Không tìm thấy thông tin giao dịch hợp lệ.");
     }
-  }, [searchParams, clearCart, clearSeats]);
+  }, [clearCart, clearSeats]);
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">
