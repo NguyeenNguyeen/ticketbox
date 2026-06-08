@@ -94,7 +94,8 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
           
           // Poll for status
           let isDone = false;
-          while (!isDone) {
+          let retries = 0;
+          while (!isDone && retries < 30) {
             await new Promise(r => setTimeout(r, 2000));
             try {
               const statusData = await api.get<{status: string, errorReason: string}>(`/admin/concerts/ai-jobs/${jobId}`);
@@ -108,7 +109,12 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
               }
             } catch (err) {
               console.error("Error polling AI status", err);
+              if (retries > 5) {
+                isDone = true;
+                alert("Lỗi mạng khi kiểm tra trạng thái PDF. Vui lòng thử lại sau.");
+              }
             }
+            retries++;
           }
         } catch (err: any) {
           console.error("Failed to upload PDF", err);

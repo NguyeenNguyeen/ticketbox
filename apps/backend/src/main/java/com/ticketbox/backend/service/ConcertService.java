@@ -71,4 +71,12 @@ public class ConcertService {
         concert.setCancelledStatus("CANCELLED");
         concertRepository.save(concert);
     }
+
+    @CacheEvict(value = {"concertsV7", "concertsListV7"}, allEntries = true)
+    public void resumeConcert(Long id) {
+        Concert concert = concertRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Concert not found"));
+        concert.setCancelledStatus(null);
+        concertRepository.save(concert);
+    }
 }

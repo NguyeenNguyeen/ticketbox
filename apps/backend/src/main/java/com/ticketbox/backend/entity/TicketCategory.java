@@ -34,6 +34,9 @@ public class TicketCategory {
     @Column(nullable = false)
     private Integer availableQuantity;
 
+    @Column(name = "max_per_user")
+    private Integer maxPerUser = 4;
+
     @Version
     private Long version; // Optimistic lock fallback, though we use Pessimistic Lock
 }

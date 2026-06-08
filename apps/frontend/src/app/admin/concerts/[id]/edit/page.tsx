@@ -77,6 +77,24 @@ export default function EditConcertPage() {
     }
   };
 
+  const handleResume = async () => {
+    if (
+      !window.confirm(
+        "Bạn có chắc chắn muốn tiếp tục sự kiện đã hoãn này không?"
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api.put(`/admin/concerts/${concertId}/resume`);
+      toast({ title: "Đã tiếp tục sự kiện thành công", variant: "success" });
+      router.push("/admin/concerts");
+    } catch (error: any) {
+      toast({ title: "Lỗi", description: error.message || "Không thể tiếp tục sự kiện", variant: "error" });
+    }
+  };
+
   return (
     <div>
       <Link
@@ -93,12 +111,21 @@ export default function EditConcertPage() {
           <p className="text-muted-foreground">{concert.title}</p>
         </div>
 
-        <button
-          onClick={handleCancel}
-          className="px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl text-sm font-medium transition-colors"
-        >
-          Huỷ / Hoãn sự kiện
-        </button>
+        {concert.status === "CANCELLED" ? (
+          <button
+            onClick={handleResume}
+            className="px-4 py-2 bg-success/10 text-success hover:bg-success hover:text-success-foreground rounded-xl text-sm font-medium transition-colors"
+          >
+            Tiếp tục sự kiện
+          </button>
+        ) : (
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl text-sm font-medium transition-colors"
+          >
+            Huỷ / Hoãn sự kiện
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-border p-6 md:p-8">

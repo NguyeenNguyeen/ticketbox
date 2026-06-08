@@ -246,6 +246,14 @@ Last Updated: 2026-06-03
 - [x] Add SVG and PDF Upload to Concert Form (`ConcertForm.tsx`)
 - [x] Build CSV Importer with Preview for Guest List (`admin/guests/page.tsx`)
 
+## Phase 4.7 — Frontend Bug Fixes (Member 4) ✅ COMPLETE
+
+- [x] Fix: Prevent freezing at update event page after importing file (added timeout and error handling for AI job polling in `ConcertForm.tsx`).
+- [x] Fix: Allow editing max tickets per person in event editing (added `maxPerUser` field to `TicketCategory` entity and updated `ConcertController.java`).
+- [x] Feature: Add functionality to resume a postponed event (added `resumeConcert` in `ConcertService.java` and `ConcertController.java`, added `Tiếp tục sự kiện` button in `admin/concerts/[id]/edit/page.tsx`).
+- [x] Fix: Block ticket booking on the customer side if the event is postponed/cancelled (updated `TicketPurchaseService.java` and disabled buttons in `TicketSelector.tsx`).
+- [x] Fix: Ensure updated AI biography artist data is immediately visible on frontend (corrected cache eviction names to `concertsV7` and `concertsListV7` in `AiBioService.java`).
+
 ---
 
 ## Blocked Tasks

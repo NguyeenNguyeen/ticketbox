@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @Service
 @RequiredArgsConstructor
@@ -72,10 +73,10 @@ public class AiBioService {
             concertRepository.save(concert);
             
             // Clear cache so frontend sees the updated artists immediately
-            org.springframework.cache.Cache concertsCache = cacheManager.getCache("concerts");
+            org.springframework.cache.Cache concertsCache = cacheManager.getCache("concertsV7");
             if (concertsCache != null) concertsCache.evict(concert.getId());
             
-            org.springframework.cache.Cache listCache = cacheManager.getCache("concertsList");
+            org.springframework.cache.Cache listCache = cacheManager.getCache("concertsListV7");
             if (listCache != null) listCache.clear();
             
             // 8. Mark Complete
@@ -87,6 +88,15 @@ public class AiBioService {
             log.error("Job {}: Business logic failure: {}", message.getJobId(), e.getMessage());
             aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "FAILED", e.getMessage());
             // We acknowledge to RabbitMQ (no throw) because retrying won't fix a bad PDF or bad JSON format from LLM
+        } catch (HttpStatusCodeException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                log.error("Job {}: Client HTTP error (e.g., invalid API key): {} - {}", message.getJobId(), e.getStatusCode(), e.getResponseBodyAsString());
+                aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "FAILED", "Lỗi xác thực API Key (4xx). Vui lòng kiểm tra lại cấu hình key.");
+                // Acknowledge to RabbitMQ (no throw) because retrying won't fix an invalid API key
+            } else {
+                log.error("Job {}: Server HTTP error from AI Provider: {}", message.getJobId(), e.getMessage());
+                throw e;
+            }
         } catch (Exception e) {
             // System faults (e.g. DB down, HTTP timeout)
             log.error("Job {}: System error occurred: {}", message.getJobId(), e.getMessage());

@@ -91,6 +91,10 @@ public class TicketPurchaseService {
             TicketCategory category = ticketCategoryRepository.findByIdWithPessimisticLock(categoryId)
                     .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
+            if ("CANCELLED".equals(category.getConcert().getEffectiveStatus())) {
+                throw new IllegalStateException("Cannot purchase tickets for a cancelled or postponed event.");
+            }
+
             int maxPerUser = TicketPurchaseLimit.getLimit(category.getName());
             int alreadyPurchased = ticketRepository.countByOwnerAndCategoryAndOrderStatus(
                     user, category, OrderStatus.COMPLETED);

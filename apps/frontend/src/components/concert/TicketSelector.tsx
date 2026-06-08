@@ -25,10 +25,11 @@ interface SelectedItem {
 
 interface TicketSelectorProps {
   concertId: string;
+  isCancelled?: boolean;
   onSelectionChange: (selectedItems: SelectedItem[]) => void;
 }
 
-export function TicketSelector({ concertId, onSelectionChange }: TicketSelectorProps) {
+export function TicketSelector({ concertId, isCancelled, onSelectionChange }: TicketSelectorProps) {
   const [categories, setCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -77,8 +78,14 @@ export function TicketSelector({ concertId, onSelectionChange }: TicketSelectorP
 
   return (
     <div className="space-y-4">
+      {isCancelled && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-center mb-6 border border-destructive/20 font-medium">
+          Sự kiện này đã bị hoãn hoặc huỷ. Bạn không thể đặt vé vào lúc này.
+        </div>
+      )}
       {categories.map((cat) => {
         const isSoldOut = cat.availableQuantity === 0;
+        const disabled = isSoldOut || isCancelled;
         const currentQty = quantities[cat.id] || 0;
         const maxAllowed = Math.min(cat.maxPerUser, cat.availableQuantity);
 
@@ -86,7 +93,7 @@ export function TicketSelector({ concertId, onSelectionChange }: TicketSelectorP
           <div
             key={cat.id}
             className={`flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl border ${
-              isSoldOut
+              disabled
                 ? "bg-secondary/50 border-border opacity-70"
                 : "bg-white border-border hover:border-primary/30 transition-colors"
             }`}
@@ -118,7 +125,7 @@ export function TicketSelector({ concertId, onSelectionChange }: TicketSelectorP
             <div className="flex items-center gap-4 bg-secondary/50 rounded-xl p-1">
               <button
                 onClick={() => updateQuantity(cat, -1)}
-                disabled={currentQty === 0 || isSoldOut}
+                disabled={currentQty === 0 || disabled}
                 className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors"
               >
                 <Minus className="w-4 h-4" />
@@ -126,7 +133,7 @@ export function TicketSelector({ concertId, onSelectionChange }: TicketSelectorP
               <span className="w-8 text-center font-bold text-lg">{currentQty}</span>
               <button
                 onClick={() => updateQuantity(cat, 1)}
-                disabled={currentQty >= maxAllowed || isSoldOut}
+                disabled={currentQty >= maxAllowed || disabled}
                 className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors"
               >
                 <Plus className="w-4 h-4" />

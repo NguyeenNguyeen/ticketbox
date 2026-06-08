@@ -99,7 +99,7 @@ public class ConcertController {
             catDto.setPrice(cat.getPrice());
             catDto.setTotalQuantity(cat.getTotalQuantity());
             catDto.setAvailableQuantity(cat.getAvailableQuantity());
-            catDto.setMaxPerUser(getMaxPerUser(cat.getName()));
+            catDto.setMaxPerUser(cat.getMaxPerUser() != null ? cat.getMaxPerUser() : 4);
             // Use concert's saleStartTime if set; otherwise 7 days before show (null-safe)
             LocalDateTime saleStart = c.getSaleStartTime();
             if (saleStart == null) {
@@ -126,7 +126,7 @@ public class ConcertController {
             dto.setPrice(cat.getPrice());
             dto.setTotalQuantity(cat.getTotalQuantity());
             dto.setAvailableQuantity(cat.getAvailableQuantity());
-            dto.setMaxPerUser(getMaxPerUser(cat.getName()));
+            dto.setMaxPerUser(cat.getMaxPerUser() != null ? cat.getMaxPerUser() : 4);
             LocalDateTime saleStart = c.getSaleStartTime();
             if (saleStart == null) {
                 saleStart = c.getStartTime() != null ? c.getStartTime().minusDays(7) : LocalDateTime.now();
@@ -166,6 +166,7 @@ public class ConcertController {
                 cat.setPrice(catReq.getPrice());
                 cat.setTotalQuantity(catReq.getTotalQuantity());
                 cat.setAvailableQuantity(catReq.getTotalQuantity());
+                cat.setMaxPerUser(catReq.getMaxPerUser() != null ? catReq.getMaxPerUser() : 4);
                 cat.setVersion(0L);
                 ticketCategoryRepository.save(cat);
             }
@@ -203,6 +204,9 @@ public class ConcertController {
                 if (match != null) {
                     match.setPrice(catReq.getPrice());
                     match.setTotalQuantity(catReq.getTotalQuantity());
+                    if (catReq.getMaxPerUser() != null) {
+                        match.setMaxPerUser(catReq.getMaxPerUser());
+                    }
                     ticketCategoryRepository.save(match);
                 } else {
                     Concert ref = concertService.getConcertById(id);
@@ -212,6 +216,7 @@ public class ConcertController {
                     cat.setPrice(catReq.getPrice());
                     cat.setTotalQuantity(catReq.getTotalQuantity());
                     cat.setAvailableQuantity(catReq.getTotalQuantity());
+                    cat.setMaxPerUser(catReq.getMaxPerUser() != null ? catReq.getMaxPerUser() : 4);
                     cat.setVersion(0L);
                     ticketCategoryRepository.save(cat);
                 }
@@ -224,6 +229,12 @@ public class ConcertController {
     @DeleteMapping("/admin/concerts/{id}")
     public ResponseEntity<Void> cancelConcert(@PathVariable Long id) {
         concertService.cancelConcert(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/admin/concerts/{id}/resume")
+    public ResponseEntity<Void> resumeConcert(@PathVariable Long id) {
+        concertService.resumeConcert(id);
         return ResponseEntity.ok().build();
     }
 
