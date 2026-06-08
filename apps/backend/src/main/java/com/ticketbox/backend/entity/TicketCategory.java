@@ -33,7 +33,7 @@ public class TicketCategory {
 
     @Column(nullable = false)
     private Integer availableQuantity;
-    
+
     @Version
     private Long version; // Optimistic lock fallback, though we use Pessimistic Lock
 }
