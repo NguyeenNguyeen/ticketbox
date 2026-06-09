@@ -124,5 +124,38 @@ Tài khoản mặc định `customer1` trong database có email là `customer1@g
 2. Khởi động hệ thống Backend và Frontend.
 3. Vào trang Đăng Ký (Register) trên ứng dụng, **tự tạo một tài khoản mới** bằng chính địa chỉ email mà bạn đã đăng ký Resend.
 4. Đăng nhập bằng tài khoản mới vừa tạo.
-5. Thực hiện quy trình mua vé (Purchase Ticket).
 6. Kiểm tra hộp thư (Inbox) của email đó để xem E-ticket PDF đính kèm.
+
+## 🚀 Khởi Động Dự Án (Startup Instructions)
+
+Dự án hiện tại không sử dụng thư viện tự động load `.env` (như `spring-dotenv`), thay vào đó, các biến môi trường sẽ được nạp trực tiếp từ hệ điều hành. Điều này đảm bảo tính nhất quán trên các môi trường CI/CD, Docker, và Server thực tế.
+
+**Lưu ý:** Bạn chỉ cần cấu hình MỘT file `.env` duy nhất ở thư mục gốc của dự án.
+
+### Đối với Linux / macOS
+
+Mở terminal ở thư mục gốc dự án, nạp biến môi trường và chạy Spring Boot:
+
+```bash
+set -a
+source .env
+set +a
+cd apps/backend
+mvn spring-boot:run
+```
+
+*(Hoặc nếu chạy từ thư mục gốc, sử dụng `mvn -pl apps/backend spring-boot:run`)*
+
+### Đối với Windows PowerShell
+
+Mở PowerShell ở thư mục gốc dự án, đọc file `.env` và set biến môi trường cho tiến trình hiện tại:
+
+```powershell
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
+        [Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
+    }
+}
+cd apps/backend
+mvn spring-boot:run
+```
