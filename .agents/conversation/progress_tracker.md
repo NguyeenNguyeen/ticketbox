@@ -255,6 +255,7 @@ Last Updated: 2026-06-03
 - [x] Fix: Ensure updated AI biography artist data is immediately visible on frontend (corrected cache eviction names to `concertsV7` and `concertsListV7` in `AiBioService.java`).
 - [x] Feature: Add manual Guest Artist editing feature in the Admin Event form (`ConcertController`, `ConcertService`, `ConcertForm.tsx`).
 - [x] Feature: Add SVG Seat Map upload and display functionality (`ConcertController`, `ConcertForm.tsx`, `page.tsx`).
+- [x] Feature: Make SVG Seat Map interactive (`InteractiveSeatMap.tsx`).
 
 ---
 

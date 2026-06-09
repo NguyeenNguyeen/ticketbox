@@ -92,6 +92,7 @@ export function TicketSelector({ concertId, isCancelled, onSelectionChange }: Ti
         return (
           <div
             key={cat.id}
+            id={`category-${cat.name}`}
             className={`flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl border ${
               disabled
                 ? "bg-secondary/50 border-border opacity-70"

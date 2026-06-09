@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 import { API_BASE_URL } from "@/lib/constants";
 import { ShoppingCart, Ticket, Users, Map } from "lucide-react";
 import Link from "next/link";
+import { InteractiveSeatMap } from "@/components/concert/InteractiveSeatMap";
 import { ArtistBioModal } from "@/components/concert/ArtistBioModal";
 import type { OrderItem } from "@/types/order";
 import type { Concert, Artist } from "@/types/concert";
@@ -151,13 +152,7 @@ export default function ConcertDetailPage() {
                 <Map className="w-6 h-6 text-primary" />
                 Sơ đồ ghế
               </h2>
-              <div className="flex justify-center bg-secondary/20 rounded-xl overflow-hidden p-4">
-                <img 
-                  src={`${API_BASE_URL}/concerts/${concert.id}/seat-map`} 
-                  alt="Sơ đồ ghế" 
-                  className="w-full h-auto max-h-[600px] object-contain" 
-                />
-              </div>
+              <InteractiveSeatMap concertId={concert.id} />
             </div>
           </div>
         )}
