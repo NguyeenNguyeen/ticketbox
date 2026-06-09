@@ -98,9 +98,12 @@ public class TicketPurchaseService {
                 throw new IllegalStateException("Cannot purchase tickets for a cancelled or postponed event.");
             }
 
-            int maxPerUser = TicketPurchaseLimit.getLimit(category.getName());
-            int alreadyPurchased = ticketRepository.countByOwnerAndCategoryAndOrderStatus(
-                    user, category, OrderStatus.COMPLETED);
+            int maxPerUser = category.getMaxPerUser() != null ? category.getMaxPerUser() : 4;
+            int alreadyPurchasedCompleted = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
+                    user.getId(), category.getId(), OrderStatus.COMPLETED);
+            int alreadyPurchasedPending = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
+                    user.getId(), category.getId(), OrderStatus.PENDING);
+            int alreadyPurchased = alreadyPurchasedCompleted + alreadyPurchasedPending;
             if (alreadyPurchased + quantity > maxPerUser) {
                 int remaining = maxPerUser - alreadyPurchased;
                 throw new IllegalStateException(
