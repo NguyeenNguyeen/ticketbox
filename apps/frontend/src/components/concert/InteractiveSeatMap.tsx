@@ -32,30 +32,35 @@ export function InteractiveSeatMap({ concertId }: InteractiveSeatMapProps) {
     svg.style.maxHeight = "600px";
 
     const handleClick = (e: MouseEvent) => {
-      let target = e.target as HTMLElement | SVGElement | null;
-      while (target && target !== svg) {
-        if (target.id) {
-          // Attempt to find a category block in the TicketSelector with this ID
-          const categoryBlock = document.getElementById(`category-${target.id}`);
-          if (categoryBlock) {
-            // Scroll to it
-            categoryBlock.scrollIntoView({ behavior: "smooth", block: "center" });
-            
-            // Add a brief highlight effect
-            categoryBlock.style.transition = "background-color 0.3s, transform 0.3s";
-            const originalBg = categoryBlock.style.backgroundColor;
-            categoryBlock.style.backgroundColor = "rgba(59, 130, 246, 0.1)"; // bg-primary/10
-            categoryBlock.style.transform = "scale(1.02)";
-            
-            setTimeout(() => {
-              categoryBlock.style.backgroundColor = originalBg;
-              categoryBlock.style.transform = "scale(1)";
-            }, 1000);
-            
-            break; // Stop climbing the DOM tree once a zone is handled
-          }
-        }
-        target = target.parentElement;
+      const target = e.target as Element;
+      const zoneElement = target.closest('g[id], path[id], rect[id], polygon[id]');
+      
+      if (!zoneElement || !svg.contains(zoneElement)) return;
+      
+      const zoneId = zoneElement.id.trim();
+      const categoryBlock = document.getElementById(`category-${zoneId}`);
+      
+      if (categoryBlock) {
+        // Scroll to it
+        categoryBlock.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        // Add a strong visible highlight effect
+        categoryBlock.style.transition = "all 0.3s ease-in-out";
+        const originalBg = categoryBlock.style.backgroundColor;
+        const originalBoxShadow = categoryBlock.style.boxShadow;
+        const originalTransform = categoryBlock.style.transform;
+        
+        categoryBlock.style.backgroundColor = "rgba(59, 130, 246, 0.15)";
+        categoryBlock.style.boxShadow = "0 0 0 4px rgba(59, 130, 246, 0.5)";
+        categoryBlock.style.transform = "scale(1.02)";
+        
+        setTimeout(() => {
+          categoryBlock.style.backgroundColor = originalBg || "";
+          categoryBlock.style.boxShadow = originalBoxShadow || "";
+          categoryBlock.style.transform = originalTransform || "";
+        }, 1500);
+      } else {
+        console.warn(`[InteractiveSeatMap] Category block not found for zone ID: ${zoneId}`);
       }
     };
 
