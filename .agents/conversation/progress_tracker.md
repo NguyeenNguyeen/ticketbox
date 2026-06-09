@@ -253,6 +253,8 @@ Last Updated: 2026-06-03
 - [x] Feature: Add functionality to resume a postponed event (added `resumeConcert` in `ConcertService.java` and `ConcertController.java`, added `Tiếp tục sự kiện` button in `admin/concerts/[id]/edit/page.tsx`).
 - [x] Fix: Block ticket booking on the customer side if the event is postponed/cancelled (updated `TicketPurchaseService.java` and disabled buttons in `TicketSelector.tsx`).
 - [x] Fix: Ensure updated AI biography artist data is immediately visible on frontend (corrected cache eviction names to `concertsV7` and `concertsListV7` in `AiBioService.java`).
+- [x] Feature: Add manual Guest Artist editing feature in the Admin Event form (`ConcertController`, `ConcertService`, `ConcertForm.tsx`).
+- [x] Feature: Add SVG Seat Map upload and display functionality (`ConcertController`, `ConcertForm.tsx`, `page.tsx`).
 
 ---
 

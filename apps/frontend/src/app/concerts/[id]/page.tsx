@@ -9,7 +9,8 @@ import { TicketSelector } from "@/components/concert/TicketSelector";
 import { useCartStore } from "@/stores/useCartStore";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
-import { ShoppingCart, Ticket, Users } from "lucide-react";
+import { API_BASE_URL } from "@/lib/constants";
+import { ShoppingCart, Ticket, Users, Map } from "lucide-react";
 import Link from "next/link";
 import { ArtistBioModal } from "@/components/concert/ArtistBioModal";
 import type { OrderItem } from "@/types/order";
@@ -122,8 +123,12 @@ export default function ConcertDetailPage() {
                     onClick={() => handleArtistClick(artist)}
                     className="flex flex-col items-center group text-left w-full focus:outline-none"
                   >
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center bg-primary/10 mb-3 border-4 border-transparent group-hover:border-primary/20 transition-all duration-300 shadow-md group-hover:shadow-xl transform group-hover:-translate-y-1">
-                      <Users className="w-8 h-8 text-primary/60" />
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center bg-primary/10 mb-3 border-4 border-transparent group-hover:border-primary/20 transition-all duration-300 shadow-md group-hover:shadow-xl transform group-hover:-translate-y-1 overflow-hidden">
+                      {artist.avatarUrl ? (
+                        <img src={artist.avatarUrl} alt={artist.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Users className="w-8 h-8 text-primary/60" />
+                      )}
                     </div>
                     <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors text-center">
                       {artist.name}
@@ -137,6 +142,25 @@ export default function ConcertDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Seat Map Section */}
+        {concert.hasSeatMap && (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-border p-6 md:p-8">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Map className="w-6 h-6 text-primary" />
+                Sơ đồ ghế
+              </h2>
+              <div className="flex justify-center bg-secondary/20 rounded-xl overflow-hidden p-4">
+                <img 
+                  src={`${API_BASE_URL}/concerts/${concert.id}/seat-map`} 
+                  alt="Sơ đồ ghế" 
+                  className="w-full h-auto max-h-[600px] object-contain" 
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Ticket Selection Section */}
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">

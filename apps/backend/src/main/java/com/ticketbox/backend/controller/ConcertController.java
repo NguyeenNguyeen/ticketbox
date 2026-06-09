@@ -1,7 +1,9 @@
 package com.ticketbox.backend.controller;
 
+import com.ticketbox.backend.entity.Artist;
 import com.ticketbox.backend.entity.Concert;
 import com.ticketbox.backend.entity.TicketCategory;
+import com.ticketbox.backend.repository.ArtistRepository;
 import com.ticketbox.backend.repository.TicketCategoryRepository;
 import com.ticketbox.backend.service.ConcertService;
 import lombok.Data;
@@ -10,10 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -24,6 +32,9 @@ public class ConcertController {
 
     @Autowired
     private TicketCategoryRepository ticketCategoryRepository;
+
+    @Autowired
+    private ArtistRepository artistRepository;
 
     // ──────────────────────────────────────────────────────────────
     // Public endpoints
@@ -90,6 +101,7 @@ public class ConcertController {
         dto.setShowTime("19:30");
         dto.setBannerUrl(resolveBannerUrl(c.getName()));
         dto.setStatus(c.getEffectiveStatus());
+        dto.setHasSeatMap(Files.exists(Paths.get("uploads/maps/concert_" + id + ".svg")));
 
         List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(c.getId());
         List<TicketCategoryDto> categoryDtos = categories.stream().map(cat -> {
@@ -155,6 +167,18 @@ public class ConcertController {
                         : null)
                 .build();
 
+        if (req.getArtists() != null) {
+            java.util.Set<com.ticketbox.backend.entity.Artist> artists = new java.util.HashSet<>();
+            for (ConcertCreateRequest.ArtistReq areq : req.getArtists()) {
+                com.ticketbox.backend.entity.Artist a = new com.ticketbox.backend.entity.Artist();
+                a.setName(areq.getName());
+                a.setAvatarUrl(areq.getAvatarUrl());
+                a.setBio(areq.getBio());
+                artists.add(a);
+            }
+            concert.setArtists(artists);
+        }
+
         Concert saved = concertService.createConcert(concert);
 
         // Create ticket categories
@@ -190,6 +214,23 @@ public class ConcertController {
                         ? LocalDateTime.parse(req.getSaleStartTime() + "T00:00:00")
                         : null)
                 .build();
+
+        if (req.getArtists() != null) {
+            java.util.Set<com.ticketbox.backend.entity.Artist> artists = new java.util.HashSet<>();
+            for (ConcertCreateRequest.ArtistReq areq : req.getArtists()) {
+                com.ticketbox.backend.entity.Artist a;
+                if (areq.getId() != null && !areq.getId().isEmpty()) {
+                    a = artistRepository.findById(Long.valueOf(areq.getId())).orElse(new com.ticketbox.backend.entity.Artist());
+                } else {
+                    a = new com.ticketbox.backend.entity.Artist();
+                }
+                a.setName(areq.getName());
+                a.setAvatarUrl(areq.getAvatarUrl());
+                a.setBio(areq.getBio());
+                artists.add(a);
+            }
+            updated.setArtists(artists);
+        }
 
         concertService.updateConcert(id, updated);
 
@@ -236,6 +277,37 @@ public class ConcertController {
     public ResponseEntity<Void> resumeConcert(@PathVariable Long id) {
         concertService.resumeConcert(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/admin/concerts/{id}/upload-map")
+    public ResponseEntity<?> uploadMap(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Path uploadPath = Paths.get("uploads/maps");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Path filePath = uploadPath.resolve("concert_" + id + ".svg");
+            file.transferTo(filePath.toAbsolutePath().toFile());
+            return ResponseEntity.ok(java.util.Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/concerts/{id}/seat-map")
+    public ResponseEntity<Resource> getSeatMap(@PathVariable Long id) {
+        Path path = Paths.get("uploads/maps/concert_" + id + ".svg");
+        if (Files.exists(path)) {
+            try {
+                Resource resource = new UrlResource(path.toUri());
+                return ResponseEntity.ok()
+                        .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "image/svg+xml")
+                        .body(resource);
+            } catch (Exception e) {
+                // Ignore and fall through
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -296,6 +368,7 @@ public class ConcertController {
         private String showTime;
         private String bannerUrl;
         private String status;
+        private boolean hasSeatMap;
         private List<TicketCategoryDto> ticketCategories;
     }
 
@@ -330,6 +403,7 @@ public class ConcertController {
         private String showTime;   // "19:30"
         private String saleStartTime; // "2026-12-01"
         private List<TicketCategoryReq> ticketCategories;
+        private List<ArtistReq> artists;
 
         @Data
         static class TicketCategoryReq {
@@ -338,6 +412,14 @@ public class ConcertController {
             private Integer totalQuantity;
             private Integer maxPerUser;
             private String saleStartTime;
+        }
+
+        @Data
+        static class ArtistReq {
+            private String id;
+            private String name;
+            private String avatarUrl;
+            private String bio;
         }
     }
 }

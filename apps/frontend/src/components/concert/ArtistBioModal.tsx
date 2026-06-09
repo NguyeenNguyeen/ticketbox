@@ -51,7 +51,11 @@ export function ArtistBioModal({ artist, isOpen, onClose }: ArtistBioModalProps)
           <div className="p-8 md:p-10">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 shrink-0 flex items-center justify-center bg-primary/10">
-                <Users className="w-16 h-16 text-primary/60" />
+                {artist.avatarUrl ? (
+                  <img src={artist.avatarUrl} alt={artist.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Users className="w-16 h-16 text-primary/60" />
+                )}
               </div>
               <div className="text-center sm:text-left mt-2">
                 <h2 className="text-3xl font-bold mb-2 text-gray-900">{artist.name}</h2>

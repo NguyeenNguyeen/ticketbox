@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%" style="background-color: #f8f9fa;">
+  <style>
+    .title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; text-anchor: middle; }
+    .subtitle { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; fill: #777; text-anchor: middle; }
+    .screen-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #fff; text-anchor: middle; }
+    .row-label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #555; dominant-baseline: middle; }
+    .seat-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+    .legend-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; fill: #333; dominant-baseline: middle; }
+    
+    /* Hiệu ứng hoor khi rê chuột vào ghế trống */
+    .seat-available:hover { fill: #218838; cursor: pointer; }
+  </style>
+
+  <text x="400" y="50" class="title">SƠ ĐỒ GHẾ NGỒI</text>
+  
+  <path d="M 150,110 Q 400,130 650,110" fill="none" stroke="#6c757d" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="150,110 650,110 600,140 200,140" fill="#6c757d" opacity="0.2"/>
+  <text x="400" y="130" class="screen-text" fill="#333">MÀN HÌNH / SÂN KHẤU</text>
+
+  <text x="160" y="225" class="row-label">A</text>
+  <rect x="220" y="200" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="245" y="225" class="seat-text">A1</text>
+  <rect x="290" y="200" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="315" y="225" class="seat-text">A2</text>
+  <rect x="360" y="200" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="385" y="225" class="seat-text">A3</text>
+  <rect x="430" y="200" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="455" y="225" class="seat-text">A4</text>
+  <rect x="500" y="200" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="525" y="225" class="seat-text">A5</text>
+  <text x="580" y="225" class="row-label">A</text>
+
+  <text x="160" y="305" class="row-label">B</text>
+  <rect x="220" y="280" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="245" y="305" class="seat-text">B1</text>
+  <rect x="290" y="280" width="50" height="50" rx="10" fill="#ffc107" cursor="pointer" />
+  <text x="315" y="305" class="seat-text" fill="#000">B2</text>
+  <rect x="360" y="280" width="50" height="50" rx="10" fill="#ffc107" cursor="pointer" />
+  <text x="385" y="305" class="seat-text" fill="#000">B3</text>
+  <rect x="430" y="280" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="455" y="305" class="seat-text">B4</text>
+  <rect x="500" y="280" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="525" y="305" class="seat-text">B5</text>
+  <text x="580" y="305" class="row-label">B</text>
+
+  <text x="160" y="385" class="row-label">C</text>
+  <rect x="220" y="360" width="50" height="50" rx="10" fill="#dc3545" opacity="0.6" />
+  <text x="245" y="385" class="seat-text">C1</text>
+  <rect x="290" y="360" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="315" y="385" class="seat-text">C2</text>
+  <rect x="360" y="360" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="385" y="385" class="seat-text">C3</text>
+  <rect x="430" y="360" width="50" height="50" rx="10" fill="#28a745" class="seat-available" />
+  <text x="455" y="385" class="seat-text">C4</text>
+  <rect x="500" y="360" width="50" height="50" rx="10" fill="#dc3545" opacity="0.6" />
+  <text x="525" y="385" class="seat-text">C5</text>
+  <text x="580" y="385" class="row-label">C</text>
+
+  <line x1="150" y1="460" x2="650" y2="460" stroke="#dee2e6" stroke-width="2" stroke-dasharray="5,5" />
+
+  <g transform="translate(180, 490)">
+    <rect x="0" y="0" width="30" height="30" rx="6" fill="#28a745" />
+    <text x="40" y="18" class="legend-text">Ghế trống</text>
+
+    <rect x="160" y="0" width="30" height="30" rx="6" fill="#ffc107" />
+    <text x="200" y="18" class="legend-text">Đang chọn</text>
+
+    <rect x="320" y="0" width="30" height="30" rx="6" fill="#dc3545" opacity="0.6" />
+    <text x="360" y="18" class="legend-text">Đã đặt</text>
+  </g>
+</svg>

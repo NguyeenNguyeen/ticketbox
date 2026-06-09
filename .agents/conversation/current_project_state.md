@@ -109,6 +109,8 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
   - Added "Tiếp tục sự kiện" (Resume event) functionality for postponed events.
   - Blocked ticket booking on the customer side if the event is postponed/cancelled.
   - Corrected cache eviction names in `AiBioService.java` to ensure AI biography updates are instantly visible.
+  - Added manual editing for Guest Artists in the Admin Concert Form.
+  - Added SVG Seat Map upload and rendering functionality.
 
 ---
 

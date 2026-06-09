@@ -61,6 +61,13 @@ public class ConcertService {
         if (updated.getSaleStartTime() != null) {
             existing.setSaleStartTime(updated.getSaleStartTime());
         }
+        if (updated.getArtists() != null) {
+            if (existing.getArtists() == null) {
+                existing.setArtists(new java.util.HashSet<>());
+            }
+            existing.getArtists().clear();
+            existing.getArtists().addAll(updated.getArtists());
+        }
         return cloneConcert(concertRepository.save(existing));
     }
 

@@ -16,6 +16,13 @@ const ticketSchema = z.object({
   saleStartTime: z.string().min(1, "Chọn thời gian mở bán"),
 });
 
+const artistSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Tên nghệ sĩ không được để trống"),
+  avatarUrl: z.string().optional(),
+  bio: z.string().optional(),
+});
+
 const formSchema = z.object({
   title: z.string().min(1, "Tên sự kiện không được để trống"),
   description: z.string().min(1, "Mô tả không được để trống"),
@@ -25,6 +32,7 @@ const formSchema = z.object({
   doors: z.string().min(1, "Chọn giờ mở cửa"),
   showTime: z.string().min(1, "Chọn giờ biểu diễn"),
   ticketCategories: z.array(ticketSchema).min(1, "Cần ít nhất 1 hạng vé"),
+  artists: z.array(artistSchema).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -50,11 +58,18 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
             name: tc.name, price: tc.price, totalQuantity: tc.totalQuantity,
             maxPerUser: tc.maxPerUser, saleStartTime: tc.saleStartTime.split("T")[0],
           })),
+          artists: initialData.artists?.map((a) => ({
+            id: a.id, name: a.name, avatarUrl: a.avatarUrl || "", bio: a.bio || "",
+          })) || [],
         }
-      : { ticketCategories: [{ name: "", price: 0, totalQuantity: 0, maxPerUser: 2, saleStartTime: "" }] },
+      : { 
+          ticketCategories: [{ name: "", price: 0, totalQuantity: 0, maxPerUser: 2, saleStartTime: "" }],
+          artists: []
+        },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "ticketCategories" });
+  const { fields: artistFields, append: appendArtist, remove: removeArtist } = useFieldArray({ control, name: "artists" });
 
   const [svgFile, setSvgFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -80,6 +95,15 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
       const returnedId = await onSubmit(data as unknown as Record<string, unknown>);
       const cid = returnedId || initialData?.id || "1";
       
+      if (svgFile) {
+        try {
+          await api.uploadFile(`/admin/concerts/${cid}/upload-map`, svgFile, "file");
+        } catch (err: any) {
+          console.error("Failed to upload SVG", err);
+          alert("Lỗi upload sơ đồ ghế: " + err.message);
+        }
+      }
+
       if (pdfFile) {
         setIsExtractingPdf(true);
         setExtractionComplete(false);
@@ -271,6 +295,49 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
           ))}
         </div>
         {errors.ticketCategories && <p className="text-sm text-destructive mt-2">{errors.ticketCategories.message}</p>}
+      </div>
+
+      {/* Guest Artists */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">Nghệ sĩ khách mời (Thủ công)</h3>
+          <Button type="button" variant="outline" size="sm" onClick={() => appendArtist({ name: "", avatarUrl: "", bio: "" })}>
+            <Plus className="w-4 h-4" /> Thêm nghệ sĩ
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {artistFields.map((field, i) => (
+            <div key={field.id} className="p-4 bg-secondary/30 rounded-xl space-y-3 border border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Nghệ sĩ #{i + 1}</span>
+                <button type="button" onClick={() => removeArtist(i)} className="text-destructive hover:text-destructive/80">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground">Tên nghệ sĩ</label>
+                  <input {...register(`artists.${i}.name`)} className={inputClass} placeholder="VD: Sơn Tùng M-TP" />
+                  {errors.artists?.[i]?.name && <p className="text-xs text-destructive mt-1">{errors.artists[i]?.name?.message}</p>}
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">URL Ảnh đại diện</label>
+                  <input {...register(`artists.${i}.avatarUrl`)} className={inputClass} placeholder="https://..." />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs text-muted-foreground">Tiểu sử ngắn</label>
+                  <textarea {...register(`artists.${i}.bio`)} rows={2} className={inputClass} placeholder="Giới thiệu về nghệ sĩ..." />
+                </div>
+                <input type="hidden" {...register(`artists.${i}.id`)} />
+              </div>
+            </div>
+          ))}
+          {artistFields.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4 bg-secondary/20 rounded-xl border border-dashed border-border">
+              Chưa có nghệ sĩ nào. Bạn có thể thêm thủ công hoặc dùng tính năng Upload PDF để AI tự động trích xuất.
+            </p>
+          )}
+        </div>
       </div>
 
       <Button type="submit" loading={isSubmitting} size="lg" className="w-full">
