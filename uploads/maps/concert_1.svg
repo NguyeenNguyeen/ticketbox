@@ -1,0 +1,35 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sân khấu (Stage) -->
+  <rect x="200" y="50" width="400" height="100" rx="10" fill="#333" />
+  <text x="400" y="110" font-family="sans-serif" font-size="24" fill="#fff" font-weight="bold" text-anchor="middle">SÂN KHẤU (STAGE)</text>
+
+  <!-- SVIP -->
+  <g id="SVIP">
+    <rect x="250" y="200" width="300" height="80" rx="10" fill="#F59E0B" />
+    <text x="400" y="245" font-family="sans-serif" font-size="20" fill="#fff" font-weight="bold" text-anchor="middle">SVIP</text>
+  </g>
+
+  <!-- VIP -->
+  <g id="VIP">
+    <path d="M 150 320 Q 400 280 650 320 L 650 400 Q 400 360 150 400 Z" fill="#7C3AED" />
+    <text x="400" y="365" font-family="sans-serif" font-size="20" fill="#fff" font-weight="bold" text-anchor="middle">VIP</text>
+  </g>
+
+  <!-- CAT1 -->
+  <g id="CAT1">
+    <rect x="150" y="440" width="200" height="100" rx="10" fill="#3B82F6" />
+    <text x="250" y="495" font-family="sans-serif" font-size="20" fill="#fff" font-weight="bold" text-anchor="middle">CAT1</text>
+  </g>
+
+  <!-- CAT2 -->
+  <g id="CAT2">
+    <rect x="450" y="440" width="200" height="100" rx="10" fill="#10B981" />
+    <text x="550" y="495" font-family="sans-serif" font-size="20" fill="#fff" font-weight="bold" text-anchor="middle">CAT2</text>
+  </g>
+
+  <!-- GA -->
+  <g id="GA">
+    <rect x="50" y="200" width="100" height="340" rx="10" fill="#9CA3AF" />
+    <text x="100" y="380" font-family="sans-serif" font-size="20" fill="#fff" font-weight="bold" text-anchor="middle" transform="rotate(-90 100 380)">GA STANDING</text>
+  </g>
+</svg>

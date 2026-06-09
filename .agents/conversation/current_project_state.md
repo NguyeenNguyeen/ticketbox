@@ -111,6 +111,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
   - Corrected cache eviction names in `AiBioService.java` to ensure AI biography updates are instantly visible.
   - Added manual editing for Guest Artists in the Admin Concert Form.
   - Added SVG Seat Map upload and rendering functionality.
+  - Upgraded SVG Seat Map to be interactive (hover to highlight, click to scroll to ticket category).
 
 ---
 
