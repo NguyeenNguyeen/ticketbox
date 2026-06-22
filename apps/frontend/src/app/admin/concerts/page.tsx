@@ -78,6 +78,7 @@ export default function AdminConcertsPage() {
                 src={concert.bannerUrl}
                 alt={concert.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 192px"
                 className="object-cover"
               />
             </div>
