@@ -67,7 +67,7 @@ export default function AdminConcertsPage() {
 
       {/* Concert List */}
       <div className="space-y-4">
-        {concerts.map((concert) => (
+        {concerts.map((concert, index) => (
           <div
             key={concert.id}
             className="bg-white rounded-2xl border border-border p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6 card-hover"
@@ -78,6 +78,7 @@ export default function AdminConcertsPage() {
                 src={concert.bannerUrl}
                 alt={concert.title}
                 fill
+                priority={index === 0}
                 sizes="(max-width: 768px) 100vw, 192px"
                 className="object-cover"
               />
