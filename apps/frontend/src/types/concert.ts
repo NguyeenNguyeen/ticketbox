@@ -30,6 +30,7 @@ export interface Concert {
   showTime: string;        // e.g., "19:30"
   bannerUrl: string;
   status: ConcertStatus;
+  forcedStatus?: string;
   hasSeatMap: boolean;
   ticketCategories: TicketCategory[];
   createdAt: string;

@@ -32,6 +32,7 @@ const formSchema = z.object({
   doors: z.string().min(1, "Chọn giờ mở cửa"),
   showTime: z.string().min(1, "Chọn giờ biểu diễn"),
   ticketCategories: z.array(ticketSchema).min(1, "Cần ít nhất 1 hạng vé"),
+  forcedStatus: z.string().optional(),
   artists: z.array(artistSchema).optional(),
 });
 
@@ -61,9 +62,11 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
           artists: initialData.artists?.map((a) => ({
             id: a.id, name: a.name, avatarUrl: a.avatarUrl || "", bio: a.bio || "",
           })) || [],
+          forcedStatus: initialData.forcedStatus || "",
         }
       : { 
           ticketCategories: [{ name: "", price: 0, totalQuantity: 0, maxPerUser: 2, saleStartTime: "" }],
+          forcedStatus: "",
           artists: []
         },
   });
@@ -190,6 +193,17 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
             <label className="block text-sm font-medium mb-2">Bắt đầu</label>
             <input type="time" {...register("showTime")} className={inputClass} />
           </div>
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-2">Trạng thái mở bán</label>
+          <select {...register("forcedStatus")} className={inputClass}>
+            <option value="">Tự động (theo thời gian)</option>
+            <option value="UPCOMING">Sắp mở bán</option>
+            <option value="ON_SALE">Đang mở bán</option>
+          </select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Chọn trạng thái nếu muốn ép sự kiện mở bán thủ công. Nếu chọn "Tự động", hệ thống sẽ dựa vào "Ngày mở bán" của hạng vé để tính toán.
+          </p>
         </div>
       </div>
 
