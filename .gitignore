@@ -59,3 +59,5 @@ out/
 .springBeans
 .sts4-cache/
 
+# Uploads
+apps/backend/uploads/

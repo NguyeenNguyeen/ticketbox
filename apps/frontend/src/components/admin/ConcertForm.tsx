@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, UploadCloud, FileType2, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, UploadCloud, FileType2, FileText, Loader2, CheckCircle2, Image } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import type { Concert } from "@/types/concert";
@@ -76,6 +76,7 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
 
   const [svgFile, setSvgFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [isExtractingPdf, setIsExtractingPdf] = useState(false);
   const [extractionComplete, setExtractionComplete] = useState(false);
 
@@ -93,6 +94,12 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
     }
   };
 
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setBannerFile(e.target.files[0]);
+    }
+  };
+
   const onValid = async (data: FormData) => {
     try {
       const returnedId = await onSubmit(data as unknown as Record<string, unknown>);
@@ -104,6 +111,15 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
         } catch (err: any) {
           console.error("Failed to upload SVG", err);
           alert("Lỗi upload sơ đồ ghế: " + err.message);
+        }
+      }
+
+      if (bannerFile) {
+        try {
+          await api.uploadFile(`/admin/concerts/${cid}/upload-banner`, bannerFile, "file");
+        } catch (err: any) {
+          console.error("Failed to upload banner", err);
+          alert("Lỗi upload ảnh nền: " + err.message);
         }
       }
 
@@ -208,7 +224,41 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
       </div>
 
       {/* File Uploads */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Banner Upload */}
+        <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer overflow-hidden group">
+          <input 
+            type="file" 
+            accept="image/*"
+            onClick={(e) => { (e.target as HTMLInputElement).value = ""; }}
+            onChange={handleBannerChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
+          />
+          
+          {/* Background Preview */}
+          {bannerFile ? (
+            <div className="absolute inset-0 z-0">
+              <img src={URL.createObjectURL(bannerFile)} alt="Preview" className="w-full h-full object-cover opacity-30" />
+            </div>
+          ) : initialData?.bannerUrl ? (
+            <div className="absolute inset-0 z-0">
+              <img src={initialData.bannerUrl} alt="Current Banner" className="w-full h-full object-cover opacity-30" />
+            </div>
+          ) : null}
+
+          <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none relative z-10">
+            <div className="w-12 h-12 bg-background/80 backdrop-blur-sm text-primary rounded-full flex items-center justify-center shadow-sm">
+              <Image className="w-6 h-6" />
+            </div>
+            <div className="bg-background/80 backdrop-blur-sm px-3 py-1 rounded-lg shadow-sm inline-block">
+              <p className="font-medium text-foreground">Ảnh nền (Banner)</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {bannerFile ? bannerFile.name : "Kéo thả/click để tải lên ảnh mới"}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* SVG Upload */}
         <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:bg-secondary/50 transition-colors relative cursor-pointer">
           <input 

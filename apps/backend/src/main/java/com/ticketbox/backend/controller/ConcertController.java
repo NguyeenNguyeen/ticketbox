@@ -48,8 +48,12 @@ public class ConcertController {
             dto.setId(c.getId().toString());
             dto.setTitle(c.getName());
             dto.setVenue(c.getLocation());
-            dto.setDate(c.getStartTime() != null ? c.getStartTime().toString() : "");
-            dto.setBannerUrl(resolveBannerUrl(c.getName()));
+            dto.setDate(c.getStartTime() != null ? c.getStartTime().toLocalDate().toString() : "");
+            
+            String bUrl = c.getBannerUrl();
+            if (bUrl != null && bUrl.contains("?t=")) bUrl = bUrl.substring(0, bUrl.indexOf("?t="));
+            dto.setBannerUrl(bUrl != null && !bUrl.isEmpty() ? bUrl : resolveBannerUrl(c.getName()));
+            
             dto.setStatus(c.getEffectiveStatus());
 
             List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(c.getId());
@@ -99,7 +103,11 @@ public class ConcertController {
         dto.setDate(c.getStartTime() != null ? c.getStartTime().toLocalDate().toString() : "");
         dto.setDoors(c.getDoorsTime() != null ? c.getDoorsTime() : "18:00");
         dto.setShowTime(c.getStartTime() != null ? String.format("%02d:%02d", c.getStartTime().getHour(), c.getStartTime().getMinute()) : "19:00");
-        dto.setBannerUrl(resolveBannerUrl(c.getName()));
+        
+        String bUrl = c.getBannerUrl();
+        if (bUrl != null && bUrl.contains("?t=")) bUrl = bUrl.substring(0, bUrl.indexOf("?t="));
+        dto.setBannerUrl(bUrl != null && !bUrl.isEmpty() ? bUrl : resolveBannerUrl(c.getName()));
+        
         dto.setStatus(c.getEffectiveStatus());
         dto.setForcedStatus(c.getForcedStatus() != null ? c.getForcedStatus() : "");
         dto.setHasSeatMap(Files.exists(Paths.get("uploads/maps/concert_" + id + ".svg")));
@@ -319,6 +327,43 @@ public class ConcertController {
                 Resource resource = new UrlResource(path.toUri());
                 return ResponseEntity.ok()
                         .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "image/svg+xml")
+                        .body(resource);
+            } catch (Exception e) {
+                // Ignore and fall through
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/admin/concerts/{id}/upload-banner")
+    public ResponseEntity<?> uploadBanner(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Path uploadPath = Paths.get("uploads/banners");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Path filePath = uploadPath.resolve("concert_" + id + ".jpg");
+            file.transferTo(filePath.toAbsolutePath().toFile());
+            
+            // Save banner URL in DB
+            Concert concert = concertService.getConcertById(id);
+            concert.setBannerUrl("/api/concerts/" + id + "/banner");
+            concertService.updateConcert(id, concert);
+            
+            return ResponseEntity.ok(java.util.Map.of("success", true, "bannerUrl", concert.getBannerUrl()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/concerts/{id}/banner")
+    public ResponseEntity<Resource> getBanner(@PathVariable Long id) {
+        Path path = Paths.get("uploads/banners/concert_" + id + ".jpg");
+        if (Files.exists(path)) {
+            try {
+                Resource resource = new UrlResource(path.toUri());
+                return ResponseEntity.ok()
+                        .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "image/jpeg")
                         .body(resource);
             } catch (Exception e) {
                 // Ignore and fall through
