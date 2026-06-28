@@ -164,9 +164,11 @@ public class ConcertController {
                 .doorsTime(req.getDoors())
                 .startTime(LocalDateTime.parse(req.getDate() + "T" + (req.getShowTime() != null ? req.getShowTime() : "19:00") + ":00"))
                 .endTime(LocalDateTime.parse(req.getDate() + "T23:59:00"))
-                .saleStartTime(req.getSaleStartTime() != null
+                .saleStartTime(req.getSaleStartTime() != null && !req.getSaleStartTime().isEmpty()
                         ? LocalDateTime.parse(req.getSaleStartTime() + "T00:00:00")
-                        : null)
+                        : (req.getTicketCategories() != null && !req.getTicketCategories().isEmpty() && req.getTicketCategories().get(0).getSaleStartTime() != null && !req.getTicketCategories().get(0).getSaleStartTime().isEmpty()
+                            ? LocalDateTime.parse(req.getTicketCategories().get(0).getSaleStartTime() + "T00:00:00")
+                            : null))
                 .build();
 
         if (req.getArtists() != null) {
@@ -214,9 +216,11 @@ public class ConcertController {
                 .doorsTime(req.getDoors())
                 .startTime(LocalDateTime.parse(req.getDate() + "T" + (req.getShowTime() != null ? req.getShowTime() : "19:00") + ":00"))
                 .endTime(LocalDateTime.parse(req.getDate() + "T23:59:00"))
-                .saleStartTime(req.getSaleStartTime() != null
+                .saleStartTime(req.getSaleStartTime() != null && !req.getSaleStartTime().isEmpty()
                         ? LocalDateTime.parse(req.getSaleStartTime() + "T00:00:00")
-                        : null)
+                        : (req.getTicketCategories() != null && !req.getTicketCategories().isEmpty() && req.getTicketCategories().get(0).getSaleStartTime() != null && !req.getTicketCategories().get(0).getSaleStartTime().isEmpty()
+                            ? LocalDateTime.parse(req.getTicketCategories().get(0).getSaleStartTime() + "T00:00:00")
+                            : null))
                 .build();
 
         if (req.getArtists() != null) {
