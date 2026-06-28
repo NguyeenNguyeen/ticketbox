@@ -65,6 +65,7 @@ public class AuthController {
 
         User user = User.builder()
                 .username(registerRequest.getUsername())
+                .fullName(registerRequest.getFullName())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .email(registerRequest.getEmail())
                 .role(registerRequest.getRole() != null ? registerRequest.getRole() : RoleName.CUSTOMER)
@@ -84,6 +85,7 @@ public class AuthController {
     @Data
     static class RegisterRequest {
         private String username;
+        private String fullName;
         private String password;
         private String email;
         private RoleName role;

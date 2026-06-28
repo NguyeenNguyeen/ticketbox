@@ -40,15 +40,17 @@ public class JwtTokenProvider {
                 .findFirst()
                 .orElse("CUSTOMER");
 
-        String email = userRepository.findByUsername(userPrincipal.getUsername())
-                .map(User::getEmail)
-                .orElse(userPrincipal.getUsername() + "@ticketbox.vn");
+        User user = userRepository.findByUsername(userPrincipal.getUsername()).orElse(null);
+        String email = user != null && user.getEmail() != null ? user.getEmail() : userPrincipal.getUsername() + "@ticketbox.vn";
+        String name = user != null && user.getFullName() != null && !user.getFullName().isEmpty() 
+                        ? user.getFullName() 
+                        : userPrincipal.getUsername();
 
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .claim("role", role)
                 .claim("email", email)
-                .claim("name", userPrincipal.getUsername())
+                .claim("name", name)
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(key())
