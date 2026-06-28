@@ -7,7 +7,6 @@ import { Footer } from "@/components/layout/Footer";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/stores/useCartStore";
-import { useSeatStore } from "@/stores/useSeatStore";
 
 export default function PaymentCallbackPage() {
   const router = useRouter();
@@ -15,7 +14,6 @@ export default function PaymentCallbackPage() {
   const [errorMessage, setErrorMessage] = useState("");
   
   const clearCart = useCartStore((s) => s.clearCart);
-  const clearSeats = useSeatStore((s) => s.clearSelection);
 
   useEffect(() => {
     // VNPAY uses vnp_ResponseCode (00 is success)
@@ -38,7 +36,6 @@ export default function PaymentCallbackPage() {
         if (isSuccess) {
           setStatus("success");
           clearCart();
-          clearSeats();
         } else {
           setStatus("error");
           setErrorMessage("Giao dịch bị từ chối hoặc đã bị huỷ bởi người dùng.");
@@ -55,7 +52,7 @@ export default function PaymentCallbackPage() {
       setStatus("error");
       setErrorMessage("Không tìm thấy thông tin giao dịch hợp lệ.");
     }
-  }, [clearCart, clearSeats]);
+  }, [clearCart]);
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">

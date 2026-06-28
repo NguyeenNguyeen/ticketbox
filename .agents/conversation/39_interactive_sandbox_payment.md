@@ -15,9 +15,10 @@ Implement an interactive, realistic sandbox payment flow for both VNPAY and MoMo
 
 ## Files Modified
 1. **Backend Controller**: [TicketController.java](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/controller/TicketController.java)
-2. **Frontend Form**: [CheckoutForm.tsx](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/frontend/src/components/checkout/CheckoutForm.tsx)
-3. **Global Styles**: [globals.css](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/frontend/src/app/globals.css)
-4. **Conversation Records**: [progress_tracker.md](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/.agents/conversation/progress_tracker.md)
+2. **Backend Controller**: [PaymentSandboxController.java](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/backend/src/main/java/com/ticketbox/backend/controller/PaymentSandboxController.java) (Fixed Hibernate proxy lazy loading serialization bug in `/complete` endpoint)
+3. **Frontend Form**: [CheckoutForm.tsx](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/frontend/src/components/checkout/CheckoutForm.tsx)
+4. **Global Styles**: [globals.css](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/apps/frontend/src/app/globals.css)
+5. **Conversation Records**: [progress_tracker.md](file:///c:/Users/Banana/OneDrive/Desktop/ticketbox/.agents/conversation/progress_tracker.md)
 
 ## Dependencies
 - Spring Boot core transaction service `TicketPurchaseService`

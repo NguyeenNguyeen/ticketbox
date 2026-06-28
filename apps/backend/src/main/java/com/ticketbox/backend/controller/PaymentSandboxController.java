@@ -55,7 +55,13 @@ public class PaymentSandboxController {
             log.info("Sandbox payment failed/cancelled. Order {} cancelled and inventory restored.", order.getId());
         }
 
-        return ResponseEntity.ok(updatedOrder);
+        // Return a simplified map to avoid Jackson serialization issues with Hibernate lazy loading of the User entity
+        return ResponseEntity.ok(java.util.Map.of(
+            "orderId", updatedOrder.getId(),
+            "status", updatedOrder.getStatus().name(),
+            "totalAmount", updatedOrder.getTotalAmount(),
+            "createdAt", updatedOrder.getCreatedAt().toString()
+        ));
     }
 
     @Data

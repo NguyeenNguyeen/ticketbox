@@ -102,7 +102,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
 - [x] Fixed Quick Login Demo to use real backend authentication instead of mock tokens
 - [x] Fixed `data.sql` test account passwords to match correct Bcrypt hashes (`password`) and added `checker1` account
 - [x] **Frontend Blueprint (Person 2) Implemented**: Realtime SSE/Polling, Idempotency headers, Network error handling, Seat limits, Cancel Concert feature.
-- [x] **Frontend Blueprint Continuation (Person 2) Implemented**: ISR for HomePage, Payment Callback Page, SVG/PDF Upload to Concert Form, CSV Importer with Preview for Guest List.
+- [x] **Frontend Blueprint Continuation (Person 2) Implemented**: ISR for HomePage, Payment Callback Page (Fixed useSeatStore import build error), SVG/PDF Upload to Concert Form, CSV Importer with Preview for Guest List.
 - [x] **Admin Concert Bug Fixes**:
   - Prevented infinite loop freezing during PDF upload/import on Concert Edit page.
   - Added `maxPerUser` persistence logic so Max/Người works correctly during event updates.
@@ -112,7 +112,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
   - Added manual editing for Guest Artists in the Admin Concert Form.
   - Added SVG Seat Map upload and rendering functionality.
   - Upgraded SVG Seat Map to be interactive (hover to highlight, click to scroll to ticket category).
-- [x] **Interactive Sandbox Payment Flow**: Integrated a realistic mock checkout screen for VNPAY (card details & OTP) and MoMo (QR scan view) with backend endpoints.
+- [x] **Interactive Sandbox Payment Flow**: Integrated a realistic mock checkout screen for VNPAY (card details & OTP) and MoMo (QR scan view) with backend endpoints (Fixed Hibernate proxy lazy loading serialization bug in `/complete` endpoint).
 
 ---
 
