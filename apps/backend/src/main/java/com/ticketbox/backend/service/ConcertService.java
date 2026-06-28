@@ -17,6 +17,9 @@ public class ConcertService {
     @Autowired
     private ConcertRepository concertRepository;
 
+    @Autowired
+    private com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
+
     private Concert cloneConcert(Concert c) {
         return Concert.builder()
                 .id(c.getId())
@@ -85,5 +88,12 @@ public class ConcertService {
                 .orElseThrow(() -> new IllegalArgumentException("Concert not found"));
         concert.setCancelledStatus(null);
         concertRepository.save(concert);
+    }
+
+    @CacheEvict(value = {"concertsV7", "concertsListV7"}, allEntries = true)
+    public void deleteConcert(Long id) {
+        java.util.List<com.ticketbox.backend.entity.TicketCategory> categories = ticketCategoryRepository.findByConcertId(id);
+        ticketCategoryRepository.deleteAll(categories);
+        concertRepository.deleteById(id);
     }
 }

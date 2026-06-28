@@ -36,7 +36,7 @@ public class Concert implements java.io.Serializable {
     /** Nullable: set to "CANCELLED" to manually cancel. Otherwise computed from time. */
     private String cancelledStatus;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "concert_artists",
         joinColumns = @JoinColumn(name = "concert_id"),

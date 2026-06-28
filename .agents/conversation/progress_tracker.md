@@ -259,6 +259,8 @@ Last Updated: 2026-06-03
 - [x] Feature: Interactive Sandbox Payment Gateway (VNPAY & MoMo UI, complete API)
 - [x] Feature: Hiển thị vé điện tử trực tiếp sau thanh toán thành công và trong trang chi tiết Lịch sử giao dịch (`payment/callback/page.tsx`, `orders/[id]/page.tsx`).
 - [x] Fix: Yêu cầu đăng nhập trước khi mua vé và thanh toán (Thêm `isAuthenticated` check và redirect trong `concerts/[id]/page.tsx` và `checkout/page.tsx`).
+- [x] Fix: Chặn người dùng mua vé đối với các sự kiện chưa mở bán (`UPCOMING`) trên frontend và backend.
+- [x] Feature: Cho phép xóa hoàn toàn sự kiện khỏi cơ sở dữ liệu nếu sự kiện đó đã bị hủy (`DELETE /api/admin/concerts/{id}/hard`).
 
 ---
 

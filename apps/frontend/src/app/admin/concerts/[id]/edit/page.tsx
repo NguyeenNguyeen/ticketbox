@@ -95,6 +95,24 @@ export default function EditConcertPage() {
     }
   };
 
+  const handleHardDelete = async () => {
+    if (
+      !window.confirm(
+        "CẢNH BÁO: Bạn có chắc chắn muốn XÓA HOÀN TOÀN sự kiện này không? Hành động này sẽ xóa toàn bộ dữ liệu liên quan khỏi cơ sở dữ liệu và không thể hoàn tác."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api.delete(`/admin/concerts/${concertId}/hard`);
+      toast({ title: "Đã xóa hoàn toàn sự kiện", variant: "success" });
+      router.push("/admin/concerts");
+    } catch (error: any) {
+      toast({ title: "Lỗi", description: error.message || "Không thể xóa sự kiện (có thể đã có giao dịch mua vé)", variant: "error" });
+    }
+  };
+
   return (
     <div>
       <Link
@@ -112,12 +130,20 @@ export default function EditConcertPage() {
         </div>
 
         {concert.status === "CANCELLED" ? (
-          <button
-            onClick={handleResume}
-            className="px-4 py-2 bg-success/10 text-success hover:bg-success hover:text-success-foreground rounded-xl text-sm font-medium transition-colors"
-          >
-            Tiếp tục sự kiện
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleResume}
+              className="px-4 py-2 bg-success/10 text-success hover:bg-success hover:text-success-foreground rounded-xl text-sm font-medium transition-colors"
+            >
+              Tiếp tục sự kiện
+            </button>
+            <button
+              onClick={handleHardDelete}
+              className="px-4 py-2 bg-destructive text-destructive-foreground hover:bg-red-700 rounded-xl text-sm font-medium transition-colors"
+            >
+              Xóa hoàn toàn
+            </button>
+          </div>
         ) : (
           <button
             onClick={handleCancel}

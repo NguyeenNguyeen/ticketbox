@@ -178,7 +178,7 @@ export default function ConcertDetailPage() {
               <Ticket className="w-6 h-6 text-primary" />
               Chọn vé
             </h2>
-            <TicketSelector concertId={concertId} isCancelled={concert.status === "CANCELLED"} onSelectionChange={setSelectedItems} />
+            <TicketSelector concertId={concertId} status={concert.status} onSelectionChange={setSelectedItems} />
           </div>
         </div>
 

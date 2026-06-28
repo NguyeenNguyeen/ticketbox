@@ -279,6 +279,12 @@ public class ConcertController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/admin/concerts/{id}/hard")
+    public ResponseEntity<Void> hardDeleteConcert(@PathVariable Long id) {
+        concertService.deleteConcert(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/admin/concerts/{id}/upload-map")
     public ResponseEntity<?> uploadMap(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {

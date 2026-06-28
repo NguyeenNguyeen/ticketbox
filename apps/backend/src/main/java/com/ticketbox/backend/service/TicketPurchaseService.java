@@ -97,6 +97,9 @@ public class TicketPurchaseService {
             if ("CANCELLED".equals(category.getConcert().getEffectiveStatus())) {
                 throw new IllegalStateException("Cannot purchase tickets for a cancelled or postponed event.");
             }
+            if ("UPCOMING".equals(category.getConcert().getEffectiveStatus())) {
+                throw new IllegalStateException("Tickets are not yet on sale for this event.");
+            }
 
             int maxPerUser = category.getMaxPerUser() != null ? category.getMaxPerUser() : 4;
             int alreadyPurchasedCompleted = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(

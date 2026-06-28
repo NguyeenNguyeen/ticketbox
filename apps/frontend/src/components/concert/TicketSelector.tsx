@@ -25,11 +25,11 @@ interface SelectedItem {
 
 interface TicketSelectorProps {
   concertId: string;
-  isCancelled?: boolean;
+  status?: string;
   onSelectionChange: (selectedItems: SelectedItem[]) => void;
 }
 
-export function TicketSelector({ concertId, isCancelled, onSelectionChange }: TicketSelectorProps) {
+export function TicketSelector({ concertId, status, onSelectionChange }: TicketSelectorProps) {
   const [categories, setCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -78,14 +78,19 @@ export function TicketSelector({ concertId, isCancelled, onSelectionChange }: Ti
 
   return (
     <div className="space-y-4">
-      {isCancelled && (
+      {(status === "CANCELLED" || status === "ENDED") && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-center mb-6 border border-destructive/20 font-medium">
-          Sự kiện này đã bị hoãn hoặc huỷ. Bạn không thể đặt vé vào lúc này.
+          Sự kiện này đã kết thúc hoặc bị hoãn/huỷ. Bạn không thể đặt vé vào lúc này.
+        </div>
+      )}
+      {status === "UPCOMING" && (
+        <div className="bg-amber-500/10 text-amber-600 p-4 rounded-xl text-center mb-6 border border-amber-500/20 font-medium">
+          Sự kiện này chưa mở bán vé. Vui lòng quay lại sau!
         </div>
       )}
       {categories.map((cat) => {
         const isSoldOut = cat.availableQuantity === 0;
-        const disabled = isSoldOut || isCancelled;
+        const disabled = isSoldOut || status === "CANCELLED" || status === "UPCOMING" || status === "ENDED";
         const currentQty = quantities[cat.id] || 0;
         const maxAllowed = Math.min(cat.maxPerUser, cat.availableQuantity);
 
