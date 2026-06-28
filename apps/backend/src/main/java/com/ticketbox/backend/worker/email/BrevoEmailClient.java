@@ -1,5 +1,6 @@
 package com.ticketbox.backend.worker.email;
 
+import com.ticketbox.backend.dto.email.EmailAttachment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,7 @@ public class BrevoEmailClient implements EmailProviderClient {
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename, String jobId) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlBody, List<EmailAttachment> attachments, String jobId) {
         log.info("Sending request to Brevo API for email to: {}", maskEmail(to));
 
         HttpHeaders headers = new HttpHeaders();
@@ -42,19 +44,23 @@ public class BrevoEmailClient implements EmailProviderClient {
         headers.set("api-key", apiKey);
         headers.set("Idempotency-Key", jobId);
 
-        String base64Attachment = Base64.getEncoder().encodeToString(attachment);
+        List<Map<String, String>> brevoAttachments = new ArrayList<>();
+        if (attachments != null) {
+            for (EmailAttachment attachment : attachments) {
+                String base64Content = Base64.getEncoder().encodeToString(attachment.getData());
+                brevoAttachments.add(Map.of(
+                        "name", attachment.getFilename(),
+                        "content", base64Content
+                ));
+            }
+        }
 
         Map<String, Object> body = Map.of(
                 "sender", Map.of("name", "TicketBox", "email", senderEmail),
                 "to", List.of(Map.of("email", to)),
                 "subject", subject,
                 "htmlContent", htmlBody,
-                "attachment", List.of(
-                        Map.of(
-                                "name", filename,
-                                "content", base64Attachment
-                        )
-                )
+                "attachment", brevoAttachments
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);

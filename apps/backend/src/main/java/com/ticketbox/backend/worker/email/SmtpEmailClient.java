@@ -1,5 +1,6 @@
 package com.ticketbox.backend.worker.email;
 
+import com.ticketbox.backend.dto.email.EmailAttachment;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,8 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @ConditionalOnProperty(name = "ticketbox.email.provider", havingValue = "smtp")
@@ -25,7 +28,7 @@ public class SmtpEmailClient implements EmailProviderClient {
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename, String jobId) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlBody, List<EmailAttachment> attachments, String jobId) {
         log.info("Sending request to SMTP Server for email to: {}", maskEmail(to));
 
         try {
@@ -36,7 +39,17 @@ public class SmtpEmailClient implements EmailProviderClient {
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true); // true indicates HTML
-            helper.addAttachment(filename, new ByteArrayResource(attachment));
+
+            if (attachments != null) {
+                for (EmailAttachment attachment : attachments) {
+                    ByteArrayResource resource = new ByteArrayResource(attachment.getData());
+                    if (attachment.getContentId() != null && !attachment.getContentId().isEmpty()) {
+                        helper.addInline(attachment.getContentId(), resource, attachment.getMimeType());
+                    } else {
+                        helper.addAttachment(attachment.getFilename(), resource);
+                    }
+                }
+            }
 
             javaMailSender.send(message);
             log.info("Successfully sent email via SMTP to: {}", maskEmail(to));

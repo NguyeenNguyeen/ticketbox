@@ -1,5 +1,6 @@
 package com.ticketbox.backend.worker.email;
 
+import com.ticketbox.backend.dto.email.EmailAttachment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +35,21 @@ public class ResendEmailClient implements EmailProviderClient {
         this.restTemplate = restTemplate;
     }
 
+    @PostConstruct
+    public void validate() {
+        boolean keyPresent = apiKey != null && !apiKey.isBlank();
+        log.info("[ResendEmailClient] RESEND_API_KEY present: {}", keyPresent);
+        log.info("[ResendEmailClient] EMAIL_FROM configured: {}", senderEmail);
+        if (!keyPresent) {
+            throw new IllegalStateException(
+                "[ResendEmailClient] RESEND_API_KEY is missing or empty. " +
+                "Ensure the environment variable is set before starting the application. " +
+                "On Linux/macOS run: set -a && source .env && set +a  (from the project root)");
+        }
+    }
+
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String filename, String jobId) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlBody, List<EmailAttachment> attachments, String jobId) {
         log.info("Sending request to Resend API for email to: {}", maskEmail(to));
 
         HttpHeaders headers = new HttpHeaders();
@@ -41,19 +57,25 @@ public class ResendEmailClient implements EmailProviderClient {
         headers.setBearerAuth(apiKey);
         headers.set("Idempotency-Key", jobId);
 
-        String base64Attachment = Base64.getEncoder().encodeToString(attachment);
+        List<Map<String, String>> resendAttachments = new ArrayList<>();
+        if (attachments != null) {
+            for (EmailAttachment attachment : attachments) {
+                String base64Content = Base64.getEncoder().encodeToString(attachment.getData());
+                // Resend currently has limited support for true inline CID via API, so we map it as an attachment.
+                // It does support 'filename' and 'content'
+                resendAttachments.add(Map.of(
+                        "filename", attachment.getFilename(),
+                        "content", base64Content
+                ));
+            }
+        }
 
         Map<String, Object> body = Map.of(
                 "from", senderEmail,
                 "to", List.of(to),
                 "subject", subject,
                 "html", htmlBody,
-                "attachments", List.of(
-                        Map.of(
-                                "filename", filename,
-                                "content", base64Attachment
-                        )
-                )
+                "attachments", resendAttachments
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);

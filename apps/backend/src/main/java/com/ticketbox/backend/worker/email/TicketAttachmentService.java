@@ -5,6 +5,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.ticketbox.backend.dto.email.EmailAttachment;
 import com.ticketbox.backend.entity.Ticket;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -19,19 +20,21 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
 public class TicketAttachmentService {
 
-    public byte[] generateETicketPdf(List<Ticket> tickets) {
-        log.info("Generating E-ticket PDF for {} tickets", tickets.size());
+    public List<EmailAttachment> generateETicketPdfs(List<Ticket> tickets) {
+        log.info("Generating E-ticket PDFs for {} tickets", tickets.size());
+        List<EmailAttachment> attachments = new ArrayList<>();
 
-        try (PDDocument document = new PDDocument();
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        for (Ticket ticket : tickets) {
+            try (PDDocument document = new PDDocument();
+                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-            for (Ticket ticket : tickets) {
                 PDPage page = new PDPage();
                 document.addPage(page);
 
@@ -61,17 +64,23 @@ public class TicketAttachmentService {
                     PDImageXObject pdImage = PDImageXObject.createFromByteArray(document, qrCodeBytes, "qr-" + ticket.getId());
                     contentStream.drawImage(pdImage, 50, 400, 200, 200);
                 }
-            }
 
-            document.save(baos);
-            return baos.toByteArray();
-        } catch (IOException | WriterException e) {
-            log.error("Failed to generate E-ticket PDF", e);
-            throw new RuntimeException("E-ticket PDF generation failed", e);
+                document.save(baos);
+                attachments.add(new EmailAttachment(
+                        "eticket-" + ticket.getId() + ".pdf",
+                        baos.toByteArray(),
+                        "application/pdf",
+                        null
+                ));
+            } catch (IOException | WriterException e) {
+                log.error("Failed to generate E-ticket PDF for ticket {}", ticket.getId(), e);
+                throw new RuntimeException("E-ticket PDF generation failed for ticket " + ticket.getId(), e);
+            }
         }
+        return attachments;
     }
 
-    private byte[] generateQRCode(String data) throws WriterException, IOException {
+    public byte[] generateQRCode(String data) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200);
 

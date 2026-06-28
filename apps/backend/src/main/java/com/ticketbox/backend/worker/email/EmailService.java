@@ -1,6 +1,7 @@
 package com.ticketbox.backend.worker.email;
 
 import com.ticketbox.backend.dto.async.EmailTaskMessage;
+import com.ticketbox.backend.dto.email.EmailAttachment;
 import com.ticketbox.backend.entity.EmailStatus;
 import com.ticketbox.backend.entity.Order;
 import com.ticketbox.backend.entity.Ticket;
@@ -14,6 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -73,8 +75,29 @@ public class EmailService {
             }
 
             // 4. Generate content (outside transaction)
-            byte[] pdfAttachment = attachmentService.generateETicketPdf(orderData.tickets);
-            String htmlBody = templateBuilder.buildOrderConfirmationHtml(orderData.order);
+            List<EmailAttachment> attachments = new ArrayList<>();
+            
+            // Add PDF attachments (one per ticket)
+            List<EmailAttachment> pdfAttachments = attachmentService.generateETicketPdfs(orderData.tickets);
+            attachments.addAll(pdfAttachments);
+            
+            // Add inline QR Code attachments
+            for (Ticket ticket : orderData.tickets) {
+                try {
+                    byte[] qrCodeBytes = attachmentService.generateQRCode(ticket.getQrCode());
+                    attachments.add(new EmailAttachment(
+                            "qr-" + ticket.getId() + ".png",
+                            qrCodeBytes,
+                            "image/png",
+                            "qr-" + ticket.getId()
+                    ));
+                } catch (Exception e) {
+                    log.error("Failed to generate QR code for ticket {}", ticket.getId(), e);
+                    throw new RuntimeException("Failed to generate QR code", e);
+                }
+            }
+
+            String htmlBody = templateBuilder.buildOrderConfirmationHtml(orderData.order, orderData.tickets);
 
             // 5. Send Email (outside transaction)
             try {
@@ -82,8 +105,7 @@ public class EmailService {
                         message.getRecipientEmail(),
                         "Your TicketBox E-Tickets (Order #" + orderData.order.getId() + ")",
                         htmlBody,
-                        pdfAttachment,
-                        "etickets-" + orderData.order.getId() + ".pdf",
+                        attachments,
                         message.getJobId()
                 );
             } catch (HttpClientErrorException e) {
