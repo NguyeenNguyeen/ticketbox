@@ -34,6 +34,18 @@ spring:
       simple:
         prefetch: 1
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   expiration: 86400000 # 1 day in ms
@@ -127,7 +139,7 @@ ticketbox:
       key: ${OPENAI_API_KEY:}
 
   email:
-    provider: resend # default to resend
+    provider: ${EMAIL_PROVIDER:resend} # default to resend
     from: ${EMAIL_FROM:onboarding@resend.dev}
     resend:
       key: ${RESEND_API_KEY:}
