@@ -12,8 +12,19 @@ export function decodeJwt(token: string): JwtPayload | null {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    return payload as JwtPayload;
+    
+    // Fix Base64Url encoding
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(base64);
+    
+    // Convert to UTF-8 properly
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const decodedPayload = new TextDecoder().decode(bytes);
+    
+    return JSON.parse(decodedPayload) as JwtPayload;
   } catch {
     return null;
   }
