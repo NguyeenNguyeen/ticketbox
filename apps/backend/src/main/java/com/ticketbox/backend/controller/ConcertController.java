@@ -95,10 +95,10 @@ public class ConcertController {
 
         dto.setArtists(artistDtos);
         dto.setVenue(c.getLocation());
-        dto.setAddress(c.getLocation());
-        dto.setDate(c.getStartTime() != null ? c.getStartTime().toString() : "");
-        dto.setDoors("18:00");
-        dto.setShowTime("19:30");
+        dto.setAddress(c.getAddress() != null ? c.getAddress() : c.getLocation());
+        dto.setDate(c.getStartTime() != null ? c.getStartTime().toLocalDate().toString() : "");
+        dto.setDoors(c.getDoorsTime() != null ? c.getDoorsTime() : "18:00");
+        dto.setShowTime(c.getStartTime() != null ? String.format("%02d:%02d", c.getStartTime().getHour(), c.getStartTime().getMinute()) : "19:00");
         dto.setBannerUrl(resolveBannerUrl(c.getName()));
         dto.setStatus(c.getEffectiveStatus());
         dto.setHasSeatMap(Files.exists(Paths.get("uploads/maps/concert_" + id + ".svg")));
@@ -160,6 +160,8 @@ public class ConcertController {
                 .name(req.getTitle())
                 .description(req.getDescription())
                 .location(req.getVenue())
+                .address(req.getAddress())
+                .doorsTime(req.getDoors())
                 .startTime(LocalDateTime.parse(req.getDate() + "T" + (req.getShowTime() != null ? req.getShowTime() : "19:00") + ":00"))
                 .endTime(LocalDateTime.parse(req.getDate() + "T23:59:00"))
                 .saleStartTime(req.getSaleStartTime() != null
@@ -208,6 +210,8 @@ public class ConcertController {
                 .name(req.getTitle())
                 .description(req.getDescription())
                 .location(req.getVenue())
+                .address(req.getAddress())
+                .doorsTime(req.getDoors())
                 .startTime(LocalDateTime.parse(req.getDate() + "T" + (req.getShowTime() != null ? req.getShowTime() : "19:00") + ":00"))
                 .endTime(LocalDateTime.parse(req.getDate() + "T23:59:00"))
                 .saleStartTime(req.getSaleStartTime() != null
