@@ -30,6 +30,11 @@ public class Concert implements java.io.Serializable {
 
     private String location;
 
+    private String address;
+
+    @Column(name = "doors_time")
+    private String doorsTime;
+
     /** Optional: explicit sale start date. If null, defaults to 7 days before startTime. */
     private LocalDateTime saleStartTime;
 

@@ -10,16 +10,17 @@ VALUES
 ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, username = EXCLUDED.username, email = EXCLUDED.email, role = EXCLUDED.role, full_name = EXCLUDED.full_name;
 
 -- Insert sample concerts
-INSERT INTO concerts (id, name, description, start_time, end_time, location, sale_start_time, cancelled_status)
+INSERT INTO concerts (id, name, description, start_time, end_time, location, address, doors_time, sale_start_time, cancelled_status)
 VALUES 
-(1, 'Anh Trai Say Hi - Live Concert', 'Concert quy tụ 30 anh trai đình đám nhất hiện nay.', '2026-12-20 19:00:00', '2026-12-20 23:00:00', 'Sân vận động Mỹ Đình, Hà Nội', '2026-06-01 00:00:00', NULL),
-(2, 'Anh Trai Vượt Ngàn Chông Gai', 'Live concert bùng nổ của các anh tài.', '2027-01-15 19:00:00', '2027-01-15 23:00:00', 'Nhà thi đấu Phú Thọ, TP.HCM', '2026-06-01 00:00:00', NULL),
-(3, 'Em Xinh Say Hi - Concert', 'Show diễn âm nhạc lãng mạn dành cho giới trẻ.', '2027-02-14 19:00:00', '2027-02-14 23:00:00', 'Trung tâm Hội nghị Quốc gia, Hà Nội', '2026-06-15 00:00:00', NULL),
-(4, 'Chị Đẹp Đạp Gió Rẽ Sóng', 'Đêm nhạc thăng hoa của các chị đẹp.', '2027-03-08 19:00:00', '2027-03-08 23:00:00', 'Sân vận động Thống Nhất, TP.HCM', '2026-07-01 00:00:00', NULL)
+(1, 'Anh Trai Say Hi - Live Concert', 'Concert quy tụ 30 anh trai đình đám nhất hiện nay.', '2026-12-20 19:00:00', '2026-12-20 23:00:00', 'Sân vận động Mỹ Đình', 'Đường Lê Đức Thọ, Mỹ Đình, Nam Từ Liêm, Hà Nội', '17:00', '2026-06-01 00:00:00', NULL),
+(2, 'Anh Trai Vượt Ngàn Chông Gai', 'Live concert bùng nổ của các anh tài.', '2027-01-15 19:00:00', '2027-01-15 23:00:00', 'Nhà thi đấu Phú Thọ', '219 Lý Thường Kiệt, Phường 15, Quận 11, TP.HCM', '17:30', '2026-06-01 00:00:00', NULL),
+(3, 'Em Xinh Say Hi - Concert', 'Show diễn âm nhạc lãng mạn dành cho giới trẻ.', '2027-02-14 19:00:00', '2027-02-14 23:00:00', 'Trung tâm Hội nghị Quốc gia', 'Đại lộ Thăng Long, Mễ Trì, Nam Từ Liêm, Hà Nội', '18:00', '2026-06-15 00:00:00', NULL),
+(4, 'Chị Đẹp Đạp Gió Rẽ Sóng', 'Đêm nhạc thăng hoa của các chị đẹp.', '2027-03-08 19:00:00', '2027-03-08 23:00:00', 'Sân vận động Thống Nhất', '138 Đào Duy Từ, Phường 6, Quận 10, TP.HCM', '18:00', '2026-07-01 00:00:00', NULL)
 ON CONFLICT (id) DO UPDATE SET 
   name = EXCLUDED.name, description = EXCLUDED.description,
   start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time,
-  location = EXCLUDED.location, sale_start_time = EXCLUDED.sale_start_time;
+  location = EXCLUDED.location, address = EXCLUDED.address, doors_time = EXCLUDED.doors_time,
+  sale_start_time = EXCLUDED.sale_start_time;
 
 -- Insert sample artists
 INSERT INTO artists (id, name, avatar_url, bio)
