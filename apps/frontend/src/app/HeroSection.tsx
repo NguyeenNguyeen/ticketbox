@@ -2,8 +2,10 @@
 
 import { Search, Sparkles, TrendingUp, Shield } from "lucide-react";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export function HeroSection() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(250,84%,54%)] via-[hsl(270,70%,55%)] to-[hsl(290,60%,50%)] text-white">
       {/* Decorative background elements */}
@@ -45,12 +47,14 @@ export function HeroSection() {
               <Search className="w-5 h-5" />
               Khám phá sự kiện
             </Link>
-            <Link
-              href="/auth/register"
-              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl border border-white/25 hover:bg-white/25 transition-all"
-            >
-              Đăng ký ngay
-            </Link>
+            {!isAuthenticated && (
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl border border-white/25 hover:bg-white/25 transition-all"
+              >
+                Đăng ký ngay
+              </Link>
+            )}
           </div>
         </div>
 
