@@ -54,6 +54,9 @@ public class Concert implements java.io.Serializable {
     @Column(name = "forced_status")
     private String forcedStatus;
 
+    @Column(name = "banner_url")
+    private String bannerUrl;
+
     /**
      * Computes effective status at call time.
      * Priority: explicit CANCELLED override → forcedStatus -> time-based logic.
