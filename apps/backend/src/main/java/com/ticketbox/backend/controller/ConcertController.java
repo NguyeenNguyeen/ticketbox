@@ -101,6 +101,7 @@ public class ConcertController {
         dto.setShowTime(c.getStartTime() != null ? String.format("%02d:%02d", c.getStartTime().getHour(), c.getStartTime().getMinute()) : "19:00");
         dto.setBannerUrl(resolveBannerUrl(c.getName()));
         dto.setStatus(c.getEffectiveStatus());
+        dto.setForcedStatus(c.getForcedStatus() != null ? c.getForcedStatus() : "");
         dto.setHasSeatMap(Files.exists(Paths.get("uploads/maps/concert_" + id + ".svg")));
 
         List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(c.getId());
@@ -169,6 +170,7 @@ public class ConcertController {
                         : (req.getTicketCategories() != null && !req.getTicketCategories().isEmpty() && req.getTicketCategories().get(0).getSaleStartTime() != null && !req.getTicketCategories().get(0).getSaleStartTime().isEmpty()
                             ? LocalDateTime.parse(req.getTicketCategories().get(0).getSaleStartTime() + "T00:00:00")
                             : null))
+                .forcedStatus(req.getForcedStatus())
                 .build();
 
         if (req.getArtists() != null) {
@@ -221,6 +223,7 @@ public class ConcertController {
                         : (req.getTicketCategories() != null && !req.getTicketCategories().isEmpty() && req.getTicketCategories().get(0).getSaleStartTime() != null && !req.getTicketCategories().get(0).getSaleStartTime().isEmpty()
                             ? LocalDateTime.parse(req.getTicketCategories().get(0).getSaleStartTime() + "T00:00:00")
                             : null))
+                .forcedStatus(req.getForcedStatus())
                 .build();
 
         if (req.getArtists() != null) {
@@ -382,6 +385,7 @@ public class ConcertController {
         private String showTime;
         private String bannerUrl;
         private String status;
+        private String forcedStatus;
         private boolean hasSeatMap;
         private List<TicketCategoryDto> ticketCategories;
     }
@@ -416,6 +420,7 @@ public class ConcertController {
         private String doors;      // "18:00"
         private String showTime;   // "19:30"
         private String saleStartTime; // "2026-12-01"
+        private String forcedStatus; // "ON_SALE", "UPCOMING", "AUTO" or ""
         private List<TicketCategoryReq> ticketCategories;
         private List<ArtistReq> artists;
 

@@ -31,6 +31,7 @@ public class ConcertService {
                 .address(c.getAddress())
                 .doorsTime(c.getDoorsTime())
                 .saleStartTime(c.getSaleStartTime())
+                .forcedStatus(c.getForcedStatus())
                 .cancelledStatus(c.getCancelledStatus())
                 .artists(c.getArtists() != null ? new java.util.HashSet<>(c.getArtists()) : new java.util.HashSet<>())
                 .build();
@@ -65,6 +66,7 @@ public class ConcertService {
         existing.setLocation(updated.getLocation());
         existing.setAddress(updated.getAddress());
         existing.setDoorsTime(updated.getDoorsTime());
+        existing.setForcedStatus(updated.getForcedStatus());
         if (updated.getSaleStartTime() != null) {
             existing.setSaleStartTime(updated.getSaleStartTime());
         }

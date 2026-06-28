@@ -51,13 +51,17 @@ public class Concert implements java.io.Serializable {
     @ToString.Exclude
     private java.util.Set<Artist> artists = new java.util.HashSet<>();
 
+    @Column(name = "forced_status")
+    private String forcedStatus;
+
     /**
      * Computes effective status at call time.
-     * Priority: explicit CANCELLED override → time-based logic.
+     * Priority: explicit CANCELLED override → forcedStatus -> time-based logic.
      */
     @com.fasterxml.jackson.annotation.JsonIgnore
     public String getEffectiveStatus() {
         if ("CANCELLED".equals(cancelledStatus)) return "CANCELLED";
+        if (forcedStatus != null && !forcedStatus.isEmpty() && !forcedStatus.equals("AUTO")) return forcedStatus;
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime saleStart = saleStartTime != null ? saleStartTime : startTime.minusDays(7);
         if (now.isAfter(endTime)) return "ENDED";
