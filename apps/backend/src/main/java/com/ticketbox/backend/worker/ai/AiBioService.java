@@ -39,14 +39,7 @@ public class AiBioService {
             boolean overwrite = message.getMetadata() != null && 
                                 Boolean.TRUE.equals(message.getMetadata().get("overwrite"));
                                 
-            if (concert.getArtists() != null && !concert.getArtists().isEmpty()) {
-                com.ticketbox.backend.entity.Artist firstArtist = concert.getArtists().iterator().next();
-                if (firstArtist.getBio() != null && !firstArtist.getBio().isEmpty() && !overwrite) {
-                    log.warn("Job {}: Concert {} already has a biography. Skipping overwrite.", message.getJobId(), concert.getId());
-                    aiJobTracker.updateStatus(message.getJobId(), message.getConcertId(), "COMPLETED", "Skipped: Already exists");
-                    return;
-                }
-            }
+            // Removed early skip check since we now match by name after extraction
 
             // 3. Extract Text from PDF
             String rawText = pdfExtractionService.extractText(message.getPdfStoragePath());
@@ -58,16 +51,27 @@ public class AiBioService {
             String rawAiResponse = aiProviderClient.generateBio(prompt);
             
             // 6. Validate & Extract
-            String biography = aiResponseValidator.validateAndExtractBiography(rawAiResponse);
+            AiResponseValidator.AiParsedBio parsedBio = aiResponseValidator.validateAndExtractBiography(rawAiResponse);
             
             // 7. Save to DB
-            if (concert.getArtists() != null && !concert.getArtists().isEmpty()) {
-                com.ticketbox.backend.entity.Artist firstArtist = concert.getArtists().iterator().next();
-                firstArtist.setBio(biography);
-            } else {
+            boolean found = false;
+            if (concert.getArtists() != null) {
+                for (com.ticketbox.backend.entity.Artist artist : concert.getArtists()) {
+                    if (artist.getName().equalsIgnoreCase(parsedBio.name())) {
+                        artist.setBio(parsedBio.biography());
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {
                 com.ticketbox.backend.entity.Artist newArtist = new com.ticketbox.backend.entity.Artist();
-                newArtist.setName("Nghệ sĩ chính");
-                newArtist.setBio(biography);
+                newArtist.setName(parsedBio.name());
+                newArtist.setBio(parsedBio.biography());
+                if (concert.getArtists() == null) {
+                    concert.setArtists(new java.util.HashSet<>());
+                }
                 concert.getArtists().add(newArtist);
             }
             concertRepository.save(concert);

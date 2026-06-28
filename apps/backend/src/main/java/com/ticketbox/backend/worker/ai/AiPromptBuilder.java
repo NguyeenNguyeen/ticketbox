@@ -17,6 +17,7 @@ public class AiPromptBuilder {
         "3. Do not invent or hallucinate information not present in the text.\n" +
         "4. Output EXACTLY in the following JSON format without any markdown code fences:\n" +
         "{\n" +
+        "  \"name\": \"Name of the main artist/band\",\n" +
         "  \"biography\": \"The generated text here...\",\n" +
         "  \"keyGenres\": [\"Genre1\", \"Genre2\"]\n" +
         "}";

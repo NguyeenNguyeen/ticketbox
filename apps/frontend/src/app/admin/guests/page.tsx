@@ -123,6 +123,17 @@ export default function AdminGuestsPage() {
     }
   };
 
+  const handleConfirmGuest = async (id: string, name: string) => {
+    try {
+      const numericId = id.replace('g', '');
+      await api.put(`/admin/guests/${numericId}/confirm`);
+      toast({ title: "Thành công", description: `Đã xác nhận khách mời ${name}`, variant: "success" });
+      loadGuests();
+    } catch (err: any) {
+      toast({ title: "Lỗi", description: "Không thể xác nhận khách mời", variant: "error" });
+    }
+  };
+
   const statusMap: Record<string, { label: string; color: string }> = {
     CONFIRMED: { label: "Đã xác nhận", color: "bg-success/10 text-success" },
     PENDING: { label: "Chờ xác nhận", color: "bg-warning/10 text-warning" },
@@ -300,7 +311,16 @@ export default function AdminGuestsPage() {
                       {statusMap[guest.status]?.label || guest.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex items-center justify-end gap-1">
+                    {guest.status === "PENDING" && (
+                      <button
+                        onClick={() => handleConfirmGuest(guest.id, guest.name)}
+                        className="p-2 text-muted-foreground hover:text-success hover:bg-success/10 rounded-lg transition-colors"
+                        title="Xác nhận khách mời"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDeleteGuest(guest.id, guest.name)}
                       className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"

@@ -46,4 +46,14 @@ public class GuestController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<Map<String, String>> confirmGuest(@PathVariable Long id) {
+        try {
+            guestService.confirmGuest(id);
+            return ResponseEntity.ok(Map.of("message", "Xác nhận khách mời thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

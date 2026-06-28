@@ -57,6 +57,14 @@ public class GuestService {
     }
 
     @Transactional
+    public void confirmGuest(Long guestId) {
+        Guest guest = guestRepository.findById(guestId)
+                .orElseThrow(() -> new IllegalArgumentException("Guest not found"));
+        guest.setStatus(GuestStatus.CONFIRMED);
+        guestRepository.save(guest);
+    }
+
+    @Transactional
     public int importGuestsFromCsv(MultipartFile file) {
         int importedCount = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {

@@ -13,7 +13,9 @@ public class AiResponseValidator {
 
     private final ObjectMapper objectMapper;
 
-    public String validateAndExtractBiography(String rawResponse) {
+    public record AiParsedBio(String name, String biography) {}
+
+    public AiParsedBio validateAndExtractBiography(String rawResponse) {
         if (rawResponse == null || rawResponse.trim().isEmpty()) {
             throw new AiValidationException("AI response is empty");
         }
@@ -28,6 +30,7 @@ public class AiResponseValidator {
             }
 
             String biography = rootNode.get("biography").asText();
+            String name = rootNode.has("name") ? rootNode.get("name").asText() : "Nghệ sĩ chính";
             
             if (biography == null || biography.trim().isEmpty()) {
                 throw new AiValidationException("Extracted biography is empty");
@@ -37,7 +40,7 @@ public class AiResponseValidator {
                 log.warn("Extracted biography is suspiciously short.");
             }
 
-            return biography.trim();
+            return new AiParsedBio(name.trim(), biography.trim());
 
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             log.error("Failed to parse JSON from AI response. Raw: {}", rawResponse);
