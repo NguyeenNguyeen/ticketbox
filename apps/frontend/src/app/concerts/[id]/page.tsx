@@ -15,6 +15,7 @@ import { ShoppingCart, Ticket, Users, Map } from "lucide-react";
 import Link from "next/link";
 import { InteractiveSeatMap } from "@/components/concert/InteractiveSeatMap";
 import { ArtistBioModal } from "@/components/concert/ArtistBioModal";
+import { CaptchaModal } from "@/components/checkout/CaptchaModal";
 import type { OrderItem } from "@/types/order";
 import type { Concert, Artist } from "@/types/concert";
 
@@ -31,6 +32,7 @@ export default function ConcertDetailPage() {
 
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
 
   const handleArtistClick = (artist: Artist) => {
     setSelectedArtist(artist);
@@ -94,11 +96,16 @@ export default function ConcertDetailPage() {
   const totalAmount = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalTickets = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handleProceedToCheckout = () => {
+  const handleCheckoutClick = () => {
     if (!isAuthenticated) {
       router.push(`/auth/login?redirect=/concerts/${concertId}`);
       return;
     }
+    setShowCaptcha(true);
+  };
+
+  const handleProceedToCheckout = () => {
+    setShowCaptcha(false);
 
     setItems(selectedItems, concert.id, concert.title);
 
@@ -195,7 +202,7 @@ export default function ConcertDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={handleProceedToCheckout}
+                    onClick={handleCheckoutClick}
                     className="bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-hover transition-all hover:scale-105 shadow-lg shadow-primary/25"
                   >
                     Thanh toán
@@ -207,6 +214,11 @@ export default function ConcertDetailPage() {
         )}
       </main>
       
+      <CaptchaModal
+        isOpen={showCaptcha}
+        onSuccess={handleProceedToCheckout}
+        onClose={() => setShowCaptcha(false)}
+      />
       <ArtistBioModal 
         artist={selectedArtist} 
         isOpen={isModalOpen} 
