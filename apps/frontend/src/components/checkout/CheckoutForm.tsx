@@ -60,7 +60,7 @@ export function CheckoutForm() {
 
         while (retries <= maxRetries) {
           try {
-            order = await api.post<any>("/tickets/purchase", {
+            order = await api.post<any>("/tickets/reserve", {
               categoryId: category.id,
               quantity,
               idempotencyKey: key,
@@ -82,13 +82,13 @@ export function CheckoutForm() {
             if (status >= 500 && retries < maxRetries) {
               retries++;
               const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
-              console.warn(`Payment failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+              console.warn(`Reservation failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
               await new Promise(resolve => setTimeout(resolve, delay));
               continue;
             }
 
             if (status >= 500 && retries === maxRetries) {
-              throw new Error("Cổng thanh toán đang bảo trì hoặc quá tải. Giao dịch đang được xử lý ngầm, bạn vẫn có thể xem vé ở lịch sử giao dịch sau vài phút.");
+              throw new Error("Hệ thống đặt vé đang quá tải. Vui lòng thử lại sau.");
             }
 
             throw error;
@@ -98,18 +98,10 @@ export function CheckoutForm() {
         lastOrder = order;
       }
 
-      completePayment();
-      toast({ title: "Thanh toán thành công! 🎉", variant: "success" });
-
       if (lastOrder && lastOrder.id) {
-        const tickets = await api.get<any[]>(`/tickets/order/${lastOrder.id}`);
-        if (tickets && tickets.length > 0) {
-          router.push(`/tickets/${tickets[0].id}`);
-        } else {
-          router.push("/");
-        }
+        router.push(`/payment/sandbox?orderId=${lastOrder.id}&provider=${paymentMethod}`);
       } else {
-        router.push("/");
+        throw new Error("Không thể khởi tạo giữ ghế.");
       }
     } catch (error: any) {
       cancelPayment();

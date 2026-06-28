@@ -39,6 +39,7 @@ export default function RegisterPage() {
     try {
       await api.post("/auth/register", {
         username: email,
+        email: email,
         password: password,
         role: "CUSTOMER",
       });

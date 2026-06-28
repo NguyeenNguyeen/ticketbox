@@ -55,6 +55,33 @@ public class TicketController {
         return ResponseEntity.ok(order);
     }
 
+    @PostMapping("/reserve")
+    public ResponseEntity<?> reserveTicket(
+            @RequestBody PurchaseRequest request,
+            @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKeyHeader
+    ) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String idempotencyKey = idempotencyKeyHeader;
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = request.getIdempotencyKey();
+        }
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        }
+
+        Order order = purchaseService.reserveTickets(
+                user,
+                request.getCategoryId(),
+                request.getQuantity(),
+                idempotencyKey
+        );
+
+        return ResponseEntity.ok(order);
+    }
+
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<ETicketDto>> getTicketsByOrderId(@PathVariable Long orderId) {
         List<Ticket> tickets = ticketRepository.findByOrderId(orderId);

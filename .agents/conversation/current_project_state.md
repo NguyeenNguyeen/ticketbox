@@ -1,6 +1,6 @@
 # Current Project State — TicketBox
 
-Last Updated: 2026-06-04 (Post-Payment Protection Design)
+Last Updated: 2026-06-28 (Interactive Sandbox Payment Flow)
 
 ---
 
@@ -112,6 +112,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
   - Added manual editing for Guest Artists in the Admin Concert Form.
   - Added SVG Seat Map upload and rendering functionality.
   - Upgraded SVG Seat Map to be interactive (hover to highlight, click to scroll to ticket category).
+- [x] **Interactive Sandbox Payment Flow**: Integrated a realistic mock checkout screen for VNPAY (card details & OTP) and MoMo (QR scan view) with backend endpoints.
 
 ---
 
