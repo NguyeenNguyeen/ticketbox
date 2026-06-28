@@ -19,6 +19,7 @@ function PaymentCallbackContent() {
   const [tickets, setTickets] = useState<ETicketType[]>([]);
   
   const clearCart = useCartStore((s) => s.clearCart);
+  const cancelPayment = useCartStore((s) => s.cancelPayment);
 
   useEffect(() => {
     // VNPAY uses vnp_ResponseCode (00 is success)
@@ -57,10 +58,12 @@ function PaymentCallbackContent() {
         } else {
           setStatus("error");
           setErrorMessage("Giao dịch bị từ chối hoặc đã bị huỷ bởi người dùng.");
+          cancelPayment();
         }
       } catch (err) {
         setStatus("error");
         setErrorMessage("Lỗi khi xác minh giao dịch với máy chủ.");
+        cancelPayment();
       }
     };
 
@@ -69,8 +72,9 @@ function PaymentCallbackContent() {
     } else {
       setStatus("error");
       setErrorMessage("Không tìm thấy thông tin giao dịch hợp lệ.");
+      cancelPayment();
     }
-  }, [searchParams, clearCart]);
+  }, [searchParams, clearCart, cancelPayment]);
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">
@@ -144,7 +148,10 @@ function PaymentCallbackContent() {
               </p>
               <div className="space-y-3">
                 <button
-                  onClick={() => router.push("/checkout")}
+                  onClick={() => {
+                    cancelPayment();
+                    router.push("/checkout");
+                  }}
                   className="block w-full bg-primary text-white font-semibold py-3.5 rounded-xl hover:bg-primary-hover transition-colors"
                 >
                   Thử thanh toán lại

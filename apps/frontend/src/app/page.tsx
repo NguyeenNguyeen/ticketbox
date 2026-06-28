@@ -22,14 +22,15 @@ async function getConcerts(): Promise<ConcertListItem[]> {
 }
 
 export default async function HomePage() {
-  const concerts = await getConcerts();
+  const allConcerts = await getConcerts();
+  const activeConcerts = allConcerts.filter(c => c.status !== "CANCELLED");
 
   return (
     <>
       <Header />
       <main className="flex-1">
         <HeroSection />
-        <ConcertSection concerts={concerts} />
+        <ConcertSection concerts={activeConcerts} />
       </main>
       <Footer />
     </>
