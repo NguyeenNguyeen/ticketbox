@@ -258,6 +258,7 @@ Last Updated: 2026-06-03
 - [x] Feature: Make SVG Seat Map interactive (`InteractiveSeatMap.tsx`).
 - [x] Feature: Interactive Sandbox Payment Gateway (VNPAY & MoMo UI, complete API)
 - [x] Feature: Hiển thị vé điện tử trực tiếp sau thanh toán thành công và trong trang chi tiết Lịch sử giao dịch (`payment/callback/page.tsx`, `orders/[id]/page.tsx`).
+- [x] Fix: Yêu cầu đăng nhập trước khi mua vé và thanh toán (Thêm `isAuthenticated` check và redirect trong `concerts/[id]/page.tsx` và `checkout/page.tsx`).
 
 ---
 

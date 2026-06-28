@@ -4,12 +4,25 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { useCartStore } from "@/stores/useCartStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const concertTitle = useCartStore((s) => s.concertTitle);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth/login?redirect=/checkout");
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) return null;
 
   if (items.length === 0) {
     return (

@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ConcertInfo } from "@/components/concert/ConcertInfo";
 import { TicketSelector } from "@/components/concert/TicketSelector";
 import { useCartStore } from "@/stores/useCartStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { API_BASE_URL } from "@/lib/constants";
@@ -26,6 +27,7 @@ export default function ConcertDetailPage() {
 
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const setItems = useCartStore((s) => s.setItems);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,6 +95,11 @@ export default function ConcertDetailPage() {
   const totalTickets = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleProceedToCheckout = () => {
+    if (!isAuthenticated) {
+      router.push(`/auth/login?redirect=/concerts/${concertId}`);
+      return;
+    }
+
     setItems(selectedItems, concert.id, concert.title);
 
     // Set a hold expiry 10 minutes from now
