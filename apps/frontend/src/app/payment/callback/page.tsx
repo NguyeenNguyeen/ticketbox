@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/stores/useCartStore";
+import { api } from "@/lib/api";
+import { ETicket } from "@/components/ticket/ETicket";
+import type { ETicket as ETicketType } from "@/types/order";
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [tickets, setTickets] = useState<ETicketType[]>([]);
   
   const clearCart = useCartStore((s) => s.clearCart);
 
@@ -19,15 +24,19 @@ export default function PaymentCallbackPage() {
     // VNPAY uses vnp_ResponseCode (00 is success)
     // MoMo uses resultCode (0 is success)
     // We also support a generic 'status=success' for testing
-    const searchParams = new URLSearchParams(window.location.search);
     const vnpResponse = searchParams.get("vnp_ResponseCode");
+    const vnpTxnRef = searchParams.get("vnp_TxnRef");
     const momoResult = searchParams.get("resultCode");
+    const momoOrderId = searchParams.get("orderId");
     const genericStatus = searchParams.get("status");
 
-    // Simulate checking with backend
+    let extractedOrderId = momoOrderId;
+    if (vnpTxnRef && vnpTxnRef.startsWith("TX-")) {
+      extractedOrderId = vnpTxnRef.replace("TX-", "");
+    }
+
     const verifyPayment = async () => {
       try {
-        // Just checking params for now
         const isSuccess = 
           vnpResponse === "00" || 
           momoResult === "0" || 
@@ -36,6 +45,15 @@ export default function PaymentCallbackPage() {
         if (isSuccess) {
           setStatus("success");
           clearCart();
+          
+          if (extractedOrderId) {
+            try {
+              const fetchedTickets = await api.get<ETicketType[]>(`/tickets/order/${extractedOrderId}`);
+              setTickets(fetchedTickets || []);
+            } catch (err) {
+              console.error("Failed to fetch tickets", err);
+            }
+          }
         } else {
           setStatus("error");
           setErrorMessage("Giao dịch bị từ chối hoặc đã bị huỷ bởi người dùng.");
@@ -52,13 +70,13 @@ export default function PaymentCallbackPage() {
       setStatus("error");
       setErrorMessage("Không tìm thấy thông tin giao dịch hợp lệ.");
     }
-  }, [clearCart]);
+  }, [searchParams, clearCart]);
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">
       <Header />
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl border border-border shadow-sm p-8 md:p-12 max-w-lg w-full text-center">
+        <div className={`bg-white rounded-3xl border border-border shadow-sm p-8 md:p-12 w-full text-center ${status === "success" && tickets.length > 0 ? "max-w-4xl" : "max-w-lg"}`}>
           {status === "loading" && (
             <div className="py-8">
               <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto mb-6" />
@@ -78,12 +96,32 @@ export default function PaymentCallbackPage() {
               <p className="text-muted-foreground mb-8">
                 Cảm ơn bạn đã mua vé. Vé điện tử (E-Ticket) đã được tạo và gửi đến email của bạn.
               </p>
-              <div className="space-y-3">
+              
+              {tickets.length > 0 ? (
+                <div className="mb-8">
+                  <div className="flex items-center justify-center gap-2 mb-6">
+                    <Ticket className="w-5 h-5 text-primary" />
+                    <h2 className="text-xl font-semibold">Vé điện tử của bạn</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 text-left">
+                    {tickets.map(ticket => (
+                      <ETicket key={ticket.id} ticket={ticket} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="py-6 mb-8 bg-secondary/50 rounded-xl flex items-center justify-center gap-3">
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                  <span className="text-sm font-medium text-muted-foreground">Đang lấy thông tin vé...</span>
+                </div>
+              )}
+
+              <div className="space-y-3 max-w-sm mx-auto">
                 <Link
                   href="/orders"
                   className="block w-full bg-primary text-white font-semibold py-3.5 rounded-xl hover:bg-primary-hover transition-colors"
                 >
-                  Xem vé của tôi
+                  Xem lịch sử mua hàng
                 </Link>
                 <Link
                   href="/"
@@ -124,5 +162,13 @@ export default function PaymentCallbackPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>}>
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }

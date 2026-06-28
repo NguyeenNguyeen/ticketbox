@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
 
 interface OrderHistoryDto {
   id: string;
@@ -53,15 +54,20 @@ export default function OrdersPage() {
                   <p className="font-semibold text-lg">Mã đơn: #{order.id}</p>
                   <p className="text-sm text-muted-foreground mt-1">Ngày đặt: {new Date(order.createdAt).toLocaleString()}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-2">
                   <p className="font-bold text-primary text-xl">{formatCurrency(order.totalAmount)}</p>
-                  <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                    order.status === "PAID" ? "bg-success/10 text-success" : 
-                    order.status === "CANCELLED" ? "bg-destructive/10 text-destructive" : 
-                    "bg-warning/10 text-warning"
-                  }`}>
-                    {order.status}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                      order.status === "PAID" ? "bg-success/10 text-success" : 
+                      order.status === "CANCELLED" ? "bg-destructive/10 text-destructive" : 
+                      "bg-warning/10 text-warning"
+                    }`}>
+                      {order.status}
+                    </span>
+                    <Link href={`/orders/${order.id}`} className="text-sm text-primary hover:underline font-semibold bg-primary/5 px-3 py-1 rounded-full">
+                      Xem chi tiết
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

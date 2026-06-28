@@ -257,6 +257,7 @@ Last Updated: 2026-06-03
 - [x] Feature: Add SVG Seat Map upload and display functionality (`ConcertController`, `ConcertForm.tsx`, `page.tsx`).
 - [x] Feature: Make SVG Seat Map interactive (`InteractiveSeatMap.tsx`).
 - [x] Feature: Interactive Sandbox Payment Gateway (VNPAY & MoMo UI, complete API)
+- [x] Feature: Hiển thị vé điện tử trực tiếp sau thanh toán thành công và trong trang chi tiết Lịch sử giao dịch (`payment/callback/page.tsx`, `orders/[id]/page.tsx`).
 
 ---
 

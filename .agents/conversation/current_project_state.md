@@ -113,6 +113,7 @@ Phase 3 RabbitMQ infrastructure is now fully validated. The application-level `R
   - Added SVG Seat Map upload and rendering functionality.
   - Upgraded SVG Seat Map to be interactive (hover to highlight, click to scroll to ticket category).
 - [x] **Interactive Sandbox Payment Flow**: Integrated a realistic mock checkout screen for VNPAY (card details & OTP) and MoMo (QR scan view) with backend endpoints (Fixed Hibernate proxy lazy loading serialization bug in `/complete` endpoint).
+- [x] **Ticket Display and Order History**: Added inline ticket display (`ETicket` component) on the payment callback page upon checkout success, and added an `orders/[id]/page.tsx` for viewing details of an order from the user's order history.
 
 ---
 
