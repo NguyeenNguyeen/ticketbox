@@ -157,6 +157,13 @@
             <version>3.5.3</version>
         </dependency>
 
+		<!-- dotenv: load .env file into Spring Environment at bootstrap time -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
