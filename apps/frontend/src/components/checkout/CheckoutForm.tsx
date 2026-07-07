@@ -40,66 +40,61 @@ export function CheckoutForm() {
       const categories = await api.get<any[]>(`/concerts/${concertId}/categories`);
 
       const baseKey = useCartStore.getState().idempotencyKey || generateIdempotencyKey();
-      let lastOrder: any = null;
 
-      for (const item of items) {
-        const categoryId = item.categoryId;
-        const quantity = item.quantity;
-        
-        const category = categories.find((c) => c.id === categoryId);
+      const purchaseItems = items.map((item) => {
+        const category = categories.find((c) => c.id === item.categoryId);
         if (!category) {
           throw new Error(`Không tìm thấy hạng vé: ${item.name}`);
         }
+        return {
+          categoryId: item.categoryId,
+          quantity: item.quantity,
+        };
+      });
 
-        const key = items.length > 1 ? `${baseKey}-${categoryId}` : baseKey;
+      // Exponential backoff retry logic
+      let order = null;
+      let retries = 0;
+      const maxRetries = 3;
 
-        // Exponential backoff retry logic
-        let order = null;
-        let retries = 0;
-        const maxRetries = 3;
+      while (retries <= maxRetries) {
+        try {
+          order = await api.post<any>("/tickets/reserve", {
+            items: purchaseItems,
+            idempotencyKey: baseKey,
+          }, { "Idempotency-Key": baseKey });
+          break; // Success, exit retry loop
+        } catch (error: any) {
+          const status = error.status;
+          const backendMessage = error.message || "Có lỗi xảy ra. Vui lòng thử lại.";
 
-        while (retries <= maxRetries) {
-          try {
-            order = await api.post<any>("/tickets/reserve", {
-              categoryId: category.id,
-              quantity,
-              idempotencyKey: key,
-            }, { "Idempotency-Key": key });
-            break; // Success, exit retry loop
-          } catch (error: any) {
-            const status = error.status;
-            const backendMessage = error.message || "Có lỗi xảy ra. Vui lòng thử lại.";
-
-            if (status === 400) {
-              const lowStockPattern = /vé này vừa được mua mất|not enough tickets available|oversell prevented/i;
-              if (lowStockPattern.test(backendMessage)) {
-                throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
-              }
-              // Show the actual backend message for other business failures.
-              throw new Error(backendMessage);
+          if (status === 400) {
+            const lowStockPattern = /vé này vừa được mua mất|not enough tickets available|oversell prevented/i;
+            if (lowStockPattern.test(backendMessage)) {
+              throw new Error("Rất tiếc, loại vé này vừa được mua mất ở giây cuối cùng. Vui lòng chọn ghế khác.");
             }
-
-            if (status >= 500 && retries < maxRetries) {
-              retries++;
-              const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
-              console.warn(`Reservation failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue;
-            }
-
-            if (status >= 500 && retries === maxRetries) {
-              throw new Error("Hệ thống đặt vé đang quá tải. Vui lòng thử lại sau.");
-            }
-
-            throw error;
+            // Show the actual backend message for other business failures.
+            throw new Error(backendMessage);
           }
-        }
 
-        lastOrder = order;
+          if (status >= 500 && retries < maxRetries) {
+            retries++;
+            const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
+            console.warn(`Reservation failed (5xx), retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+
+          if (status >= 500 && retries === maxRetries) {
+            throw new Error("Hệ thống đặt vé đang quá tải. Vui lòng thử lại sau.");
+          }
+
+          throw error;
+        }
       }
 
-      if (lastOrder && lastOrder.id) {
-        router.push(`/payment/sandbox?orderId=${lastOrder.id}&provider=${paymentMethod}`);
+      if (order && order.id) {
+        router.push(`/payment/sandbox?orderId=${order.id}&provider=${paymentMethod}`);
       } else {
         throw new Error("Không thể khởi tạo giữ ghế.");
       }

@@ -41,17 +41,14 @@ public class PaymentSandboxController {
             return ResponseEntity.badRequest().body("No items found for order ID " + request.getOrderId());
         }
 
-        OrderItem firstItem = items.get(0);
-        Long categoryId = firstItem.getTicketCategory().getId();
-        int quantity = firstItem.getQuantity();
         User user = order.getUser();
 
         Order updatedOrder;
         if ("SUCCESS".equalsIgnoreCase(request.getStatus())) {
-            updatedOrder = purchaseService.finalizeOrderSuccess(order.getId(), categoryId, quantity, user);
+            updatedOrder = purchaseService.finalizeOrderSuccess(order.getId(), user);
             log.info("Sandbox payment success. Order {} finalized.", order.getId());
         } else {
-            updatedOrder = purchaseService.finalizeOrderFailure(order.getId(), categoryId, quantity);
+            updatedOrder = purchaseService.finalizeOrderFailure(order.getId());
             log.info("Sandbox payment failed/cancelled. Order {} cancelled and inventory restored.", order.getId());
         }
 

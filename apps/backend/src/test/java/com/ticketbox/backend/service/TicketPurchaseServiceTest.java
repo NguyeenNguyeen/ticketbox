@@ -25,6 +25,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +56,7 @@ class TicketPurchaseServiceTest {
     private User testUser;
     private TicketCategory testCategory;
     private String idempKey;
+    private List<com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem> testItems;
 
     @BeforeEach
     void setUp() {
@@ -66,6 +69,11 @@ class TicketPurchaseServiceTest {
                 .build();
         idempKey = UUID.randomUUID().toString();
         
+        com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem item = new com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem();
+        item.setCategoryId(100L);
+        item.setQuantity(2);
+        testItems = Collections.singletonList(item);
+        
         ReflectionTestUtils.setField(ticketPurchaseService, "self", ticketPurchaseService);
     }
 
@@ -77,7 +85,7 @@ class TicketPurchaseServiceTest {
         
         // Mock reserveTickets
         Order reservedOrder = Order.builder().id(1L).status(OrderStatus.PAYING).build();
-        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, 100L, 2, idempKey);
+        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, testItems, idempKey);
         
         // Mock payment
         PaymentResult successResult = PaymentResult.builder().status(PaymentResult.PaymentStatus.SUCCESS).build();
@@ -85,15 +93,15 @@ class TicketPurchaseServiceTest {
         
         // Mock finalize
         Order completedOrder = Order.builder().id(1L).status(OrderStatus.COMPLETED).build();
-        doReturn(completedOrder).when(ticketPurchaseService).finalizeOrderSuccess(1L, 100L, 2, testUser);
+        doReturn(completedOrder).when(ticketPurchaseService).finalizeOrderSuccess(1L, testUser);
 
         // Execute
-        Order finalOrder = ticketPurchaseService.purchaseTicket(testUser, 100L, 2, idempKey);
+        Order finalOrder = ticketPurchaseService.purchaseTicket(testUser, testItems, idempKey);
 
         // Verify
         assertThat(finalOrder.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         verify(paymentGatewayService).processPayment(reservedOrder);
-        verify(ticketPurchaseService).finalizeOrderSuccess(1L, 100L, 2, testUser);
+        verify(ticketPurchaseService).finalizeOrderSuccess(1L, testUser);
     }
 
     @Test
@@ -102,7 +110,7 @@ class TicketPurchaseServiceTest {
         when(redisService.setIfAbsentIdempotencyKey(eq("idemp:" + idempKey), any(Duration.class))).thenReturn(true);
         
         Order reservedOrder = Order.builder().id(1L).status(OrderStatus.PAYING).build();
-        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, 100L, 2, idempKey);
+        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, testItems, idempKey);
         
         // Mock payment throwing PaymentDeclinedException
         when(paymentGatewayService.processPayment(reservedOrder))
@@ -110,14 +118,14 @@ class TicketPurchaseServiceTest {
         
         // Mock finalize failure
         Order cancelledOrder = Order.builder().id(1L).status(OrderStatus.CANCELLED).build();
-        doReturn(cancelledOrder).when(ticketPurchaseService).finalizeOrderFailure(1L, 100L, 2);
+        doReturn(cancelledOrder).when(ticketPurchaseService).finalizeOrderFailure(1L);
 
         // Execute
-        Order finalOrder = ticketPurchaseService.purchaseTicket(testUser, 100L, 2, idempKey);
+        Order finalOrder = ticketPurchaseService.purchaseTicket(testUser, testItems, idempKey);
 
         // Verify
         assertThat(finalOrder.getStatus()).isEqualTo(OrderStatus.CANCELLED);
-        verify(ticketPurchaseService).finalizeOrderFailure(1L, 100L, 2);
+        verify(ticketPurchaseService).finalizeOrderFailure(1L);
     }
 
     @Test
@@ -126,7 +134,7 @@ class TicketPurchaseServiceTest {
         when(redisService.setIfAbsentIdempotencyKey(eq("idemp:" + idempKey), any(Duration.class))).thenReturn(true);
         
         Order reservedOrder = Order.builder().id(1L).status(OrderStatus.PAYING).build();
-        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, 100L, 2, idempKey);
+        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, testItems, idempKey);
         
         // Mock payment throwing PaymentGatewayException
         when(paymentGatewayService.processPayment(reservedOrder))
@@ -134,12 +142,12 @@ class TicketPurchaseServiceTest {
         
         // Execute and expect exception
         assertThrows(PaymentGatewayException.class, () -> {
-            ticketPurchaseService.purchaseTicket(testUser, 100L, 2, idempKey);
+            ticketPurchaseService.purchaseTicket(testUser, testItems, idempKey);
         });
 
         // Verify finalize operations are NOT called (order remains in PAYING state)
-        verify(ticketPurchaseService, never()).finalizeOrderSuccess(any(), any(), anyInt(), any());
-        verify(ticketPurchaseService, never()).finalizeOrderFailure(any(), any(), anyInt());
+        verify(ticketPurchaseService, never()).finalizeOrderSuccess(any(), any());
+        verify(ticketPurchaseService, never()).finalizeOrderFailure(any());
     }
 
     @Test
@@ -148,7 +156,7 @@ class TicketPurchaseServiceTest {
         when(redisService.setIfAbsentIdempotencyKey(eq("idemp:" + idempKey), any(Duration.class))).thenReturn(true);
         
         Order reservedOrder = Order.builder().id(1L).status(OrderStatus.PAYING).build();
-        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, 100L, 2, idempKey);
+        doReturn(reservedOrder).when(ticketPurchaseService).reserveTickets(testUser, testItems, idempKey);
         
         // Mock payment throwing a generic exception (simulating Circuit Open or Bulkhead Full)
         RuntimeException ex = new RuntimeException("Circuit breaker open");
@@ -156,10 +164,10 @@ class TicketPurchaseServiceTest {
         
         // Execute and expect exception
         assertThrows(RuntimeException.class, () -> {
-            ticketPurchaseService.purchaseTicket(testUser, 100L, 2, idempKey);
+            ticketPurchaseService.purchaseTicket(testUser, testItems, idempKey);
         });
 
-        verify(ticketPurchaseService, never()).finalizeOrderSuccess(any(), any(), anyInt(), any());
-        verify(ticketPurchaseService, never()).finalizeOrderFailure(any(), any(), anyInt());
+        verify(ticketPurchaseService, never()).finalizeOrderSuccess(any(), any());
+        verify(ticketPurchaseService, never()).finalizeOrderFailure(any());
     }
 }

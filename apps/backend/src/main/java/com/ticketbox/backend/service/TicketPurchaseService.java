@@ -56,9 +56,9 @@ public class TicketPurchaseService {
     /**
      * Handles ticket purchase with Concurrency, Idempotency and payment protection.
      */
-    public Order purchaseTicket(User user, Long categoryId, int quantity, String idempotencyKey) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than 0.");
+    public Order purchaseTicket(User user, java.util.List<com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem> items, String idempotencyKey) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Items cannot be empty.");
         }
 
         String idempKeyRedis = "idemp:" + idempotencyKey;
@@ -69,7 +69,7 @@ public class TicketPurchaseService {
 
         Order order;
         try {
-            order = self.reserveTickets(user, categoryId, quantity, idempotencyKey);
+            order = self.reserveTickets(user, items, idempotencyKey);
         } catch (RuntimeException ex) {
             redisService.releaseLock(idempKeyRedis);
             throw ex;
@@ -77,99 +77,112 @@ public class TicketPurchaseService {
 
         try {
             PaymentResult result = paymentGatewayService.processPayment(order);
-            return self.finalizeOrderSuccess(order.getId(), categoryId, quantity, user);
+            return self.finalizeOrderSuccess(order.getId(), user);
         } catch (PaymentDeclinedException e) {
-            return self.finalizeOrderFailure(order.getId(), categoryId, quantity);
+            return self.finalizeOrderFailure(order.getId());
         }
     }
 
     @Transactional
-    public Order reserveTickets(User user, Long categoryId, int quantity, String idempotencyKey) {
-        String lockKey = "lock:purchase:" + user.getId() + ":" + categoryId;
+    public Order reserveTickets(User user, java.util.List<com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem> items, String idempotencyKey) {
+        String lockKey = "lock:purchase:" + user.getId();
         if (!redisService.acquireLock(lockKey, Duration.ofSeconds(10))) {
             throw new IllegalStateException("Too many requests. Please try again later.");
         }
 
         try {
-            TicketCategory category = ticketCategoryRepository.findByIdWithPessimisticLock(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-            if ("CANCELLED".equals(category.getConcert().getEffectiveStatus())) {
-                throw new IllegalStateException("Cannot purchase tickets for a cancelled or postponed event.");
-            }
-            if ("UPCOMING".equals(category.getConcert().getEffectiveStatus())) {
-                throw new IllegalStateException("Tickets are not yet on sale for this event.");
-            }
-
-            int maxPerUser = category.getMaxPerUser() != null ? category.getMaxPerUser() : 4;
-            int alreadyPurchasedCompleted = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
-                    user.getId(), category.getId(), OrderStatus.COMPLETED);
-            int alreadyPurchasedPending = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
-                    user.getId(), category.getId(), OrderStatus.PENDING);
-            int alreadyPurchased = alreadyPurchasedCompleted + alreadyPurchasedPending;
-            if (alreadyPurchased + quantity > maxPerUser) {
-                int remaining = maxPerUser - alreadyPurchased;
-                throw new IllegalStateException(
-                        "Purchase limit exceeded for category '" + category.getName() + "'. " +
-                        "Max " + maxPerUser + " ticket(s) per account. " +
-                        "You have already purchased " + alreadyPurchased + ", " +
-                        "remaining quota: " + Math.max(0, remaining) + ".");
-            }
-
-            if (category.getAvailableQuantity() < quantity) {
-                throw new IllegalStateException("Not enough tickets available. Oversell prevented.");
-            }
-
-            category.setAvailableQuantity(category.getAvailableQuantity() - quantity);
-            ticketCategoryRepository.save(category);
-
+            BigDecimal totalPrice = BigDecimal.ZERO;
             PricingStrategy pricingStrategy = new StandardPricingStrategy();
-            BigDecimal unitPrice = pricingStrategy.calculatePrice(category.getPrice());
-            BigDecimal totalPrice = unitPrice.multiply(new BigDecimal(quantity));
-
+            
             Order order = Order.builder()
                     .user(user)
-                    .totalAmount(totalPrice)
+                    .totalAmount(BigDecimal.ZERO)
                     .status(OrderStatus.PENDING)
                     .idempotencyKey(idempotencyKey)
                     .createdAt(LocalDateTime.now())
                     .build();
-
             order = orderRepository.save(order);
+
+            for (com.ticketbox.backend.controller.TicketController.PurchaseRequest.PurchaseItem item : items) {
+                Long categoryId = item.getCategoryId();
+                int quantity = item.getQuantity();
+
+                if (quantity <= 0) {
+                    throw new IllegalArgumentException("Quantity must be greater than 0.");
+                }
+
+                TicketCategory category = ticketCategoryRepository.findByIdWithPessimisticLock(categoryId)
+                        .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+                if ("CANCELLED".equals(category.getConcert().getEffectiveStatus())) {
+                    throw new IllegalStateException("Cannot purchase tickets for a cancelled or postponed event.");
+                }
+                if ("UPCOMING".equals(category.getConcert().getEffectiveStatus())) {
+                    throw new IllegalStateException("Tickets are not yet on sale for this event.");
+                }
+
+                int maxPerUser = category.getMaxPerUser() != null ? category.getMaxPerUser() : 4;
+                int alreadyPurchasedCompleted = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
+                        user.getId(), category.getId(), OrderStatus.COMPLETED);
+                int alreadyPurchasedPending = orderItemRepository.sumQuantityByUserAndCategoryAndStatus(
+                        user.getId(), category.getId(), OrderStatus.PENDING);
+                int alreadyPurchased = alreadyPurchasedCompleted + alreadyPurchasedPending;
+                if (alreadyPurchased + quantity > maxPerUser) {
+                    int remaining = maxPerUser - alreadyPurchased;
+                    throw new IllegalStateException(
+                            "Purchase limit exceeded for category '" + category.getName() + "'. " +
+                            "Max " + maxPerUser + " ticket(s) per account. " +
+                            "You have already purchased " + alreadyPurchased + ", " +
+                            "remaining quota: " + Math.max(0, remaining) + ".");
+                }
+
+                if (category.getAvailableQuantity() < quantity) {
+                    throw new IllegalStateException("Not enough tickets available. Oversell prevented.");
+                }
+
+                category.setAvailableQuantity(category.getAvailableQuantity() - quantity);
+                ticketCategoryRepository.save(category);
+
+                BigDecimal unitPrice = pricingStrategy.calculatePrice(category.getPrice());
+                BigDecimal itemTotalPrice = unitPrice.multiply(new BigDecimal(quantity));
+                totalPrice = totalPrice.add(itemTotalPrice);
+
+                OrderItem orderItem = OrderItem.builder()
+                        .order(order)
+                        .ticketCategory(category)
+                        .quantity(quantity)
+                        .price(unitPrice)
+                        .build();
+                orderItemRepository.save(orderItem);
+            }
+
+            order.setTotalAmount(totalPrice);
             orderStateContext.processPayment(order);
-            order = orderRepository.save(order);
-
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .ticketCategory(category)
-                    .quantity(quantity)
-                    .price(unitPrice)
-                    .build();
-            orderItemRepository.save(orderItem);
-
-            return order;
+            return orderRepository.save(order);
         } finally {
             redisService.releaseLock(lockKey);
         }
     }
 
     @Transactional
-    public Order finalizeOrderSuccess(Long orderId, Long categoryId, int quantity, User user) {
+    public Order finalizeOrderSuccess(Long orderId, User user) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-        TicketCategory category = ticketCategoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
         orderStateContext.completeOrder(order);
         order = orderRepository.save(order);
 
-        TicketFactory factory = ticketFactoryProvider.getFactory(category.getName());
+        java.util.List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
         java.util.List<Long> ticketIds = new java.util.ArrayList<>();
-        for (int i = 0; i < quantity; i++) {
-            Ticket ticket = factory.createTicket(category, user, order);
-            ticket = ticketRepository.save(ticket);
-            ticketIds.add(ticket.getId());
+
+        for (OrderItem item : orderItems) {
+            TicketCategory category = item.getTicketCategory();
+            TicketFactory factory = ticketFactoryProvider.getFactory(category.getName());
+            for (int i = 0; i < item.getQuantity(); i++) {
+                Ticket ticket = factory.createTicket(category, user, order);
+                ticket = ticketRepository.save(ticket);
+                ticketIds.add(ticket.getId());
+            }
         }
 
         String jobId = java.util.UUID.randomUUID().toString();
@@ -191,15 +204,18 @@ public class TicketPurchaseService {
     }
 
     @Transactional
-    public Order finalizeOrderFailure(Long orderId, Long categoryId, int quantity) {
+    public Order finalizeOrderFailure(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        TicketCategory category = ticketCategoryRepository.findByIdWithPessimisticLock(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        java.util.List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        for (OrderItem item : orderItems) {
+            TicketCategory category = ticketCategoryRepository.findByIdWithPessimisticLock(item.getTicketCategory().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        category.setAvailableQuantity(category.getAvailableQuantity() + quantity);
-        ticketCategoryRepository.save(category);
+            category.setAvailableQuantity(category.getAvailableQuantity() + item.getQuantity());
+            ticketCategoryRepository.save(category);
+        }
 
         orderStateContext.cancelOrder(order);
         return orderRepository.save(order);

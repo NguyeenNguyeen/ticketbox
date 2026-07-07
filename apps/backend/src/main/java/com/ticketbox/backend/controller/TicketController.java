@@ -47,8 +47,7 @@ public class TicketController {
 
         Order order = purchaseService.purchaseTicket(
                 user,
-                request.getCategoryId(),
-                request.getQuantity(),
+                request.getItems(),
                 idempotencyKey
         );
 
@@ -74,8 +73,7 @@ public class TicketController {
 
         Order order = purchaseService.reserveTickets(
                 user,
-                request.getCategoryId(),
-                request.getQuantity(),
+                request.getItems(),
                 idempotencyKey
         );
 
@@ -120,10 +118,15 @@ public class TicketController {
     }
 
     @Data
-    static class PurchaseRequest {
-        private Long categoryId;
-        private Integer quantity;
+    public static class PurchaseRequest {
+        private List<PurchaseItem> items;
         private String idempotencyKey;
+
+        @Data
+        public static class PurchaseItem {
+            private Long categoryId;
+            private Integer quantity;
+        }
     }
 
     @Data

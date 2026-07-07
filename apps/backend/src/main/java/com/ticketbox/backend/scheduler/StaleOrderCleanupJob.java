@@ -78,11 +78,11 @@ public class StaleOrderCleanupJob {
 
                 if (result.getStatus() == PaymentResult.PaymentStatus.SUCCESS) {
                     log.warn("Stale order {} actually succeeded at gateway! Finalizing order...", order.getId());
-                    ticketPurchaseService.finalizeOrderSuccess(order.getId(), item.getTicketCategory().getId(), item.getQuantity(), order.getUser());
+                    ticketPurchaseService.finalizeOrderSuccess(order.getId(), order.getUser());
                     meterRegistry.counter("ticketbox.payment.cleanup.recovered").increment();
                 } else {
                     log.warn("Stale order {} was abandoned. Cancelling and restoring inventory...", order.getId());
-                    ticketPurchaseService.finalizeOrderFailure(order.getId(), item.getTicketCategory().getId(), item.getQuantity());
+                    ticketPurchaseService.finalizeOrderFailure(order.getId());
                     meterRegistry.counter("ticketbox.payment.cleanup.cancelled").increment();
                     cancelledCount++;
                 }
