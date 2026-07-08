@@ -91,9 +91,14 @@ public class TicketAttachmentService {
                             ? ticket.getCategory().getConcert().getStartTime().format(dateFormatter) 
                             : "Date TBD";
                     String venueStr = ticket.getCategory().getConcert().getLocation() != null ? ticket.getCategory().getConcert().getLocation() : "Venue TBD";
-                    String holderStr = ticket.getOrder().getUser().getFullName() != null && !ticket.getOrder().getUser().getFullName().isEmpty() 
-                            ? ticket.getOrder().getUser().getFullName() 
-                            : ticket.getOrder().getUser().getUsername();
+                    String holderStr = "Unknown Holder";
+                    if (ticket.getGuest() != null && ticket.getGuest().getFullName() != null) {
+                        holderStr = ticket.getGuest().getFullName();
+                    } else if (ticket.getOrder() != null && ticket.getOrder().getUser() != null) {
+                        holderStr = ticket.getOrder().getUser().getFullName() != null && !ticket.getOrder().getUser().getFullName().isEmpty() 
+                                ? ticket.getOrder().getUser().getFullName() 
+                                : ticket.getOrder().getUser().getUsername();
+                    }
 
                     contentStream.setNonStrokingColor(new java.awt.Color(63, 63, 70)); // #3f3f46
                     

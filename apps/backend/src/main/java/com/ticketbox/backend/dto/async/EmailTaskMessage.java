@@ -12,6 +12,7 @@ public class EmailTaskMessage implements Serializable {
 
     private String jobId;
     private Long orderId;
+    private Long guestId;
     private Long userId;
     private String recipientEmail;
     private List<Long> ticketIds;
@@ -23,6 +24,16 @@ public class EmailTaskMessage implements Serializable {
     public EmailTaskMessage(String jobId, Long orderId, Long userId, String recipientEmail, List<Long> ticketIds, String correlationId) {
         this.jobId = jobId;
         this.orderId = orderId;
+        this.userId = userId;
+        this.recipientEmail = recipientEmail;
+        this.ticketIds = ticketIds;
+        this.correlationId = correlationId;
+    }
+
+    public EmailTaskMessage(String jobId, Long orderId, Long guestId, Long userId, String recipientEmail, List<Long> ticketIds, String correlationId) {
+        this.jobId = jobId;
+        this.orderId = orderId;
+        this.guestId = guestId;
         this.userId = userId;
         this.recipientEmail = recipientEmail;
         this.ticketIds = ticketIds;
@@ -43,6 +54,14 @@ public class EmailTaskMessage implements Serializable {
 
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
+    }
+
+    public Long getGuestId() {
+        return guestId;
+    }
+
+    public void setGuestId(Long guestId) {
+        this.guestId = guestId;
     }
 
     public Long getUserId() {

@@ -11,6 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import com.ticketbox.backend.config.RabbitMQConfig;
+import com.ticketbox.backend.dto.async.EmailTaskMessage;
+import com.ticketbox.backend.entity.Ticket;
+import com.ticketbox.backend.entity.TicketCategory;
+import com.ticketbox.backend.entity.TicketStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +37,9 @@ public class GuestService {
 
     private final GuestRepository guestRepository;
     private final ConcertRepository concertRepository;
+    private final com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
+    private final com.ticketbox.backend.repository.TicketRepository ticketRepository;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
 
     @Transactional(readOnly = true)
     public List<GuestDto> getAllGuests(String search, String concertName) {
@@ -116,13 +127,14 @@ public class GuestService {
                 GuestStatus status = parseStatus(statusStr);
                 
                 Optional<Guest> existingGuestOpt = guestRepository.findByConcertIdAndEmail(concert.getId(), email);
+                Guest savedGuest;
                 if (existingGuestOpt.isPresent()) {
                     Guest existing = existingGuestOpt.get();
                     existing.setFullName(name);
                     existing.setPhone(phone);
                     existing.setSponsor(sponsor);
                     existing.setStatus(status);
-                    guestRepository.save(existing);
+                    savedGuest = guestRepository.save(existing);
                 } else {
                     Guest newGuest = Guest.builder()
                         .concert(concert)
@@ -132,8 +144,35 @@ public class GuestService {
                         .sponsor(sponsor)
                         .status(status)
                         .build();
-                    guestRepository.save(newGuest);
+                    savedGuest = guestRepository.save(newGuest);
                 }
+                
+                // Issue ticket if not exists
+                if (ticketRepository.findByGuestId(savedGuest.getId()).isEmpty()) {
+                    TicketCategory guestCategory = getOrCreateGuestCategory(concert);
+                    Ticket ticket = Ticket.builder()
+                            .category(guestCategory)
+                            .guest(savedGuest)
+                            .status(TicketStatus.ACTIVE)
+                            .qrCode(UUID.randomUUID().toString())
+                            .ticketType("GUEST")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    ticket = ticketRepository.save(ticket);
+                    
+                    // Trigger email
+                    EmailTaskMessage emailMsg = new EmailTaskMessage(
+                            UUID.randomUUID().toString(),
+                            null, // orderId
+                            savedGuest.getId(), // guestId
+                            null, // userId
+                            savedGuest.getEmail(),
+                            Collections.singletonList(ticket.getId()),
+                            UUID.randomUUID().toString()
+                    );
+                    rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_COMMANDS, RabbitMQConfig.ROUTING_KEY_EMAIL, emailMsg);
+                }
+
                 importedCount++;
             }
             log.info("Successfully imported {} guests", importedCount);
@@ -142,6 +181,23 @@ public class GuestService {
             log.error("Failed to parse CSV file", e);
             throw new RuntimeException("Failed to import CSV: " + e.getMessage());
         }
+    }
+    
+    private TicketCategory getOrCreateGuestCategory(Concert concert) {
+        return ticketCategoryRepository.findByConcertId(concert.getId()).stream()
+                .filter(c -> "GUEST".equalsIgnoreCase(c.getName()))
+                .findFirst()
+                .orElseGet(() -> {
+                    TicketCategory cat = TicketCategory.builder()
+                            .concert(concert)
+                            .name("GUEST")
+                            .price(java.math.BigDecimal.ZERO)
+                            .totalQuantity(999999)
+                            .availableQuantity(999999)
+                            .maxPerUser(1)
+                            .build();
+                    return ticketCategoryRepository.save(cat);
+                });
     }
     
     private GuestStatus parseStatus(String val) {

@@ -15,6 +15,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByOrderId(Long orderId);
 
+    java.util.Optional<Ticket> findByGuestId(Long guestId);
+
 
     /**
      * Counts tickets already purchased by a user for a given category,

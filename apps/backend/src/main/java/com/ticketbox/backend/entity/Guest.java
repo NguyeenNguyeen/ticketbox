@@ -40,6 +40,11 @@ public class Guest implements java.io.Serializable {
     @Builder.Default
     private GuestStatus status = GuestStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "email_status", nullable = false)
+    @Builder.Default
+    private EmailStatus emailStatus = EmailStatus.PENDING;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

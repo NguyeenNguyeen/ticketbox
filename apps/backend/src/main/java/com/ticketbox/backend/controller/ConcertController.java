@@ -58,6 +58,7 @@ public class ConcertController {
 
             List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(c.getId());
             BigDecimal minPrice = categories.stream()
+                    .filter(cat -> !"GUEST".equalsIgnoreCase(cat.getName()))
                     .map(TicketCategory::getPrice)
                     .min(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
@@ -113,7 +114,9 @@ public class ConcertController {
         dto.setHasSeatMap(Files.exists(Paths.get("uploads/maps/concert_" + id + ".svg")));
 
         List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(c.getId());
-        List<TicketCategoryDto> categoryDtos = categories.stream().map(cat -> {
+        List<TicketCategoryDto> categoryDtos = categories.stream()
+                .filter(cat -> !"GUEST".equalsIgnoreCase(cat.getName()))
+                .map(cat -> {
             TicketCategoryDto catDto = new TicketCategoryDto();
             catDto.setId(cat.getId());
             catDto.setName(cat.getName());
@@ -140,7 +143,9 @@ public class ConcertController {
     public ResponseEntity<List<TicketCategoryDto>> getConcertCategories(@PathVariable Long id) {
         Concert c = concertService.getConcertById(id);
         List<TicketCategory> categories = ticketCategoryRepository.findByConcertId(id);
-        List<TicketCategoryDto> dtos = categories.stream().map(cat -> {
+        List<TicketCategoryDto> dtos = categories.stream()
+                .filter(cat -> !"GUEST".equalsIgnoreCase(cat.getName()))
+                .map(cat -> {
             TicketCategoryDto dto = new TicketCategoryDto();
             dto.setId(cat.getId());
             dto.setName(cat.getName());

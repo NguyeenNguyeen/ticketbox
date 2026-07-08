@@ -59,7 +59,7 @@ export default function AdminGuestsPage() {
         const text = event.target?.result as string;
         if (text) {
           const lines = text.split('\n').filter(line => line.trim().length > 0);
-          const preview = lines.slice(1, 6).map((line, index) => {
+          const preview = lines.slice(1).map((line, index) => {
             const cols = line.split(',');
             let error = "";
             if (cols.length < 2 || !cols[1]?.includes('@')) {
@@ -85,21 +85,7 @@ export default function AdminGuestsPage() {
   const confirmImport = async () => {
     if (!csvFile) return;
     try {
-      const formData = new FormData();
-      formData.append("file", csvFile);
-      
-      const token = localStorage.getItem("ticketbox_token");
-      const res = await fetch("http://localhost:8080/api/admin/guests/import", {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-      
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData.error || "Import failed");
-      }
-      
+      const resData = await api.uploadFile<{ message: string }>("/admin/guests/import", csvFile);
       toast({ title: "Thành công", description: resData.message || "Đã import danh sách khách mời thành công", variant: "success" });
       cancelImport();
       loadGuests();
