@@ -3,28 +3,32 @@
 ## Cấu trúc thư mục
 ```text
 ticketbox/
-│
 ├── README.md
-├── .gitignore
+├── .env
 ├── .env.example
-│
-├── docs/
-│   ├── architecture/
-│   ├── api/
-│   └── reports/
-│
+├── .gitignore
+├── EnvChecker.java
+├── mock_vip_guests.csv
+├── plan_frontend.md
+├── agent/
 ├── apps/
-│   ├── frontend/
 │   ├── backend/
-│   └── mobile/
-│
+│   ├── frontend/
+│   └── mobileapp/
+├── blueprint/
+│   ├── design.md
+│   ├── proposal.md
+│   ├── image/
+│   └── specs/
+├── data/
 ├── infra/
 │   └── docker/
 │       ├── docker-compose.yml
-│       ├── init.sql
-│   └── README.md
-│
-└── assets/
+│       └── init.sql
+├── scripts/
+├── src/
+├── Ticketbox/
+└── uploads/
 ```
 
 ## Git Workflow & Merge Policy
@@ -32,11 +36,8 @@ ticketbox/
 ### Branch Structure
 
 ```text
-## Branch Structure
-├── main
-│
+main
 ├── develop
-│
 ├── backend
 ├── frontend
 ├── mobileapp
@@ -195,10 +196,11 @@ docker compose -f infra/docker/docker-compose.yml logs -f
 ```
 
 ### 5) Chạy Backend (Spring Boot)
-Backend nằm trong thư mục [apps/backend](apps/backend).
+Backend nằm trong thư mục [apps/backend](apps/backend). Hãy mở terminal ở thư mục gốc của repo trước khi chạy các lệnh dưới đây, vì file `.env` nằm ở thư mục gốc.
 
 #### 5.1 Linux / macOS
 ```bash
+cd /path/to/ticketbox
 set -a
 source .env
 set +a
@@ -211,18 +213,25 @@ mvn spring-boot:run
 ```powershell
 Get-Content .env | ForEach-Object {
     if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
-        [Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
+        $name = $matches[1].Trim()
+        $value = $matches[2].Trim()
+        [Environment]::SetEnvironmentVariable($name, $value, "Process")
     }
 }
-cd apps/backend
+Set-Location apps/backend
 mvn clean install
 mvn spring-boot:run
 ```
 
-Sau khi chạy thành công, backend sẽ mở tại:
+Sau khi backend khởi động thành công, ứng dụng sẽ chạy tại:
 - http://localhost:8080
 
-Bạn có thể kiểm tra bằng cách mở URL này trong trình duyệt hoặc gọi thử một endpoint đơn giản.
+Bạn có thể kiểm tra bằng cách mở URL này trong trình duyệt hoặc xem log của terminal. Nếu bạn muốn kiểm tra nhanh bằng lệnh, có thể thử:
+```bash
+curl -i http://localhost:8080/actuator/health
+```
+
+Lưu ý: vì backend có cấu hình Spring Security, một số endpoint có thể trả về `403 Forbidden` nếu chưa được xác thực. Nếu log terminal hiển thị `Tomcat started on port 8080` và `Started Application`, thì backend đã khởi động đúng.
 
 ### 6) Chạy Frontend (Next.js)
 Frontend nằm trong thư mục [apps/frontend](apps/frontend).
