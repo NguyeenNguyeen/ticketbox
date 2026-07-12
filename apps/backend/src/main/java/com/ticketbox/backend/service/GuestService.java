@@ -65,6 +65,7 @@ public class GuestService {
         if (!guestRepository.existsById(guestId)) {
             throw new IllegalArgumentException("Guest not found");
         }
+        ticketRepository.findByGuestId(guestId).ifPresent(ticketRepository::delete);
         guestRepository.deleteById(guestId);
     }
 
