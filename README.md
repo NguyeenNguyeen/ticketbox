@@ -126,30 +126,88 @@ Tài khoản mặc định `customer1` trong database có email là `customer1@g
 4. Đăng nhập bằng tài khoản mới vừa tạo.
 6. Kiểm tra hộp thư (Inbox) của email đó để xem E-ticket PDF đính kèm.
 
-## 🚀 Khởi Động Dự Án (Startup Instructions)
+## 🚀 Hướng dẫn Build & Run
 
-Dự án hiện tại không sử dụng thư viện tự động load `.env` (như `spring-dotenv`), thay vào đó, các biến môi trường sẽ được nạp trực tiếp từ hệ điều hành. Điều này đảm bảo tính nhất quán trên các môi trường CI/CD, Docker, và Server thực tế.
+Dưới đây là hướng dẫn đầy đủ để chạy dự án Ticketbox trên máy local theo đúng trình tự. Nếu bạn là người mới làm quen với dự án, hãy đọc từ đầu đến cuối và làm theo từng bước.
 
-**Lưu ý:** Bạn chỉ cần cấu hình MỘT file `.env` duy nhất ở thư mục gốc của dự án.
+### 1) Yêu cầu trước khi bắt đầu
+Trước khi chạy ứng dụng, hãy đảm bảo máy của bạn đã cài đặt các công cụ sau:
+- Java 17 hoặc mới hơn
+- Maven 3.8+
+- Node.js 20+
+- npm (đi kèm với Node.js)
+- Docker Desktop hoặc Docker Engine và Docker Compose
 
-### Đối với Linux / macOS
+Nếu bạn chưa cài đặt, hãy cài trước rồi mới tiếp tục. Đây là những công cụ cần thiết để chạy backend, frontend và các dịch vụ phụ trợ như PostgreSQL, Redis và RabbitMQ.
 
-Mở terminal ở thư mục gốc dự án, nạp biến môi trường và chạy Spring Boot:
+### 2) Clone dự án và vào thư mục gốc
+```bash
+git clone <repository-url>
+cd ticketbox
+```
 
+Nếu repo đã có sẵn trên máy, chỉ cần vào thư mục gốc:
+```bash
+cd ticketbox
+```
+
+### 3) Cấu hình file biến môi trường
+Tạo file `.env` từ mẫu có sẵn [.env.example](.env.example):
+
+```bash
+cp .env.example .env
+```
+
+Sau đó mở file `.env` và chỉnh lại các giá trị cần thiết. Các biến quan trọng thường là:
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `GEMINI_API_KEY`
+- `RESEND_API_KEY`
+
+Nếu bạn chưa có API key thật, có thể để trống cho các phần chưa dùng đến, nhưng nếu cần test các tính năng AI hoặc email thì nên điền đúng giá trị.
+
+> Lưu ý: Hãy chỉ cấu hình một file `.env` ở thư mục gốc. Dự án sẽ đọc file này khi khởi động backend.
+
+### 4) Khởi động các dịch vụ phụ trợ bằng Docker
+Dự án cần PostgreSQL, Redis và RabbitMQ để vận hành đầy đủ. Bạn có thể chạy tất cả bằng Docker Compose:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d
+```
+
+Lệnh này sẽ khởi động các container sau:
+- PostgreSQL trên cổng 5432
+- Redis trên cổng 6379
+- RabbitMQ trên cổng 5672
+- RabbitMQ Management UI trên cổng 15672
+
+Bạn có thể kiểm tra trạng thái container bằng lệnh:
+
+```bash
+docker ps
+```
+
+Nếu các container chưa chạy, hãy kiểm tra log:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml logs -f
+```
+
+### 5) Chạy Backend (Spring Boot)
+Backend nằm trong thư mục [apps/backend](apps/backend).
+
+#### 5.1 Linux / macOS
 ```bash
 set -a
 source .env
 set +a
 cd apps/backend
+mvn clean install
 mvn spring-boot:run
 ```
 
-*(Hoặc nếu chạy từ thư mục gốc, sử dụng `mvn -pl apps/backend spring-boot:run`)*
-
-### Đối với Windows PowerShell
-
-Mở PowerShell ở thư mục gốc dự án, đọc file `.env` và set biến môi trường cho tiến trình hiện tại:
-
+#### 5.2 Windows PowerShell
 ```powershell
 Get-Content .env | ForEach-Object {
     if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
@@ -157,5 +215,83 @@ Get-Content .env | ForEach-Object {
     }
 }
 cd apps/backend
+mvn clean install
 mvn spring-boot:run
 ```
+
+Sau khi chạy thành công, backend sẽ mở tại:
+- http://localhost:8080
+
+Bạn có thể kiểm tra bằng cách mở URL này trong trình duyệt hoặc gọi thử một endpoint đơn giản.
+
+### 6) Chạy Frontend (Next.js)
+Frontend nằm trong thư mục [apps/frontend](apps/frontend).
+
+Mở một terminal mới, chạy các lệnh sau:
+
+```bash
+cd apps/frontend
+npm install
+npm run dev
+```
+
+Sau khi khởi động xong, frontend sẽ chạy tại:
+- http://localhost:3000
+
+Nếu port 3000 đang bị chiếm, Next.js có thể tự đổi sang port khác. Hãy kiểm tra terminal output để xác nhận URL chính xác.
+
+### 7) Build production (không chạy dev server)
+#### 7.1 Build Backend
+```bash
+cd apps/backend
+mvn clean package
+```
+
+Lệnh này sẽ build file JAR có thể chạy ở môi trường production.
+
+#### 7.2 Build Frontend
+```bash
+cd apps/frontend
+npm run build
+```
+
+Sau khi build xong, bạn có thể chạy frontend ở chế độ production bằng:
+
+```bash
+npm run start
+```
+
+### 8) Kiểm tra sau khi chạy
+Sau khi cả backend và frontend đã chạy, hãy kiểm tra các điểm sau:
+- Backend có phản hồi trên http://localhost:8080 hay không
+- Frontend có mở trên http://localhost:3000 hay không
+- Docker container PostgreSQL, Redis và RabbitMQ đang ở trạng thái `Up`
+- Nếu cần test email, hãy đảm bảo `RESEND_API_KEY` đã được cấu hình đúng và dùng email đã xác thực trong Resend sandbox
+
+### 9) Các lỗi thường gặp
+#### Lỗi không kết nối được database
+- Kiểm tra Docker container đã chạy chưa bằng `docker ps`
+- Kiểm tra file `.env` có đúng `POSTGRES_*` không
+- Kiểm tra log của container bằng `docker compose -f infra/docker/docker-compose.yml logs postgres`
+
+#### Lỗi `npm install` thất bại
+- Kiểm tra Node.js đã cài đúng version chưa
+- Xóa thư mục `node_modules` rồi chạy lại `npm install`
+
+#### Backend không khởi động được
+- Kiểm tra Java 17 đã được cài và `mvn -version` hoạt động bình thường
+- Kiểm tra file `.env` có tồn tại ở thư mục gốc và có đúng định dạng
+- Xem log lỗi của Maven để biết nguyên nhân cụ thể
+
+#### Frontend không mở được trên port 3000
+- Port 3000 có thể đã được service khác sử dụng
+- Xem output của terminal để biết port mới được Next.js chọn
+
+### 10) Gợi ý chạy nhanh cho developer
+Nếu bạn chỉ muốn chạy nhanh để test UI và API, có thể làm theo thứ tự:
+1. Chạy Docker services
+2. Chạy backend
+3. Chạy frontend
+4. Truy cập http://localhost:3000 để bắt đầu sử dụng
+
+Nếu bạn muốn, tôi có thể tiếp tục viết thêm một phần “Troubleshooting nâng cao” hoặc “Cách chạy bằng Docker Compose toàn bộ stack” cho README này. 

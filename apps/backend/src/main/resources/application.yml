@@ -25,6 +25,10 @@ spring:
   sql:
     init:
       mode: always
+      schema-locations:
+        - file:${user.dir}/../../data/init.sql
+      data-locations:
+        - file:${user.dir}/../../data/seed.sql
   rabbitmq:
     host: ${RABBITMQ_HOST:127.0.0.1}
     port: ${RABBITMQ_PORT:5672}
