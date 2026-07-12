@@ -13,7 +13,7 @@ const ticketSchema = z.object({
   price: z.number().min(1, "Giá phải lớn hơn 0"),
   totalQuantity: z.number().min(1, "Số lượng phải lớn hơn 0"),
   maxPerUser: z.number().min(1, "Tối thiểu 1 vé/người"),
-  saleStartTime: z.string().min(1, "Chọn thời gian mở bán"),
+  saleStartTime: z.string().optional(),
 });
 
 const artistSchema = z.object({
@@ -333,7 +333,7 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Tên</label>
                   <input {...register(`ticketCategories.${i}.name`)} className={inputClass} placeholder="VD: SVIP" />
@@ -349,10 +349,6 @@ export function ConcertForm({ initialData, onSubmit }: ConcertFormProps) {
                 <div>
                   <label className="text-xs text-muted-foreground">Max/người</label>
                   <input type="number" {...register(`ticketCategories.${i}.maxPerUser`, { valueAsNumber: true })} className={inputClass} />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">Mở bán</label>
-                  <input type="date" {...register(`ticketCategories.${i}.saleStartTime`)} className={inputClass} />
                 </div>
               </div>
             </div>
