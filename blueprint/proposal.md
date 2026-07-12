@@ -156,9 +156,9 @@ Xây dựng hệ thống **TicketBox** — nền tảng bán vé concert trực 
 
 ### 5.3. Phân công nhóm
 
-| Thành viên | Phân hệ | Trách nhiệm chính | Đánh giá hoàn thành |
-|------------|---------|-------------------|--------------------|
-| 23120307 - Trần Nguyễn Nguyên | Backend Core & Security | Entity, Repository, Service, Security, Design Patterns | 100% |
-| 23120107 - Nguyễn Phạm Trí Viễn | Web Frontend & UX | Next.js, Tailwind CSS, Zustand, TanStack Query, SVG Seat Map | 100% |
-| 23120306 - Đào Nguyễn Nguyên | Infrastructure, Async & AI | Docker, Rate Limiting, Circuit Breaker, RabbitMQ, AI Worker, Email Worker | 100% |
-| 21120597 - Mai Huy Vũ | Mobile & Offline Check-in | Mobile app soát vé (Trạng thái hiện tại: Chưa cài đặt) | 0% |
+| Thành viên | Phân hệ | Trách nhiệm chính | Đóng góp | Đánh giá hoàn thành |
+|------------|---------|-------------------|----------|---------------------|
+| 23120107 - Nguyễn Phạm Trí Viễn | Web Frontend & UX | Next.js, Tailwind CSS, Zustand, TanStack Query, SVG Seat Map | 30% | 100% |
+| 23120306 - Đào Nguyễn Nguyên | Infrastructure, Async & AI, Báo cáo & Phân công | Docker, Rate Limiting, Circuit Breaker, RabbitMQ, AI Worker, Email Worker | 30% | 100% |
+| 23120307 - Trần Nguyễn Nguyên | Backend Core & Security | Entity, Repository, Service, Security, Design Patterns | 30% | 100% |
+| 21120597 - Mai Huy Vũ | Mobile & Offline Check-in | Mobile app soát vé (Trạng thái hiện tại: Chưa cài đặt) | 0% | 0% |

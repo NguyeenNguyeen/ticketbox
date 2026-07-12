@@ -60,4 +60,9 @@ out/
 .sts4-cache/
 
 # Uploads
-apps/backend/uploads/
+apps/backend/uploads/banners/
+apps/backend/uploads/maps/
+apps/backend/uploads/artists/
+
+# Load Tests
+tests/
