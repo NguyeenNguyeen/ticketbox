@@ -1,3 +1,4 @@
 - [x] Fixing Multi-item Checkout Bug
 - [x] Fixing Guest Import Validation Bug
+- [x] Fixing AI Press Kit Output Language
 - [ ] Integrating Real Payment Gateway

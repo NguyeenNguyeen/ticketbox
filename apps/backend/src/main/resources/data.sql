@@ -25,11 +25,11 @@ ON CONFLICT (id) DO UPDATE SET
 -- Insert sample artists
 INSERT INTO artists (id, name, avatar_url, bio)
 VALUES
-(1, 'HIEUTHUHAI', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=200&h=200', 'HIEUTHUHAI sinh năm 1999 tại TP.HCM. Anh nổi lên từ chương trình King Of Rap. Phong cách âm nhạc hiện đại, ngoại hình sáng giúp anh thu hút đông đảo khán giả trẻ.'),
-(2, 'Rhyder', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200&h=200', 'Rhyder tên thật là Quang Anh, Quán quân Giọng Hát Việt Nhí mùa đầu tiên. Sự trở lại mạnh mẽ trong các gameshow gần đây cho thấy sự lột xác ngoạn mục về hình ảnh và tư duy âm nhạc.'),
-(3, 'HURRYKNG', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=200&h=200', 'HURRYKNG là một rapper trẻ với nhiều bản hit tạo trend. Sự nghiệp của anh bắt đầu thăng hoa sau khi tham gia các tổ đội Rap tại miền Nam.'),
-(4, 'Tuấn Hưng', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200&h=200', 'Nam ca sĩ kì cựu của âm nhạc Việt Nam với hàng loạt bản hit gắn liền với tuổi thanh xuân của thế hệ 8x, 9x đời đầu. Giọng hát nam tính, mạnh mẽ là điểm đặc trưng.'),
-(5, 'Amee', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200', 'Nữ ca sĩ Gen Z với phong cách kẹo ngọt, sở hữu hàng loạt MV triệu view và vũ đạo viral trên mạng xã hội TikTok.'),
+(1, 'HIEUTHUHAI', 'https://cdn.phototourl.com/free/2026-07-12-31cdea73-1bfb-4c5e-8fab-2a48b376cca9.webp', 'HIEUTHUHAI sinh năm 1999 tại TP.HCM. Anh nổi lên từ chương trình King Of Rap. Phong cách âm nhạc hiện đại, ngoại hình sáng giúp anh thu hút đông đảo khán giả trẻ.'),
+(2, 'Rhyder', 'https://cdn.phototourl.com/free/2026-07-12-6ac5e9d3-3df1-48b2-b999-cbca470f2ccf.webp', 'Rhyder tên thật là Quang Anh, Quán quân Giọng Hát Việt Nhí mùa đầu tiên. Sự trở lại mạnh mẽ trong các gameshow gần đây cho thấy sự lột xác ngoạn mục về hình ảnh và tư duy âm nhạc.'),
+(3, 'HURRYKNG', 'https://cdn.phototourl.com/free/2026-07-12-7205b94c-9497-42dd-b7c4-64d5cb84c8e7.webp', 'HURRYKNG là một rapper trẻ với nhiều bản hit tạo trend. Sự nghiệp của anh bắt đầu thăng hoa sau khi tham gia các tổ đội Rap tại miền Nam.'),
+(4, 'Tuấn Hưng', 'https://cdn.phototourl.com/free/2026-07-12-d22e7e85-f2af-47da-aba5-7a89c4d01084.webp', 'Nam ca sĩ kì cựu của âm nhạc Việt Nam với hàng loạt bản hit gắn liền với tuổi thanh xuân của thế hệ 8x, 9x đời đầu. Giọng hát nam tính, mạnh mẽ là điểm đặc trưng.'),
+(5, 'Amee', 'https://cdn.phototourl.com/free/2026-07-12-01483941-8315-4be9-9c85-c9ca5226d1e4.webp', 'Nữ ca sĩ Gen Z với phong cách kẹo ngọt, sở hữu hàng loạt MV triệu view và vũ đạo viral trên mạng xã hội TikTok.'),
 (6, 'Mỹ Tâm', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200', 'Họa mi tóc nâu, tượng đài của âm nhạc Việt Nam trong suốt hơn 20 năm qua. Sở hữu lượng fan đông đảo bậc nhất và những liveshow quy mô kỷ lục.')
 ON CONFLICT (id) DO NOTHING;
 
