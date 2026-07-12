@@ -1,0 +1,3 @@
+- [x] Fixing Multi-item Checkout Bug
+- [x] Fixing Guest Import Validation Bug
+- [ ] Integrating Real Payment Gateway

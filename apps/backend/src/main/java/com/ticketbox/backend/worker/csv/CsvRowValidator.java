@@ -19,6 +19,10 @@ public class CsvRowValidator {
         String email = record.get("email");
         String fullName = record.get("fullName");
 
+        return isValid(fullName, email);
+    }
+
+    public boolean isValid(String fullName, String email) {
         if (!StringUtils.hasText(email) || !StringUtils.hasText(fullName)) {
             return false;
         }

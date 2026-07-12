@@ -40,6 +40,7 @@ public class GuestService {
     private final com.ticketbox.backend.repository.TicketCategoryRepository ticketCategoryRepository;
     private final com.ticketbox.backend.repository.TicketRepository ticketRepository;
     private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    private final com.ticketbox.backend.worker.csv.CsvRowValidator csvRowValidator;
 
     @Transactional(readOnly = true)
     public List<GuestDto> getAllGuests(String search, String concertName) {
@@ -109,8 +110,8 @@ public class GuestService {
                 String sponsor = record.size() > 4 ? record.get(4) : "";
                 String statusStr = record.size() > 5 ? record.get(5) : "PENDING";
                 
-                if (name.isEmpty() || email.isEmpty()) {
-                    log.warn("Skipping line due to empty name or email");
+                if (!csvRowValidator.isValid(name, email)) {
+                    log.warn("Skipping line due to invalid name or email format: {}", email);
                     continue;
                 }
                 
