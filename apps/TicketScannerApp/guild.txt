@@ -1,0 +1,31 @@
+npx create-expo-app TicketScannerApp --template blank-typescript
+cd TicketScannerApp
+
+npx expo install expo-camera expo-sqlite expo-crypto
+
+//CHẠY LÊN MÁY THẬT
+npx expo start --localhost //sau đó mở terminal khác chạy: adb reverse tcp:8081 tcp:8081
+
+//fix lỗi: Project is incompatible with this version of expo go. This project requires a newer version of expo gogP
+rm -rf node_modules package-lock.json && npm install expo@^54.0.0 react@19.1.0 react-native@0.81.5 expo-camera@~17.0.10 expo-crypto@~15.0.9 expo-sqlite@~16.0.10 expo-status-bar@~3.0.9 --legacy-peer-deps
+npx expo start --localhost
+    //nếu cổng chưa chạy:
+    adb reverse tcp:8081 tcp:8081
+
+//cấu trúc lại cây thư mục:
+mkdir -p src/database src/screens
+    //trong thư mục database thêm database.ts
+    //trong thư mục screens thêm ScannerScreen.tsx
+    //chuyển App.tsx và package.json và trong thư mục src này
+    //tạo file DashboardScreen.tsx bên trong screens
+
+//chạy để chuẩn bị bước internet/offline
+npx expo install @react-native-community/netinfo
+
+//Chạy lên app
+Terminal1:
+npx expo start --clear
+
+Terminal2:
+cd sync-server
+node server.js

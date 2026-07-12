@@ -1,0 +1,68 @@
+============================================================
+  BÁO CÁO HỆ THỐNG KIỂM SOÁT VÉ (OFFLINE)
+============================================================
+
+1. TỔNG QUAN HỆ THỐNG
+   - Mục tiêu: Kiểm soát vé sự kiện bằng mã QR.
+   - Tính chất: Offline-First (hoạt động không cần Internet).
+   - Công nghệ: React Native, Expo, SQLite/Local Storage, Node-Forge.
+
+2. CƠ CHẾ BẢO MẬT (Digital Signature)
+   - Phương thức: RSA-SHA256.
+   - Luồng xác thực:
+     a. Server ký chữ ký cho mỗi ID vé bằng Private Key.
+     b. App tích hợp Public Key để giải mã và xác thực.
+     c. Chữ ký bị thay đổi (vé giả) sẽ không khớp với dữ liệu.
+
+3. QUY TRÌNH XỬ LÝ (Scanner Logic)
+   - Input: Quét mã QR (JSON: {id, signature}).
+   - Xử lý: 
+     + Chuẩn hóa Base64 & Giải mã chữ ký.
+     + Kiểm tra tính toàn vẹn (Verify RSA).
+     + Đối chiếu Database nội bộ (Trạng thái vé: ACTIVE/USED).
+   - Output: Thông báo trạng thái vé (Thành công/Vé đã dùng/Vé giả).
+
+4. CÁC TÌNH HUỐNG THỬ NGHIỆM (Demo Cases)
+   - Case 1: Vé hợp lệ -> [Thông báo thành công & Cập nhật DB]
+   - Case 2: Vé đã sử dụng -> [Cảnh báo vé đã dùng]
+   - Case 3: Vé giả (Sai Signature) -> [Cảnh báo an ninh]
+   - Case 4: Vé không tồn tại -> [Thông báo lỗi hệ thống]
+
+5. KẾT LUẬN & HƯỚNG PHÁT TRIỂN
+   - Hệ thống đảm bảo tính bảo mật và tốc độ quét nhanh.
+   - Hướng phát triển: Đồng bộ hóa thời gian thực (Real-time sync) 
+     khi có kết nối Internet để cập nhật vé từ nhiều trạm quét.
+ 6. HƯỚNG DẪN CHẠY CODE: 
+   -Cài các thư viện cần thiết:
+   npx create-expo-app TicketScannerApp --template blank-typescript
+   cd TicketScannerApp
+
+   npx expo install expo-camera expo-sqlite expo-crypto
+
+   //CHẠY LÊN MÁY THẬT
+      npx expo start --localhost //sau đó mở terminal khác chạy: adb reverse tcp:8081 tcp:8081
+
+   //fix lỗi: Project is incompatible with this version of expo go. This project requires a newer version of expo gogP
+      rm -rf node_modules package-lock.json && npm install expo@^54.0.0 react@19.1.0 react-native@0.81.5 expo-camera@~17.0.10 expo-crypto@~15.0.9 expo-sqlite@~16.0.10 expo-status-bar@~3.0.9 --legacy-peer-deps
+      npx expo start --localhost
+      //nếu cổng chưa chạy:
+         adb reverse tcp:8081 tcp:8081
+
+   //cấu trúc lại cây thư mục:
+      mkdir -p src/database src/screens
+      //trong thư mục database thêm database.ts
+      //trong thư mục screens thêm ScannerScreen.tsx
+      //chuyển App.tsx và package.json và trong thư mục src này
+      //tạo file DashboardScreen.tsx bên trong screens
+
+//chạy để chuẩn bị bước internet/offline
+npx expo install @react-native-community/netinfo
+
+//Chạy lên app
+Terminal1:
+npx expo start --clear
+
+Terminal2:
+cd sync-server
+node server.js
+============================================================
